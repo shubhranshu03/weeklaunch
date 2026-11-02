@@ -10,7 +10,7 @@ import { toolHref, tools } from "@/lib/tools";
 export const metadata: Metadata = {
   title: "Free tools for founders and indie makers",
   description:
-    "Free tools to prepare your product launch: a launch checklist, a tagline generator, a meta tag generator with Google and social previews, and launch badges.",
+    "Free tools for founders: startup name generator, tagline generator, launch copy checker, launch date planner, launch checklist and meta tag generator.",
   alternates: { canonical: "/tools" },
 };
 

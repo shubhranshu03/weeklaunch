@@ -6,7 +6,8 @@ export type Tool = {
   // Search-focused title and description for the tool page
   seoTitle: string;
   seoDescription: string;
-  icon: "checklist" | "tagline" | "meta" | "badge";
+  icon:
+    "checklist" | "tagline" | "meta" | "badge" | "name" | "checker" | "planner";
 };
 
 export const tools: Tool[] = [
@@ -39,6 +40,36 @@ export const tools: Tool[] = [
     seoDescription:
       "Free meta tag generator: preview your page on Google, X (Twitter) and LinkedIn, check title and description length, and copy ready-to-paste HTML meta tags.",
     icon: "meta",
+  },
+  {
+    slug: "startup-name-generator",
+    name: "Startup Name Generator",
+    summary:
+      "Type a few keywords and get brandable names for your startup, each with a quick domain check.",
+    seoTitle: "Free Startup Name Generator — brandable ideas",
+    seoDescription:
+      "Generate brandable startup and SaaS name ideas from your keywords. Free, no sign-up, with a one-click .com domain check for every name.",
+    icon: "name",
+  },
+  {
+    slug: "launch-copy-checker",
+    name: "Launch Copy Checker",
+    summary:
+      "Score your tagline and description out of 100 and get simple tips to make them clearer.",
+    seoTitle: "Free Tagline & Product Description Checker",
+    seoDescription:
+      "Check your product tagline and description before you launch. Get a score out of 100 with tips on length, clarity, buzzwords and audience. Free, no sign-up.",
+    icon: "checker",
+  },
+  {
+    slug: "launch-date-planner",
+    name: "Launch Date Planner",
+    summary:
+      "Pick your launch day and get a dated, step-by-step plan you can copy or add to your calendar.",
+    seoTitle: "Free Product Launch Timeline & Date Planner",
+    seoDescription:
+      "Pick your launch date and get a day-by-day product launch timeline, from 4 weeks before to 2 weeks after. Copy it or add it to your calendar. Free.",
+    icon: "planner",
   },
   {
     slug: "launch-badge",

@@ -2,6 +2,9 @@ import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
+  CalendarRange,
+  ClipboardCheck,
+  Lightbulb,
   ChevronDown,
   ChevronRight,
   ListChecks,
@@ -20,6 +23,9 @@ export const toolIcons: Record<Tool["icon"], LucideIcon> = {
   tagline: Sparkles,
   meta: SquareCode,
   badge: BadgeCheck,
+  name: Lightbulb,
+  checker: ClipboardCheck,
+  planner: CalendarRange,
 };
 
 export type Faq = { q: string; a: string };
