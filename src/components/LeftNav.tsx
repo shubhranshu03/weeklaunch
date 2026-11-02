@@ -4,15 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowUpRight,
+  BadgeDollarSign,
   Bell,
-  Compass,
-  LayoutGrid,
-  Package,
+  Boxes,
+  CircleUserRound,
+  Flame,
+  Rocket,
   Search,
-  Settings,
-  Tag,
-  Wrench,
-  UserRound,
+  SlidersHorizontal,
+  WandSparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,16 +24,16 @@ type NavItem = {
 };
 
 const explore: NavItem[] = [
-  { label: "Discover", icon: Compass, href: "/" },
-  { label: "All products", icon: LayoutGrid, href: "/products" },
-  { label: "Pricing", icon: Tag, href: "/pricing" },
-  { label: "Free tools", icon: Wrench, href: "/tools" },
+  { label: "Discover", icon: Flame, href: "/" },
+  { label: "All products", icon: Boxes, href: "/products" },
+  { label: "Pricing", icon: BadgeDollarSign, href: "/pricing" },
+  { label: "Free tools", icon: WandSparkles, href: "/tools" },
 ];
 
 const workspace: NavItem[] = [
-  { label: "My launches", icon: Package, href: "/dashboard" },
-  { label: "Profile", icon: UserRound, href: "/profile" },
-  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "My launches", icon: Rocket, href: "/dashboard" },
+  { label: "Profile", icon: CircleUserRound, href: "/profile" },
+  { label: "Settings", icon: SlidersHorizontal, href: "/settings" },
 ];
 
 function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
