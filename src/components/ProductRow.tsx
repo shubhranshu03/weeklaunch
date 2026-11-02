@@ -45,7 +45,7 @@ export function ProductLogo({
           ? "size-10 rounded-full text-sm"
           : size === "lg"
             ? "badge-pop size-20 rounded-full text-3xl"
-            : "size-12 rounded-full text-lg sm:size-[52px]"
+            : "size-10 rounded-full text-base sm:size-[52px] sm:text-lg"
       }`}
       style={{
         backgroundImage: `linear-gradient(135deg, ${logo.from}, ${logo.to})`,
@@ -67,7 +67,7 @@ export function UpvoteButton({ count }: { count: number }) {
       onClick={() => setVoted((v) => !v)}
       aria-pressed={voted}
       aria-label={voted ? "Remove upvote" : "Upvote"}
-      className={`btn-pop flex h-14 w-12 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-sm font-bold tabular-nums ${
+      className={`btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums sm:h-14 sm:w-12 sm:gap-1 ${
         voted
           ? "bg-brand-500 text-white"
           : "bg-white text-slate-900 hover:bg-brand-50"
@@ -93,8 +93,8 @@ export function ProductRow({
 
   return (
     <li className={`group ${top?.row ?? "bg-white"}`}>
-      <div className="flex items-center gap-3 px-3 py-5 transition hover:bg-slate-50/70 sm:gap-4 sm:px-4">
-        <div className="flex w-9 shrink-0 justify-center">
+      <div className="flex items-center gap-2.5 px-3 py-4 transition hover:bg-slate-50/70 sm:gap-4 sm:px-4 sm:py-5">
+        <div className="flex w-8 shrink-0 justify-center sm:w-9">
           {top ? (
             <span
               className={`badge-pop rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase ${top.chip}`}
@@ -110,7 +110,7 @@ export function ProductRow({
 
         <Link
           href={`/products/${product.slug}`}
-          className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4"
+          className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-4"
         >
           <ProductLogo logo={product.logo} name={product.name} />
           <div className="min-w-0 flex-1">
@@ -130,7 +130,7 @@ export function ProductRow({
                 </span>
               )}
             </div>
-            <p className="mt-0.5 line-clamp-1 text-sm text-slate-500">
+            <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-slate-500 sm:line-clamp-1">
               {product.tagline}
             </p>
             <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">

@@ -15,7 +15,10 @@ import {
   Pin,
   Rocket,
   Rows3,
+  ArrowUpRight,
+  ChevronLeft,
   Triangle,
+  Trash2,
   X,
 } from "lucide-react";
 import { CURRENT_WEEK, productCategories, weeks } from "@/lib/data";
@@ -30,6 +33,7 @@ type Form = {
   description: string;
   categories: string[];
   logo: string | null;
+  shots: string[];
   plan: "free" | "premium";
   week: number;
   boost: boolean;
@@ -42,10 +46,18 @@ const empty: Form = {
   description: "",
   categories: [],
   logo: null,
+  shots: [],
   plan: "premium",
-  week: upcoming[0].number,
+  week: 46,
   boost: false,
 };
+
+const MAX_SHOTS = 5;
+
+// Sample availability until it comes from the database
+const PREMIUM_CAPACITY = 5;
+const premiumSpots: Record<number, number> = { 46: 3, 47: 0, 48: 5 };
+const freeWeek = upcoming[upcoming.length - 1].number;
 
 const PREMIUM_PRICE = 29;
 const BOOST_PRICE = 19;
@@ -182,6 +194,25 @@ export function SubmitForm() {
           : f.categories,
     }));
 
+  const addShots = (files: FileList | null) => {
+    if (!files) return;
+    const urls = Array.from(files)
+      .filter((f) => f.type.startsWith("image/"))
+      .map((f) => URL.createObjectURL(f));
+    setForm((f) => ({
+      ...f,
+      shots: [...f.shots, ...urls].slice(0, MAX_SHOTS),
+    }));
+  };
+  const moveShot = (i: number) =>
+    setForm((f) => {
+      const shots = [...f.shots];
+      [shots[i - 1], shots[i]] = [shots[i], shots[i - 1]];
+      return { ...f, shots };
+    });
+  const removeShot = (i: number) =>
+    setForm((f) => ({ ...f, shots: f.shots.filter((_, j) => j !== i) }));
+
   const week = weeks.find((w) => w.number === form.week)!;
   const total =
     (form.plan === "premium" ? PREMIUM_PRICE : 0) +
@@ -226,7 +257,7 @@ export function SubmitForm() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <form
         noValidate
         onSubmit={(e) => {
@@ -343,6 +374,86 @@ export function SubmitForm() {
                   />
                 </label>
               </div>
+              <div>
+                <span className="flex items-baseline justify-between">
+                  <span className="text-sm font-semibold text-slate-900">
+                    Screenshots
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    {form.shots.length}/{MAX_SHOTS} · first one is the cover
+                  </span>
+                </span>
+                {form.shots.length > 0 && (
+                  <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {form.shots.map((src, i) => (
+                      <li
+                        key={src}
+                        className="group relative aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen file */}
+                        <img
+                          src={src}
+                          alt={`Screenshot ${i + 1}`}
+                          className="size-full object-cover"
+                        />
+                        {i === 0 && (
+                          <span className="badge-pop absolute left-1.5 top-1.5 rounded-md bg-amber-300 px-1.5 py-px text-[10px] font-bold uppercase text-slate-900">
+                            Cover
+                          </span>
+                        )}
+                        <span className="absolute bottom-1.5 right-1.5 flex gap-1">
+                          {i > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => moveShot(i)}
+                              aria-label={`Move screenshot ${i + 1} left`}
+                              className="flex size-7 items-center justify-center rounded-lg bg-white/90 text-slate-700 shadow-sm hover:bg-white"
+                            >
+                              <ChevronLeft className="size-4" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeShot(i)}
+                            aria-label={`Remove screenshot ${i + 1}`}
+                            className="flex size-7 items-center justify-center rounded-lg bg-white/90 text-rose-600 shadow-sm hover:bg-white"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {form.shots.length < MAX_SHOTS && (
+                  <label
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      addShots(e.dataTransfer.files);
+                    }}
+                    className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-[1.5px] border-dashed border-slate-300 px-4 py-6 text-center transition hover:border-brand-400 hover:bg-brand-50/40"
+                  >
+                    <ImagePlus className="size-6 text-slate-400" />
+                    <span className="mt-2 text-sm font-semibold text-brand-700">
+                      Drop images here or click to upload
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      Up to {MAX_SHOTS} images · 1270×760 works best
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      multiple
+                      className="sr-only"
+                      onChange={(e) => {
+                        addShots(e.target.files);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
               <Field
                 label="Description"
                 hint={`${form.description.length}/500`}
@@ -413,8 +524,12 @@ export function SubmitForm() {
                             plan: p.id,
                             week:
                               p.id === "free"
-                                ? upcoming[upcoming.length - 1].number
-                                : f.week,
+                                ? freeWeek
+                                : premiumSpots[f.week] > 0
+                                  ? f.week
+                                  : upcoming.find(
+                                      (w) => premiumSpots[w.number] > 0,
+                                    )!.number,
                           }))
                         }
                         className={`relative flex flex-col rounded-2xl p-4 text-left transition ${
@@ -517,31 +632,83 @@ export function SubmitForm() {
                   Launch week
                 </span>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  {upcoming.map((w, i) => {
-                    const locked =
-                      form.plan === "free" && i < upcoming.length - 1;
+                  {upcoming.map((w) => {
+                    const premium = form.plan === "premium";
+                    const left = premiumSpots[w.number] ?? 0;
+                    const soldOut = premium && left === 0;
+                    const locked = !premium && w.number !== freeWeek;
                     const on = form.week === w.number;
                     return (
                       <button
                         key={w.number}
                         type="button"
-                        disabled={locked}
+                        disabled={soldOut || locked}
                         aria-pressed={on}
                         onClick={() => set("week", w.number)}
-                        className={`rounded-xl px-3 py-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                        className={`relative rounded-xl p-3 text-left transition disabled:cursor-not-allowed ${
                           on
                             ? "badge-pop bg-brand-500 text-white"
-                            : "border-[1.5px] border-slate-200 hover:border-slate-300"
+                            : soldOut || locked
+                              ? "border-[1.5px] border-slate-200 bg-slate-50 text-slate-400"
+                              : "border-[1.5px] border-slate-200 hover:border-slate-300"
                         }`}
                       >
-                        <span className="block text-sm font-semibold">
-                          Week {w.number}
+                        <span className="flex items-center justify-between">
+                          <span className="text-sm font-semibold">
+                            Week {w.number}
+                          </span>
+                          {on && <Check className="size-4" strokeWidth={3} />}
                         </span>
                         <span
-                          className={`text-xs ${on ? "text-white/75" : "text-slate-500"}`}
+                          className={`block text-xs ${on ? "text-white/75" : "text-slate-500"}`}
                         >
                           {w.label}
                         </span>
+                        {premium ? (
+                          <>
+                            <span aria-hidden className="mt-2.5 flex gap-1">
+                              {Array.from({ length: PREMIUM_CAPACITY }).map(
+                                (_, i) => (
+                                  <span
+                                    key={i}
+                                    className={`h-1.5 flex-1 rounded-full ${
+                                      i < PREMIUM_CAPACITY - left
+                                        ? on
+                                          ? "bg-white/35"
+                                          : "bg-slate-200"
+                                        : on
+                                          ? "bg-amber-300"
+                                          : "bg-emerald-400"
+                                    }`}
+                                  />
+                                ),
+                              )}
+                            </span>
+                            <span
+                              className={`mt-1.5 block text-[11px] font-semibold ${
+                                on
+                                  ? "text-white"
+                                  : soldOut
+                                    ? "text-rose-600"
+                                    : left <= 2
+                                      ? "text-amber-700"
+                                      : "text-emerald-700"
+                              }`}
+                            >
+                              {soldOut
+                                ? "Sold out"
+                                : `${left} of ${PREMIUM_CAPACITY} Premium spots left`}
+                            </span>
+                          </>
+                        ) : (
+                          <span
+                            className={`mt-2.5 block text-[11px] font-semibold ${
+                              on ? "text-white" : "text-slate-400"
+                            }`}
+                          >
+                            {locked ? "Premium only" : "Next free opening"}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -693,45 +860,7 @@ export function SubmitForm() {
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           Preview on the board
         </p>
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white">
-          <div className="flex items-center gap-3 bg-gradient-to-r from-brand-50 to-white p-4">
-            {form.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen file
-              <img
-                src={form.logo}
-                alt=""
-                className="size-12 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-lg font-bold text-white">
-                {form.name.trim()[0]?.toUpperCase() ?? "?"}
-              </span>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 truncate font-semibold text-slate-900">
-                {form.name || "Your product"}
-                {form.plan === "premium" && (
-                  <span className="badge-pop rounded-md bg-amber-300 px-1.5 py-px text-[10px] font-bold uppercase text-slate-900">
-                    Featured
-                  </span>
-                )}
-              </p>
-              <p className="line-clamp-2 text-sm text-slate-500">
-                {form.tagline || "Your tagline shows here"}
-              </p>
-              {form.categories.length > 0 && (
-                <p className="mt-1 truncate text-xs text-slate-400">
-                  {form.categories
-                    .map((c) => `#${c.toLowerCase().replace(/\s+/g, "")}`)
-                    .join(" ")}
-                </p>
-              )}
-            </div>
-            <span className="badge-pop flex h-14 w-12 shrink-0 flex-col items-center justify-center gap-1 rounded-xl bg-white text-sm font-bold text-slate-900">
-              <Triangle className="size-3 fill-current" />0
-            </span>
-          </div>
-        </div>
+        <BoardPreview form={form} />
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
           Launching Week {week.number} · {week.label}. Need help?{" "}
           <Link
@@ -743,6 +872,140 @@ export function SubmitForm() {
           .
         </p>
       </aside>
+    </div>
+  );
+}
+
+// Mini copy of the home board, showing where the product will appear
+function BoardPreview({ form }: { form: Form }) {
+  const premium = form.plan === "premium";
+  const tags = form.categories.length ? form.categories : ["Category"];
+
+  const yourRow = (
+    <li
+      className={`flex items-center gap-2.5 px-3 py-4 ${
+        premium
+          ? "bg-gradient-to-r from-brand-50 via-brand-50/40 to-white"
+          : "bg-white"
+      }`}
+    >
+      <span className="flex w-8 shrink-0 justify-center">
+        {premium ? (
+          <span className="badge-pop rounded-md bg-brand-500 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+            1st
+          </span>
+        ) : (
+          <span className="text-xs font-semibold text-slate-300">—</span>
+        )}
+      </span>
+      {form.logo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen file
+        <img
+          src={form.logo}
+          alt=""
+          className="size-10 shrink-0 rounded-full object-cover"
+        />
+      ) : (
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 font-bold text-white">
+          {form.name.trim()[0]?.toUpperCase() ?? "?"}
+        </span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1">
+          <span className="truncate text-sm font-semibold text-slate-900">
+            {form.name || "Your product"}
+          </span>
+          {premium && (
+            <span className="badge-pop shrink-0 rounded bg-amber-300 px-1 text-[8px] font-bold uppercase leading-4 text-slate-900">
+              Featured
+            </span>
+          )}
+        </span>
+        <span className="block truncate text-xs text-slate-500">
+          {form.tagline || "Your tagline shows here"}
+        </span>
+        <span className="mt-1 flex gap-1">
+          {tags.slice(0, 2).map((t) => (
+            <span
+              key={t}
+              className="rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500"
+            >
+              #{t.toLowerCase().replace(/\s+/g, "")}
+            </span>
+          ))}
+        </span>
+      </span>
+      {premium && (
+        <span className="badge-pop flex h-7 shrink-0 items-center gap-0.5 rounded-md bg-amber-300 px-1.5 text-[10px] font-bold text-slate-900">
+          Visit <ArrowUpRight className="size-3" />
+        </span>
+      )}
+      <span className="badge-pop flex h-11 w-9 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg bg-white text-xs font-bold text-slate-900">
+        <Triangle className="size-2.5 fill-current" />0
+      </span>
+    </li>
+  );
+
+  const ghostRow = (
+    <li aria-hidden className="flex items-center gap-2.5 px-3 py-4 opacity-45">
+      <span className="w-8 shrink-0 text-center text-xs font-semibold text-slate-300">
+        {premium ? "02" : "01"}
+      </span>
+      <span className="size-10 shrink-0 rounded-full bg-slate-200" />
+      <span className="min-w-0 flex-1 space-y-1.5">
+        <span className="block h-2.5 w-20 rounded bg-slate-200" />
+        <span className="block h-2 w-32 rounded bg-slate-100" />
+      </span>
+      <span className="h-11 w-9 shrink-0 rounded-lg border-[1.5px] border-slate-200" />
+    </li>
+  );
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white">
+      <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50/60 p-2 text-xs font-medium">
+        {upcoming.map((w) => (
+          <span
+            key={w.number}
+            className={`rounded-md px-2 py-1 ${
+              w.number === form.week
+                ? "badge-pop bg-brand-500 text-white"
+                : "text-slate-400"
+            }`}
+          >
+            W{w.number}
+          </span>
+        ))}
+      </div>
+      <ol className="divide-y divide-slate-100">
+        {premium ? (
+          <>
+            {yourRow}
+            {ghostRow}
+          </>
+        ) : (
+          <>
+            {ghostRow}
+            {yourRow}
+          </>
+        )}
+        {form.boost && (
+          <li className="p-2.5">
+            <span className="block rounded-xl bg-gradient-to-br from-indigo-950 via-brand-700 to-fuchsia-600 p-3 text-white">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-white/70">
+                Partner · your ad
+              </span>
+              <span className="mt-0.5 block truncate text-sm font-semibold">
+                {form.name || "Your product"} — {form.tagline || "your tagline"}
+              </span>
+            </span>
+          </li>
+        )}
+      </ol>
+      <p className="border-t border-slate-100 bg-slate-50/60 px-3 py-2 text-[11px] text-slate-500">
+        {premium
+          ? "Premium: pinned at the top all week."
+          : "Free: ranked by upvotes among other launches."}
+      </p>
     </div>
   );
 }

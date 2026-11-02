@@ -26,7 +26,7 @@ export function FeedHeader({
 
   return (
     <>
-      <div className="flex h-10 items-center justify-between gap-3">
+      <div className="flex h-10 items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -62,10 +62,12 @@ export function FeedHeader({
         <div className="flex items-center gap-2">
           <Link
             href="/submit"
-            className="btn-pop flex h-10 items-center gap-2 rounded-xl bg-brand-500 pl-3.5 pr-4 text-sm font-semibold text-white hover:bg-brand-600"
+            aria-label="Launch product"
+            className="btn-pop flex h-10 items-center gap-2 rounded-xl bg-brand-500 px-3 text-sm font-semibold text-white hover:bg-brand-600 min-[400px]:pl-3.5 min-[400px]:pr-4"
           >
             <Rocket className="size-4" />
-            <span>
+            {/* Icon only on narrow phones so the bar fits */}
+            <span className="hidden min-[400px]:inline">
               Launch<span className="hidden sm:inline"> product</span>
             </span>
           </Link>
