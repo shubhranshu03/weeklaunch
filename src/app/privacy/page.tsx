@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { InfoPage } from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — WeekLaunch",
+  title: "Privacy Policy",
+  description: "How WeekLaunch collects, uses and protects your data.",
+  alternates: { canonical: "/privacy" },
 };
 
 // Starter text only — have a lawyer review before going live

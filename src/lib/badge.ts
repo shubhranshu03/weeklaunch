@@ -1,4 +1,4 @@
-import { SITE_URL } from "./data";
+import { SITE_URL } from "./site";
 
 export type BadgeTheme = "light" | "dark" | "brand";
 

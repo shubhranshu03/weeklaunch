@@ -80,7 +80,7 @@ const adPlans = [
   },
 ];
 
-const faqs = [
+export const faqs = [
   {
     q: "Is the free launch really free?",
     a: "Yes. You get a spot on a weekly board, your own product page, upvotes and comments — no card needed. Free launches join a queue, so your week may be a few weeks out.",

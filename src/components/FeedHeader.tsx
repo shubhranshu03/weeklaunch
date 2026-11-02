@@ -10,6 +10,7 @@ const pageLinks = [
   { label: "Discover", href: "/" },
   { label: "All products", href: "/products" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Free tools", href: "/tools" },
 ];
 
 export function FeedHeader({

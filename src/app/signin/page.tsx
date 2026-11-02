@@ -3,7 +3,8 @@ import { AuthForm } from "@/components/AuthForm";
 import { SiteShell } from "@/components/SiteShell";
 
 export const metadata: Metadata = {
-  title: "Sign in — WeekLaunch",
+  title: "Sign in",
+  robots: { index: false, follow: true },
 };
 
 export default function SignInPage() {

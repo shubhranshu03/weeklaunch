@@ -4,9 +4,10 @@ import { SiteShell } from "@/components/SiteShell";
 import { badgeCode, type BadgeTheme } from "@/lib/badge";
 
 export const metadata: Metadata = {
-  title: "Launch badges — WeekLaunch",
+  title: "Launch badges",
   description:
     "Free badges to show your WeekLaunch launch on your website. Pick a style and copy the code.",
+  alternates: { canonical: "/badges" },
 };
 
 const styles: { theme: BadgeTheme; name: string; note: string }[] = [

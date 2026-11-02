@@ -17,7 +17,8 @@ import { SiteShell } from "@/components/SiteShell";
 import { getProduct } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "My launches — WeekLaunch",
+  title: "My launches",
+  robots: { index: false, follow: false },
 };
 
 // Sample numbers until launches come from a database

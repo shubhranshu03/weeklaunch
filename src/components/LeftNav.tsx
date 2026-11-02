@@ -11,6 +11,7 @@ import {
   Search,
   Settings,
   Tag,
+  Wrench,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const explore: NavItem[] = [
   { label: "Discover", icon: Compass, href: "/" },
   { label: "All products", icon: LayoutGrid, href: "/products" },
   { label: "Pricing", icon: Tag, href: "/pricing" },
+  { label: "Free tools", icon: Wrench, href: "/tools" },
 ];
 
 const workspace: NavItem[] = [

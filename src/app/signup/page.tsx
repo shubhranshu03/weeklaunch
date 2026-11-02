@@ -3,7 +3,8 @@ import { AuthForm } from "@/components/AuthForm";
 import { SiteShell } from "@/components/SiteShell";
 
 export const metadata: Metadata = {
-  title: "Create an account — WeekLaunch",
+  title: "Create an account",
+  robots: { index: false, follow: true },
 };
 
 export default function SignUpPage() {

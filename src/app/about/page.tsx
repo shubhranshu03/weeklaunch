@@ -4,9 +4,10 @@ import { CalendarDays, Scale, Users } from "lucide-react";
 import { InfoPage } from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "About — WeekLaunch",
+  title: "About — a fair weekly launch board for makers",
   description:
-    "WeekLaunch is a weekly launch board that gives indie makers and small teams a fair shot at getting seen.",
+    "WeekLaunch is a weekly launch board that gives indie makers and small teams a fair shot at getting seen, with a permanent product page for every launch.",
+  alternates: { canonical: "/about" },
 };
 
 const values = [

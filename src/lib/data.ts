@@ -18,9 +18,6 @@ export type Week = {
   current?: boolean;
 };
 
-// Replace with the real domain before going live
-export const SITE_URL = "https://weeklaunch.com";
-
 export const CURRENT_WEEK = 45;
 
 export const weeks: Week[] = [

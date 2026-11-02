@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { InfoPage } from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — WeekLaunch",
+  title: "Terms of Service",
+  description:
+    "The terms for using WeekLaunch, launching products and buying ads.",
+  alternates: { canonical: "/terms" },
 };
 
 // Starter text only — have a lawyer review before going live

@@ -4,9 +4,10 @@ import { SiteShell } from "@/components/SiteShell";
 import { SubmitForm } from "@/components/SubmitForm";
 
 export const metadata: Metadata = {
-  title: "Submit your product — WeekLaunch",
+  title: "Submit your product — launch free or go Premium",
   description:
-    "Launch your product on WeekLaunch. Add your details, pick a launch week and go live on Monday.",
+    "Launch your product on WeekLaunch in about 3 minutes. Add your details, pick a launch week and go live on Monday. Free launches available.",
+  alternates: { canonical: "/submit" },
 };
 
 const highlights = [

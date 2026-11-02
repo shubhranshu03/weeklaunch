@@ -4,7 +4,10 @@ import { ContactForm } from "@/components/ContactForm";
 import { SiteShell } from "@/components/SiteShell";
 
 export const metadata: Metadata = {
-  title: "Contact — WeekLaunch",
+  title: "Contact",
+  description:
+    "Get in touch with the WeekLaunch team about launching your product, advertising or partnerships.",
+  alternates: { canonical: "/contact" },
 };
 
 const info = [

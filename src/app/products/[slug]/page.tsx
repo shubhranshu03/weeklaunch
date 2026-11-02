@@ -12,8 +12,10 @@ import {
   Triangle,
 } from "lucide-react";
 import { Comments } from "@/components/Comments";
+import { JsonLd } from "@/components/JsonLd";
 import { BadgePreview, CopyCode } from "@/components/LaunchBadge";
 import { badgeCode } from "@/lib/badge";
+import { SITE_URL } from "@/lib/site";
 import { ProductLogo, ProductRow, UpvoteButton } from "@/components/ProductRow";
 import { SiteShell } from "@/components/SiteShell";
 import { allProducts, getProduct, launchInfo, weeks } from "@/lib/data";
@@ -22,15 +24,35 @@ export function generateStaticParams() {
   return allProducts.map((p) => ({ slug: p.slug }));
 }
 
+// Keeps "Name — tagline | WeekLaunch" within the ~60 characters Google shows
+function shortTitle(name: string, tagline: string) {
+  const room = 60 - " | WeekLaunch".length - name.length - " — ".length;
+  if (tagline.length <= room) return `${name} — ${tagline}`;
+  const cut = tagline.slice(0, room - 1);
+  return `${name} — ${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,.;:]$/, "")}…`;
+}
+
 export async function generateMetadata({
   params,
 }: PageProps<"/products/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) return {};
+  const url = `/products/${product.slug}`;
+  const description = `${product.name}: ${product.tagline}. Launched on WeekLaunch in ${product.tags.join(", ")}. See upvotes, comments and more.`;
   return {
-    title: `${product.name} — ${product.tagline} | WeekLaunch`,
-    description: product.tagline,
+    title: shortTitle(product.name, product.tagline),
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: product.name,
+      description,
+      siteName: "WeekLaunch",
+      locale: "en_US",
+    },
+    twitter: { title: product.name, description },
   };
 }
 
@@ -87,8 +109,50 @@ async function ProductDetail({
     { icon: CalendarDays, label: "Launched", value: `Week ${info.week}` },
   ];
 
+  const pageUrl = `${SITE_URL}/products/${product.slug}`;
+
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "SoftwareApplication",
+              name: product.name,
+              description: product.tagline,
+              url: info.website,
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              keywords: product.tags.join(", "),
+              mainEntityOfPage: pageUrl,
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: SITE_URL,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Products",
+                  item: `${SITE_URL}/products`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: product.name,
+                  item: pageUrl,
+                },
+              ],
+            },
+          ],
+        }}
+      />
       {/* Header */}
       <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">

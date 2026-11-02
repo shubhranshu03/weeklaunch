@@ -14,6 +14,8 @@ const hrefs: Record<string, string> = {
   "Submit a product": "/submit",
   "Launch badges": "/badges",
   "Help center": "/contact",
+  "Launch checklist": "/tools/launch-checklist",
+  "Free tools": "/tools",
   About: "/about",
   Contact: "/contact",
   Terms: "/terms",
@@ -31,7 +33,12 @@ const columns = [
   },
   {
     title: "Resources",
-    links: ["Launch directories", "Launch checklist", "Blog", "Help center"],
+    links: [
+      "Launch directories",
+      "Launch checklist",
+      "Free tools",
+      "Help center",
+    ],
   },
   {
     title: "Company",
