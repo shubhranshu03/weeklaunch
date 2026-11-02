@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteShell } from "@/components/SiteShell";
 import { toolIcons } from "@/components/ToolLayout";
@@ -14,24 +14,63 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tools" },
 };
 
+const faqs = [
+  {
+    q: "Are these tools really free?",
+    a: "Yes. Every tool is 100% free with no sign-up, no trial and no limits. You don't need a WeekLaunch account to use them.",
+  },
+  {
+    q: "Do you save what I type into the tools?",
+    a: "No. The tools run in your browser, so what you type isn't sent to our servers. The launch checklist only saves your ticks on your own device so you can come back later.",
+  },
+  {
+    q: "Which tool should I use first?",
+    a: "Start with the launch checklist to plan everything, write your one-liner with the tagline generator, then check your page title and share image with the meta tag generator.",
+  },
+  {
+    q: "Can I use these tools for products I don't launch on WeekLaunch?",
+    a: "Of course. They work for any product, website or side project, wherever you plan to launch.",
+  },
+  {
+    q: "Do the tools work on my phone?",
+    a: "Yes. Every tool works on phones, tablets and desktop browsers.",
+  },
+  {
+    q: "Will you add more free tools?",
+    a: "Yes, we add new tools for founders over time. If there's a tool you'd like to see, tell us on the contact page.",
+  },
+];
+
 export default function ToolsPage() {
   return (
     <SiteShell sidebars={false}>
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: "Free tools for founders",
-          url: `${SITE_URL}/tools`,
-          mainEntity: {
-            "@type": "ItemList",
-            itemListElement: tools.map((t, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              url: `${SITE_URL}${toolHref(t)}`,
-              name: t.name,
-            })),
-          },
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              name: "Free tools for founders",
+              url: `${SITE_URL}/tools`,
+              mainEntity: {
+                "@type": "ItemList",
+                itemListElement: tools.map((t, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  url: `${SITE_URL}${toolHref(t)}`,
+                  name: t.name,
+                })),
+              },
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: faqs.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ],
         }}
       />
 
@@ -76,6 +115,38 @@ export default function ToolsPage() {
           );
         })}
       </ul>
+
+      <section aria-labelledby="tools-faq" className="mt-10">
+        <h2
+          id="tools-faq"
+          className="mb-3 text-xl font-semibold text-slate-900"
+        >
+          Frequently asked questions
+        </h2>
+        <div className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white">
+          {faqs.map((f) => (
+            <details key={f.q} className="group px-5 py-4 sm:px-6">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-slate-900 [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <ChevronDown className="size-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
+              </summary>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                {f.a}
+              </p>
+            </details>
+          ))}
+        </div>
+        <p className="mt-4 text-sm text-slate-500">
+          Ready to launch?{" "}
+          <Link
+            href="/submit"
+            className="font-semibold text-brand-700 underline"
+          >
+            Submit your product for free
+          </Link>
+          .
+        </p>
+      </section>
     </SiteShell>
   );
 }

@@ -32,8 +32,8 @@ const explore: NavItem[] = [
 
 const workspace: NavItem[] = [
   { label: "My launches", icon: Package, href: "/dashboard" },
-  { label: "Profile", icon: UserRound, href: "#" },
-  { label: "Settings", icon: Settings, href: "#" },
+  { label: "Profile", icon: UserRound, href: "/profile" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
