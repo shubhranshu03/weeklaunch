@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site";
 import { BadgePreview, CopyCode } from "@/components/LaunchBadge";
 import { SiteShell } from "@/components/SiteShell";
 import { badgeCode, type BadgeTheme } from "@/lib/badge";
@@ -19,6 +21,17 @@ const styles: { theme: BadgeTheme; name: string; note: string }[] = [
 export default function BadgesPage() {
   return (
     <SiteShell sidebars={false}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          url: `${SITE_URL}/badges`,
+          name: "WeekLaunch launch badges",
+          description:
+            "Embeddable Launched on WeekLaunch badges for your website.",
+          isPartOf: { "@id": `${SITE_URL}/#website` },
+        }}
+      />
       <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center sm:p-8">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           Launch badges

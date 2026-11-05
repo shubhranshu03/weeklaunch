@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Leaderboard } from "@/components/Leaderboard";
 import { getBoard, getBoardWeeks } from "@/lib/products";
 import { SiteShell } from "@/components/SiteShell";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -16,23 +16,12 @@ export default function Home() {
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "WebSite",
-              "@id": `${SITE_URL}/#website`,
-              url: SITE_URL,
-              name: SITE_NAME,
-              description: SITE_DESCRIPTION,
-              publisher: { "@id": `${SITE_URL}/#organization` },
-            },
-            {
-              "@type": "Organization",
-              "@id": `${SITE_URL}/#organization`,
-              name: SITE_NAME,
-              url: SITE_URL,
-              logo: `${SITE_URL}/icon.svg`,
-            },
-          ],
+          "@type": "CollectionPage",
+          "@id": `${SITE_URL}/#home`,
+          url: SITE_URL,
+          name: "This week's product launches on WeekLaunch",
+          description: SITE_DESCRIPTION,
+          isPartOf: { "@id": `${SITE_URL}/#website` },
         }}
       />
       <h1 className="sr-only">

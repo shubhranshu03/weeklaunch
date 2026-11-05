@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site";
 import { Clock, Mail, Megaphone } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
 import { SiteShell } from "@/components/SiteShell";
@@ -19,6 +21,17 @@ const info = [
 export default function ContactPage() {
   return (
     <SiteShell sidebars={false}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          url: `${SITE_URL}/contact`,
+          name: "Contact WeekLaunch",
+          description:
+            "Questions about launching, Premium or advertising on WeekLaunch.",
+          isPartOf: { "@id": `${SITE_URL}/#website` },
+        }}
+      />
       <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-[minmax(0,1fr)_260px]">
         <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900">

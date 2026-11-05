@@ -1,3 +1,5 @@
+import { SITE_URL } from "@/lib/site";
+import { JsonLd } from "./JsonLd";
 import { SiteShell } from "./SiteShell";
 
 // Simple text page layout for About, Terms, Privacy and similar
@@ -5,15 +7,30 @@ export function InfoPage({
   title,
   intro,
   updated,
+  path,
+  type = "WebPage",
   children,
 }: {
   title: string;
   intro?: string;
   updated?: string;
+  // The page's address, e.g. "/about", for its structured data
+  path: string;
+  type?: "WebPage" | "AboutPage" | "ContactPage";
   children: React.ReactNode;
 }) {
   return (
     <SiteShell sidebars={false}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": type,
+          url: `${SITE_URL}${path}`,
+          name: title,
+          ...(intro && { description: intro }),
+          isPartOf: { "@id": `${SITE_URL}/#website` },
+        }}
+      />
       <article className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-10">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           {title}

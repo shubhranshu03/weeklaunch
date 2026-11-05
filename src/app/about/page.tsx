@@ -31,6 +31,8 @@ const values = [
 export default function AboutPage() {
   return (
     <InfoPage
+      path="/about"
+      type="AboutPage"
       title="About WeekLaunch"
       intro="A weekly launch board that gives indie makers and small teams a fair shot at getting seen."
     >

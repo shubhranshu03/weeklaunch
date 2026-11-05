@@ -76,3 +76,27 @@ export async function createCheckout({
   if (!session.checkout_url) throw new Error("Checkout page missing");
   return session.checkout_url;
 }
+
+// Starts a Dodo checkout for a directory submission order
+export async function createDirectoryCheckout({
+  orderId,
+  dodoProductId,
+  user,
+}: {
+  orderId: string;
+  dodoProductId: string;
+  user: { email: string; name: string };
+}) {
+  const session = await dodo().checkoutSessions.create({
+    product_cart: [{ product_id: dodoProductId, quantity: 1 }],
+    customer: { email: user.email, name: user.name || user.email },
+    return_url: `${SITE_URL}/api/payments/return`,
+    metadata: { directory_order_id: orderId },
+  });
+  await supabaseAdmin()
+    .from("directory_orders")
+    .update({ checkout_session_id: session.session_id })
+    .eq("id", orderId);
+  if (!session.checkout_url) throw new Error("Checkout page missing");
+  return session.checkout_url;
+}

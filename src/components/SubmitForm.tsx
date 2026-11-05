@@ -48,7 +48,12 @@ type Form = {
   plan: "free" | "premium";
   week: number;
   boost: boolean;
+  // Premium only: shown on the product page and to search engines
+  highlights: string[];
+  faqs: { q: string; a: string }[];
 };
+
+const MAX_EXTRAS = 5;
 
 const empty: Form = {
   name: "",
@@ -61,6 +66,8 @@ const empty: Form = {
   plan: "premium",
   week: 0,
   boost: false,
+  highlights: ["", "", ""],
+  faqs: [{ q: "", a: "" }],
 };
 
 const MAX_SHOTS = 5;
@@ -172,6 +179,7 @@ function errorsFor(step: number, f: Form) {
 export function SubmitForm({
   upcoming,
   premiumSpots,
+  boostTaken,
   freeWeek: freeWeekInfo,
   paymentsReady,
 }: {
@@ -179,6 +187,8 @@ export function SubmitForm({
   upcoming: Week[];
   // Premium spots still open, by week number
   premiumSpots: Record<number, number>;
+  // Weeks whose one Boost is already sold, by week number
+  boostTaken: Record<number, boolean>;
   // Where a free launch goes: 3 weeks out, or later if those weeks are full
   freeWeek: Week;
   paymentsReady: boolean;
@@ -203,6 +213,9 @@ export function SubmitForm({
   const [uploading, setUploading] = useState(0);
   const [error, setError] = useState("");
   const [submitting, startSubmit] = useTransition();
+  // Each week has one Boost; it's switched off for weeks where it's sold
+  const boostSold = !!boostTaken[form.week];
+  const boost = form.boost && !boostSold;
 
   const upload = async (file: File, kind: string) => {
     if (!user) throw new Error("Please sign in again.");
@@ -228,7 +241,9 @@ export function SubmitForm({
         shots: form.shots,
         plan: form.plan,
         week: { year: yearOf, number: form.week },
-        boost: form.boost,
+        boost,
+        highlights: form.highlights,
+        faqs: form.faqs,
       });
       if (!res.ok) {
         setError(res.error);
@@ -292,8 +307,7 @@ export function SubmitForm({
 
   const week = allWeeks.find((w) => w.number === form.week)!;
   const total =
-    (form.plan === "premium" ? PREMIUM_PRICE : 0) +
-    (form.boost ? BOOST_PRICE : 0);
+    (form.plan === "premium" ? PREMIUM_PRICE : 0) + (boost ? BOOST_PRICE : 0);
 
   if (done) {
     return (
@@ -810,16 +824,18 @@ export function SubmitForm({
               </div>
 
               <label
-                className={`flex cursor-pointer items-start gap-3 rounded-2xl p-4 transition ${
-                  form.boost
-                    ? "badge-pop bg-brand-50"
-                    : "border-[1.5px] border-dashed border-slate-300 hover:border-brand-400"
+                className={`flex items-start gap-3 rounded-2xl p-4 transition ${
+                  boostSold
+                    ? "cursor-not-allowed border-[1.5px] border-dashed border-slate-200 bg-slate-50 opacity-70"
+                    : boost
+                      ? "cursor-pointer badge-pop bg-brand-50"
+                      : "border-[1.5px] border-dashed border-slate-300 hover:border-brand-400"
                 }`}
               >
                 <input
                   type="checkbox"
-                  checked={form.boost}
-                  disabled={!paymentsReady}
+                  checked={boost}
+                  disabled={!paymentsReady || boostSold}
                   onChange={(e) => set("boost", e.target.checked)}
                   className="mt-1 size-4 accent-brand-500"
                 />
@@ -834,11 +850,22 @@ export function SubmitForm({
                     </span>
                   </span>
                   <span className="mt-0.5 block text-xs text-slate-500">
-                    Extra boost: a sponsor card for your product right after the
-                    top 3, all through Week {week.number}.
+                    {boostSold
+                      ? `Sold out for Week ${week.number}: there's one per week. Pick another week to add it.`
+                      : `Extra boost: a sponsor card for your product right after the top 3, all through Week ${week.number}.`}
                   </span>
                 </span>
               </label>
+
+              {form.plan === "premium" && (
+                <PremiumExtras
+                  name={form.name}
+                  highlights={form.highlights}
+                  faqs={form.faqs}
+                  onHighlights={(v) => set("highlights", v)}
+                  onFaqs={(v) => set("faqs", v)}
+                />
+              )}
             </>
           )}
 
@@ -885,7 +912,7 @@ export function SubmitForm({
                     ${form.plan === "premium" ? PREMIUM_PRICE : 0}
                   </span>
                 </li>
-                {form.boost && (
+                {boost && (
                   <li className="flex justify-between gap-3">
                     <span className="text-slate-600">
                       Center feed ad · Week {week.number}
@@ -964,7 +991,7 @@ export function SubmitForm({
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           Preview on the board
         </p>
-        <BoardPreview form={form} upcoming={upcoming} />
+        <BoardPreview form={{ ...form, boost }} upcoming={upcoming} />
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
           Launching Week {week.number} · {week.label}. Need help?{" "}
           <Link
@@ -1117,5 +1144,150 @@ function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
           : "Free: ranked by upvotes among other launches."}
       </p>
     </div>
+  );
+}
+
+// Premium makers explain why to pick them and answer common questions.
+// Both show on the product page, and the FAQ is marked up for search and AI answers.
+function PremiumExtras({
+  name,
+  highlights,
+  faqs,
+  onHighlights,
+  onFaqs,
+}: {
+  name: string;
+  highlights: string[];
+  faqs: { q: string; a: string }[];
+  onHighlights: (v: string[]) => void;
+  onFaqs: (v: { q: string; a: string }[]) => void;
+}) {
+  const product = name.trim() || "your product";
+  return (
+    <section className="space-y-5 rounded-2xl border-[1.5px] border-amber-300 bg-amber-50/50 p-4 sm:p-5">
+      <div>
+        <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+          <Crown className="size-4 text-amber-600" />
+          Make your page stand out
+        </p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Premium only. These show on your product page, and help Google and AI
+          assistants like ChatGPT understand and recommend {product}.
+        </p>
+      </div>
+
+      <div>
+        <span className="text-sm font-semibold text-slate-900">
+          Why choose {product}?
+        </span>
+        <span className="block text-xs text-slate-400">
+          Short points, like &ldquo;Works offline&rdquo; or &ldquo;Free for
+          students&rdquo;
+        </span>
+        <ul className="mt-2 space-y-2">
+          {highlights.map((h, i) => (
+            <li key={i} className="flex gap-2">
+              <input
+                className={input}
+                value={h}
+                maxLength={120}
+                placeholder={`Reason ${i + 1}`}
+                onChange={(e) =>
+                  onHighlights(
+                    highlights.map((x, j) => (j === i ? e.target.value : x)),
+                  )
+                }
+              />
+              {highlights.length > 1 && (
+                <button
+                  type="button"
+                  aria-label={`Remove reason ${i + 1}`}
+                  onClick={() =>
+                    onHighlights(highlights.filter((_, j) => j !== i))
+                  }
+                  className="flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-white hover:text-rose-600"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+        {highlights.length < MAX_EXTRAS && (
+          <button
+            type="button"
+            onClick={() => onHighlights([...highlights, ""])}
+            className="mt-2 text-xs font-semibold text-brand-700 hover:underline"
+          >
+            + Add a reason
+          </button>
+        )}
+      </div>
+
+      <div>
+        <span className="text-sm font-semibold text-slate-900">
+          Frequently asked questions
+        </span>
+        <span className="block text-xs text-slate-400">
+          What do people usually ask before trying {product}?
+        </span>
+        <ul className="mt-2 space-y-3">
+          {faqs.map((f, i) => (
+            <li
+              key={i}
+              className="space-y-2 rounded-xl bg-white p-3 ring-1 ring-slate-200"
+            >
+              <div className="flex gap-2">
+                <input
+                  className={input}
+                  value={f.q}
+                  maxLength={120}
+                  placeholder="Question, e.g. Is there a free plan?"
+                  onChange={(e) =>
+                    onFaqs(
+                      faqs.map((x, j) =>
+                        j === i ? { ...x, q: e.target.value } : x,
+                      ),
+                    )
+                  }
+                />
+                {faqs.length > 1 && (
+                  <button
+                    type="button"
+                    aria-label={`Remove question ${i + 1}`}
+                    onClick={() => onFaqs(faqs.filter((_, j) => j !== i))}
+                    className="flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-rose-600"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
+              <textarea
+                className={`${input} h-20 resize-none py-2.5`}
+                value={f.a}
+                maxLength={500}
+                placeholder="Answer"
+                onChange={(e) =>
+                  onFaqs(
+                    faqs.map((x, j) =>
+                      j === i ? { ...x, a: e.target.value } : x,
+                    ),
+                  )
+                }
+              />
+            </li>
+          ))}
+        </ul>
+        {faqs.length < MAX_EXTRAS && (
+          <button
+            type="button"
+            onClick={() => onFaqs([...faqs, { q: "", a: "" }])}
+            className="mt-2 text-xs font-semibold text-brand-700 hover:underline"
+          >
+            + Add a question
+          </button>
+        )}
+      </div>
+    </section>
   );
 }

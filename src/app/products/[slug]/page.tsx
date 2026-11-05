@@ -7,10 +7,13 @@ import {
   ArrowUpRight,
   BadgeCheck,
   CalendarDays,
+  ChevronDown,
+  CircleCheck,
   MessageSquare,
   Star,
   Triangle,
 } from "lucide-react";
+import { AskAI } from "@/components/AskAI";
 import { Comments } from "@/components/Comments";
 import { JsonLd } from "@/components/JsonLd";
 import { BadgePreview, CopyCode } from "@/components/LaunchBadge";
@@ -24,7 +27,7 @@ import {
 } from "@/components/ProductRow";
 import { SiteShell } from "@/components/SiteShell";
 import { getAllProducts, getComments, getProduct } from "@/lib/products";
-import { weekLabel } from "@/lib/weeks";
+import { weekLabel, weekStart } from "@/lib/weeks";
 
 export async function generateStaticParams() {
   const products = await getAllProducts();
@@ -49,7 +52,13 @@ export async function generateMetadata({
   const product = await getProduct(slug);
   if (!product) return {};
   const url = `/products/${product.slug}`;
-  const description = `${product.name}: ${product.tagline}. Launched on WeekLaunch in ${product.tags.join(", ")}. See upvotes, comments and more.`;
+  // Under ~160 characters: the tagline, then the start of the maker's own description
+  const lead = `${product.name}: ${product.tagline}.`;
+  const more = product.description.replace(/\s+/g, " ").trim();
+  const description =
+    more && lead.length < 120
+      ? `${lead} ${more.slice(0, 157 - lead.length).replace(/\s+\S*$/, "")}…`
+      : `${lead} Launched on WeekLaunch in ${product.tags.join(", ")}.`;
   return {
     title: shortTitle(product.name, product.tagline),
     description,
@@ -61,7 +70,9 @@ export async function generateMetadata({
       description,
       siteName: "WeekLaunch",
       locale: "en_US",
+      publishedTime: weekStart(product.week).toISOString(),
     },
+    keywords: [product.name, ...product.tags, `${product.name} alternatives`],
     twitter: { title: product.name, description },
   };
 }
@@ -122,6 +133,14 @@ async function ProductDetail({
   ];
 
   const pageUrl = `${SITE_URL}/products/${product.slug}`;
+  const launched = weekStart(product.week);
+  const launchedOn = launched.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const host = product.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return (
     <>
@@ -130,17 +149,62 @@ async function ProductDetail({
           "@context": "https://schema.org",
           "@graph": [
             {
-              "@type": "SoftwareApplication",
-              name: product.name,
+              "@type": "WebPage",
+              "@id": pageUrl,
+              url: pageUrl,
+              name: `${product.name} on WeekLaunch`,
               description: product.tagline,
-              url: product.website,
-              applicationCategory: "BusinessApplication",
-              operatingSystem: "Web",
-              keywords: product.tags.join(", "),
-              mainEntityOfPage: pageUrl,
+              datePublished: launched.toISOString(),
+              isPartOf: { "@id": `${SITE_URL}/#website` },
+              about: { "@id": `${pageUrl}#product` },
+              breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
             },
             {
+              "@type": "SoftwareApplication",
+              "@id": `${pageUrl}#product`,
+              name: product.name,
+              headline: product.tagline,
+              description: product.description || product.tagline,
+              url: product.website,
+              image: product.logo.url ?? `${pageUrl}/opengraph-image`,
+              ...(product.screenshots.length > 0 && {
+                screenshot: product.screenshots,
+              }),
+              applicationCategory: "BusinessApplication",
+              applicationSubCategory: product.tags[0],
+              operatingSystem: "Web",
+              keywords: product.tags.join(", "),
+              datePublished: launched.toISOString(),
+              creator: { "@type": "Person", name: product.maker.name },
+              ...(product.highlights.length > 0 && {
+                featureList: product.highlights,
+              }),
+              ...(product.rating &&
+                product.rating.count > 0 && {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: product.rating.score,
+                    ratingCount: product.rating.count,
+                  },
+                }),
+              mainEntityOfPage: pageUrl,
+            },
+            ...(product.faqs.length > 0
+              ? [
+                  {
+                    "@type": "FAQPage",
+                    "@id": `${pageUrl}#faq`,
+                    mainEntity: product.faqs.map((f) => ({
+                      "@type": "Question",
+                      name: f.q,
+                      acceptedAnswer: { "@type": "Answer", text: f.a },
+                    })),
+                  },
+                ]
+              : []),
+            {
               "@type": "BreadcrumbList",
+              "@id": `${pageUrl}#breadcrumb`,
               itemListElement: [
                 {
                   "@type": "ListItem",
@@ -201,7 +265,11 @@ async function ProductDetail({
             >
               Visit website <ArrowUpRight className="size-4" />
             </a>
-            <UpvoteButton productId={product.id} count={product.upvotes} />
+            <UpvoteButton
+              productId={product.id}
+              count={product.upvotes}
+              week={product.week}
+            />
           </div>
         </div>
 
@@ -272,14 +340,18 @@ async function ProductDetail({
               ))}
             <p>
               It launched on WeekLaunch in Week {product.week} (
-              {weekLabel(product.week)}, {product.year}) and is
-              listed under {product.tags.join(", ")}.
+              {weekLabel(product.week)}, {product.year}) and is listed under{" "}
+              {product.tags.join(", ")}.
             </p>
           </div>
         </section>
         <section className="rounded-3xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-slate-900">Maker</h2>
-          <div className="mt-3 flex items-center gap-3">
+          {/* Opens the maker's public profile when they have an account */}
+          <MakerLink
+            handle={product.maker.handle}
+            className="group mt-3 flex items-center gap-3 rounded-2xl"
+          >
             {product.maker.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element -- Google or uploaded profile photo
               <img
@@ -294,7 +366,7 @@ async function ProductDetail({
               </span>
             )}
             <div>
-              <p className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+              <p className="flex items-center gap-1 text-sm font-semibold text-slate-900 group-hover:text-brand-700">
                 {product.maker.name}
                 {product.maker.verified && (
                   <BadgeCheck
@@ -303,10 +375,115 @@ async function ProductDetail({
                   />
                 )}
               </p>
-              <p className="text-xs text-slate-500">Maker of {product.name}</p>
+              <p className="text-xs text-slate-500">
+                {product.maker.handle
+                  ? `@${product.maker.handle} · View profile`
+                  : `Maker of ${product.name}`}
+              </p>
             </div>
+          </MakerLink>
+        </section>
+      </div>
+
+      {/* Short, plain facts: easy for people to skim and for AI search to quote */}
+      <section
+        aria-labelledby="facts-title"
+        className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6"
+      >
+        <h2 id="facts-title" className="font-semibold text-slate-900">
+          {product.name} at a glance
+        </h2>
+        <dl className="mt-3 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          {[
+            ["What it is", product.tagline],
+            ["Category", product.tags.join(", ")],
+            ["Made by", product.maker.name],
+            ["Website", host],
+            ["Launched on WeekLaunch", `Week ${product.week}, ${launchedOn}`],
+            [
+              "Community",
+              `${product.upvotes} upvotes · ${product.comments} comments`,
+            ],
+          ].map(([term, detail]) => (
+            <div key={term} className="min-w-0">
+              <dt className="text-xs font-medium text-slate-400">{term}</dt>
+              <dd className="mt-0.5 break-words text-slate-700">
+                {term === "Website" ? (
+                  <a
+                    href={product.website}
+                    target="_blank"
+                    rel="noopener"
+                    className="font-medium text-brand-700 hover:underline"
+                  >
+                    {detail}
+                  </a>
+                ) : term === "Made by" && product.maker.handle ? (
+                  <Link
+                    href={`/makers/${product.maker.handle}`}
+                    className="font-medium text-brand-700 hover:underline"
+                  >
+                    {detail}
+                  </Link>
+                ) : (
+                  detail
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {product.highlights.length > 0 && (
+        <section
+          aria-labelledby="why-title"
+          className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6"
+        >
+          <h2 id="why-title" className="font-semibold text-slate-900">
+            Why choose {product.name}?
+          </h2>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {product.highlights.map((h) => (
+              <li
+                key={h}
+                className="flex gap-2.5 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700"
+              >
+                <CircleCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                {h}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {product.faqs.length > 0 && (
+        <section
+          aria-labelledby="faq-title"
+          className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6"
+        >
+          <h2 id="faq-title" className="font-semibold text-slate-900">
+            {product.name} FAQ
+          </h2>
+          <div className="mt-2 divide-y divide-slate-100">
+            {product.faqs.map((f) => (
+              <details key={f.q} className="group py-3">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-slate-900 [&::-webkit-details-marker]:hidden">
+                  {f.q}
+                  <ChevronDown className="size-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
+                </summary>
+                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                  {f.a}
+                </p>
+              </details>
+            ))}
           </div>
         </section>
+      )}
+
+      <div className="mt-4">
+        <AskAI
+          subject={product.name}
+          prompt={`What is ${product.name} (${product.website})? It's described as: "${product.tagline}". Who is it for, what are its main features, and what are good alternatives? It launched on WeekLaunch: ${pageUrl}`}
+        />
       </div>
 
       {/* Badge */}
@@ -347,5 +524,23 @@ async function ProductDetail({
         </section>
       )}
     </>
+  );
+}
+
+function MakerLink({
+  handle,
+  className,
+  children,
+}: {
+  handle?: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return handle ? (
+    <Link href={`/makers/${handle}`} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className}>{children}</div>
   );
 }

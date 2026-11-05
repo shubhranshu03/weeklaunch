@@ -9,7 +9,13 @@ import {
 } from "./data";
 import { supabaseConfigured } from "./supabase/env";
 import { supabaseAdmin, supabasePublic } from "./supabase/server";
-import { currentWeek, weekKey, weeksAround, type Week } from "./weeks";
+import {
+  currentWeek,
+  weekKey,
+  weekNumber,
+  weeksAround,
+  type Week,
+} from "./weeks";
 
 export type ProductRowDb = {
   id: string;
@@ -27,6 +33,8 @@ export type ProductRowDb = {
   logo_fg: string | null;
   logo_url: string | null;
   screenshots: string[];
+  highlights: string[] | null;
+  faqs: { q: string; a: string }[] | null;
   plan: "free" | "premium";
   boosted: boolean;
   status: LaunchStatus;
@@ -76,6 +84,9 @@ export function toProduct(r: ProductRowDb): Product {
       url: r.logo_url ?? undefined,
     },
     screenshots: r.screenshots,
+    // Only shown while the launch is Premium
+    highlights: r.plan === "premium" ? (r.highlights ?? []) : [],
+    faqs: r.plan === "premium" ? (r.faqs ?? []) : [],
     week: r.launch_week,
     year: r.launch_year,
     maker: r.maker
@@ -146,6 +157,8 @@ export async function getAllProducts(): Promise<Product[]> {
     .from("products")
     .select(select)
     .eq("status", "approved")
+    // Launches stay hidden until Monday of their week
+    .lte("launch_week", weekNumber(new Date()))
     .order("upvotes_count", { ascending: false })
     .limit(1000);
   return ((data ?? []) as ProductRowDb[]).map(toProduct);
@@ -161,8 +174,64 @@ export async function getProduct(slug: string): Promise<Product | null> {
     .select(select)
     .eq("slug", slug)
     .eq("status", "approved")
+    .lte("launch_week", weekNumber(new Date()))
     .maybeSingle<ProductRowDb>();
   return data ? toProduct(data) : null;
+}
+
+export type PublicMaker = {
+  id: string;
+  handle: string;
+  name: string;
+  avatar_url: string | null;
+  bio: string;
+  location: string;
+  website: string;
+  x_handle: string;
+  verified: boolean;
+  created_at: string;
+};
+
+// A maker's public profile and their live launches (nothing private like email)
+export async function getMaker(handle: string) {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products", `maker:${handle}`);
+  if (!supabaseConfigured) return null;
+  const db = supabasePublic();
+  const { data: maker } = await db
+    .from("profiles")
+    .select(
+      "id, handle, name, avatar_url, bio, location, website, x_handle, verified, created_at",
+    )
+    .eq("handle", handle.toLowerCase())
+    .maybeSingle<PublicMaker>();
+  if (!maker) return null;
+
+  const { data } = await db
+    .from("products")
+    .select(select)
+    .eq("maker_id", maker.id)
+    .eq("status", "approved")
+    .lte("launch_week", weekNumber(new Date()))
+    .order("launch_week", { ascending: false });
+  return {
+    maker,
+    launches: ((data ?? []) as ProductRowDb[]).map(toProduct),
+  };
+}
+
+// Makers with at least one live launch, for the sitemap
+export async function getMakerHandles(): Promise<string[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products");
+  const products = await getAllProducts();
+  return [
+    ...new Set(
+      products.map((p) => p.maker.handle).filter((h): h is string => !!h),
+    ),
+  ];
 }
 
 // Last week's top 3, for the right column
@@ -209,32 +278,55 @@ export async function getComments(productId: string): Promise<CommentItem[]> {
 
 // ─── Server-only reads (not cached) ─────────────────────────
 
-export type WeekLoad = { premium: number; total: number };
+export type WeekLoad = { premium: number; total: number; boosted: boolean };
 
-// Launches booked per week, free and Premium. Rejected ones don't count, and an
-// unpaid checkout only holds its spot for an hour.
-export async function weekLoad(weeks: Week[]) {
+// Launches booked per week, free and Premium, and whether its one Boost is
+// taken. Rejected launches don't count, and an unpaid checkout only holds its
+// spot for an hour. `exceptId` leaves out one launch (the one being paid for).
+export async function weekLoad(weeks: Week[], exceptId?: string) {
   const load: Record<string, WeekLoad> = {};
-  for (const w of weeks) load[weekKey(w)] = { premium: 0, total: 0 };
+  for (const w of weeks)
+    load[weekKey(w)] = { premium: 0, total: 0, boosted: false };
   if (!supabaseConfigured || weeks.length === 0) return load;
 
   const hourAgo = new Date(Date.now() - 3_600_000).toISOString();
-  const { data } = await supabaseAdmin()
-    .from("products")
-    .select("launch_year, launch_week, plan, status, created_at")
-    .in("launch_year", [...new Set(weeks.map((w) => w.year))])
-    .in(
-      "launch_week",
-      weeks.map((w) => w.number),
-    )
-    .neq("status", "rejected");
+  const years = [...new Set(weeks.map((w) => w.year))];
+  const numbers = weeks.map((w) => w.number);
+  const admin = supabaseAdmin();
+  const [{ data: products }, { data: boosts }] = await Promise.all([
+    admin
+      .from("products")
+      .select("id, launch_year, launch_week, plan, boosted, status, created_at")
+      .in("launch_year", years)
+      .in("launch_week", numbers)
+      .neq("status", "rejected"),
+    // A Boost checkout in progress holds the week's sponsor spot too
+    admin
+      .from("payments")
+      .select("product_id, product:products!inner(launch_year, launch_week)")
+      .eq("boost", true)
+      .eq("status", "pending")
+      .gte("created_at", hourAgo)
+      .in("product.launch_year", years)
+      .in("product.launch_week", numbers),
+  ]);
 
-  for (const r of data ?? []) {
-    if (r.status === "pending_payment" && r.created_at < hourAgo) continue;
+  for (const r of products ?? []) {
+    if (r.id === exceptId) continue;
     const l = load[`${r.launch_year}-${r.launch_week}`];
     if (!l) continue;
+    if (r.boosted) l.boosted = true;
+    if (r.status === "pending_payment" && r.created_at < hourAgo) continue;
     l.total++;
     if (r.plan === "premium") l.premium++;
+  }
+  for (const b of (boosts ?? []) as unknown as {
+    product_id: string;
+    product: { launch_year: number; launch_week: number };
+  }[]) {
+    if (b.product_id === exceptId) continue;
+    const l = load[`${b.product.launch_year}-${b.product.launch_week}`];
+    if (l) l.boosted = true;
   }
   return load;
 }

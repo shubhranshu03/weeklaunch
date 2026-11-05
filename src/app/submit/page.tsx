@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site";
 import { Suspense } from "react";
 import { CalendarDays, Clock, Gift, ShieldCheck } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
@@ -32,6 +34,17 @@ const highlights = [
 export default function SubmitPage() {
   return (
     <SiteShell sidebars={false}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          url: `${SITE_URL}/submit`,
+          name: "Submit your product to WeekLaunch",
+          description:
+            "Launch your product on a weekly board for free, or go Premium to pick your week and get pinned at the top.",
+          isPartOf: { "@id": `${SITE_URL}/#website` },
+        }}
+      />
       <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 to-indigo-600 p-6 text-white sm:p-8">
         <div className="pointer-events-none absolute -right-10 -top-10 size-44 rounded-full bg-white/15" />
         <div className="pointer-events-none absolute -bottom-16 right-40 size-32 rounded-full bg-white/10" />
@@ -92,10 +105,11 @@ async function Form() {
   const weeks = await getBoardWeeks();
   const now = weeks.findIndex((w) => w.current);
   const upcoming = weeks.slice(now + 1, now + 1 + FREE_QUEUE_WEEKS);
-  const [load, freeWeek] = await Promise.all([
-    weekLoad(upcoming),
-    nextFreeWeek(),
-  ]);
+  const freeWeek = (await nextFreeWeek()) ?? upcoming[upcoming.length - 1];
+  const weeksShown = upcoming.some((w) => w.number === freeWeek.number)
+    ? upcoming
+    : [...upcoming, freeWeek];
+  const load = await weekLoad(weeksShown);
   const premiumSpots = Object.fromEntries(
     upcoming.map((w) => [w.number, premiumLeft(load[weekKey(w)])]),
   );
@@ -103,7 +117,10 @@ async function Form() {
     <SubmitForm
       upcoming={upcoming}
       premiumSpots={premiumSpots}
-      freeWeek={freeWeek ?? upcoming[upcoming.length - 1]}
+      boostTaken={Object.fromEntries(
+        weeksShown.map((w) => [w.number, load[weekKey(w)].boosted]),
+      )}
+      freeWeek={freeWeek}
       paymentsReady={paymentsConfigured}
     />
   );

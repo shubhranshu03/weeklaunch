@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import {
   ArrowUpRight,
   Crown,
@@ -14,6 +14,7 @@ import {
 import type { Product } from "@/lib/data";
 import { toggleUpvote } from "@/lib/actions/community";
 import { setVoted, useAuth } from "@/lib/useAuth";
+import { weekNumber } from "@/lib/weeks";
 
 const podium = [
   {
@@ -73,6 +74,8 @@ export function ProductLogo({
   );
 }
 
+const noSubscribe = () => () => {};
+
 // Marks a paid Premium launch, on every screen size
 export function PremiumBadge({ size = "sm" }: { size?: "sm" | "md" }) {
   return (
@@ -93,10 +96,20 @@ export function PremiumBadge({ size = "sm" }: { size?: "sm" | "md" }) {
 export function UpvoteButton({
   productId,
   count,
+  week,
 }: {
   productId: string;
   count: number;
+  // The launch's week; votes count only while it's running
+  week: number;
 }) {
+  // Worked out in the browser; while the page loads the button stays usable
+  const nowWeek = useSyncExternalStore(
+    noSubscribe,
+    () => weekNumber(new Date()),
+    () => null,
+  );
+  const open = nowWeek === null || week === nowWeek;
   const { ready, user, votes } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -108,6 +121,7 @@ export function UpvoteButton({
   const shown = count - (initial ? 1 : 0) + (voted ? 1 : 0);
 
   const onClick = () => {
+    if (!open) return;
     if (!user) {
       router.push(`/signin?next=${encodeURIComponent(pathname)}`);
       return;
@@ -124,12 +138,26 @@ export function UpvoteButton({
     <button
       type="button"
       onClick={onClick}
+      disabled={!open}
+      title={
+        open
+          ? undefined
+          : "Voting is closed: it's open during the launch week only"
+      }
       aria-pressed={voted}
-      aria-label={voted ? "Remove upvote" : "Upvote"}
-      className={`btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums sm:h-14 sm:w-12 sm:gap-1 ${
+      aria-label={
+        open
+          ? voted
+            ? "Remove upvote"
+            : "Upvote"
+          : `${Math.max(0, shown)} upvotes, voting closed`
+      }
+      className={`btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
         voted
           ? "bg-brand-500 text-white"
-          : "bg-white text-slate-900 hover:bg-brand-50"
+          : open
+            ? "bg-white text-slate-900 hover:bg-brand-50"
+            : "bg-slate-50 text-slate-500"
       }`}
     >
       <Triangle
@@ -226,7 +254,11 @@ export function ProductRow({
             Visit <ArrowUpRight className="size-4" />
           </a>
         )}
-        <UpvoteButton productId={product.id} count={product.upvotes} />
+        <UpvoteButton
+          productId={product.id}
+          count={product.upvotes}
+          week={product.week}
+        />
       </div>
     </li>
   );

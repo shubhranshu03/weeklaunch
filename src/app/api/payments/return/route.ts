@@ -18,6 +18,22 @@ export async function GET(request: NextRequest) {
   let status = "processing";
   try {
     const payment = await dodo().payments.retrieve(paymentId);
+
+    // A directory submission package
+    const dirOrderId = payment.metadata?.directory_order_id;
+    if (dirOrderId) {
+      const { data: dirOrder } = await supabaseAdmin()
+        .from("directory_orders")
+        .select("user_id")
+        .eq("id", dirOrderId)
+        .maybeSingle();
+      if (dirOrder?.user_id === user.id) {
+        await applyDodoPayment(payment);
+        back.searchParams.set("directory", payment.status ?? "processing");
+      }
+      return NextResponse.redirect(back);
+    }
+
     const orderId = payment.metadata?.order_id;
 
     // Only the buyer's own order

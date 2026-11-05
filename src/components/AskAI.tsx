@@ -1,10 +1,9 @@
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { siClaude, siGoogle, siPerplexity } from "simple-icons";
 
-// The question each assistant opens with
-const prompt =
+// The question each assistant opens with, unless a page asks its own
+const sitePrompt =
   "What is WeekLaunch, the weekly product launch directory for indie makers and startups? How can it help me launch my product and get users?";
-const q = encodeURIComponent(prompt);
 
 // OpenAI mark (not included in Simple Icons)
 const openAiPath =
@@ -13,31 +12,40 @@ const openAiPath =
 const assistants = [
   {
     name: "ChatGPT",
-    href: `https://chatgpt.com/?q=${q}`,
+    href: (q: string) => `https://chatgpt.com/?q=${q}`,
     path: openAiPath,
     color: "#000000",
   },
   {
     name: "Claude",
-    href: `https://claude.ai/new?q=${q}`,
+    href: (q: string) => `https://claude.ai/new?q=${q}`,
     path: siClaude.path,
     color: `#${siClaude.hex}`,
   },
   {
     name: "Perplexity",
-    href: `https://www.perplexity.ai/search?q=${q}`,
+    href: (q: string) => `https://www.perplexity.ai/search?q=${q}`,
     path: siPerplexity.path,
     color: `#${siPerplexity.hex}`,
   },
   {
+    // Google's AI Mode, powered by Gemini
     name: "Google AI",
-    href: `https://www.google.com/search?udm=50&q=${q}`,
+    href: (q: string) => `https://www.google.com/search?udm=50&q=${q}`,
     path: siGoogle.path,
     color: `#${siGoogle.hex}`,
   },
 ];
 
-export function AskAI() {
+export function AskAI({
+  subject = "WeekLaunch",
+  prompt = sitePrompt,
+}: {
+  // What the box asks about, e.g. a product name
+  subject?: string;
+  prompt?: string;
+}) {
+  const q = encodeURIComponent(prompt);
   return (
     <div className="flex flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div className="flex items-center gap-3">
@@ -46,7 +54,7 @@ export function AskAI() {
         </span>
         <div>
           <p className="text-sm font-semibold text-slate-900">
-            Ask AI about WeekLaunch
+            Ask AI about {subject}
           </p>
           <p className="text-xs text-slate-500">
             Get a quick summary from your favorite assistant.
@@ -58,10 +66,10 @@ export function AskAI() {
         {assistants.map((a) => (
           <li key={a.name}>
             <a
-              href={a.href}
+              href={a.href(q)}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Ask ${a.name} about WeekLaunch (opens in a new tab)`}
+              aria-label={`Ask ${a.name} about ${subject} (opens in a new tab)`}
               className="btn-pop group flex h-9 items-center gap-2 rounded-lg bg-white pl-2.5 pr-3 text-sm font-semibold text-slate-900"
             >
               <svg

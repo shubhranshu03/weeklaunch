@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 // Starter text only — have a lawyer review before going live
 export default function PrivacyPage() {
   return (
-    <InfoPage title="Privacy Policy" updated="November 2026">
+    <InfoPage path="/privacy" title="Privacy Policy" updated="November 2026">
       <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
         Draft for review — update it to match the services you actually use and
         have it checked before launch.

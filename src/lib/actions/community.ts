@@ -3,6 +3,7 @@
 import { revalidateTag, updateTag } from "next/cache";
 import { getCurrentUser } from "../auth";
 import { supabaseServer } from "../supabase/server";
+import { weekNumber } from "../weeks";
 
 type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -15,6 +16,15 @@ export async function toggleUpvote(
   const user = await getCurrentUser();
   if (!user) return signedOut;
   const supabase = await supabaseServer();
+
+  // Voting is open only during the launch's own week, so past results stay fixed
+  const { data: product } = await supabase
+    .from("products")
+    .select("launch_week")
+    .eq("id", productId)
+    .maybeSingle();
+  if (!product || product.launch_week !== weekNumber(new Date()))
+    return { ok: false, error: "Voting is closed for this launch." };
 
   const { error } = on
     ? await supabase

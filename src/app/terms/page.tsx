@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 // Starter text only — have a lawyer review before going live
 export default function TermsPage() {
   return (
-    <InfoPage title="Terms of Service" updated="November 2026">
+    <InfoPage path="/terms" title="Terms of Service" updated="November 2026">
       <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
         Draft for review — replace with terms checked by a lawyer before launch.
       </p>

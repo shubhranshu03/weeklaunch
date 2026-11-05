@@ -32,6 +32,7 @@ WeekLaunch publishes a new launch leaderboard every Monday at 00:00 UTC. Makers 
 - [All products](${SITE_URL}/products): every product, grouped by category
 - [Submit a product](${SITE_URL}/submit): launch for free or with Premium
 - [Pricing](${SITE_URL}/pricing): plans for launches and ads
+- [Directory submission](${SITE_URL}/directory-submission): we submit your product to 30, 50 or 100+ directories for you
 - [Launch badges](${SITE_URL}/badges): embeddable "Launched on WeekLaunch" badges
 - [Free tools](${SITE_URL}/tools): free tools for founders
 - [About](${SITE_URL}/about)
@@ -42,6 +43,7 @@ WeekLaunch publishes a new launch leaderboard every Monday at 00:00 UTC. Makers 
 - Free launch: $0. Listed on a weekly board, own product page, upvotes and comments; free launches join a queue.
 - Premium launch: $29 one-time. Pick any launch week, pinned at the top for the whole week, PREMIUM tag, a verified maker tick, dofollow backlink and a Monday newsletter mention.
 - Center feed ad: $19 per week. A sponsor card in the launch list after the top 3.
+- Directory submission: $49 for 30+ directories, $99 for 50+, $149 for 100+. Done for you, strongest sites first, with a report of every live link.
 - Right sidebar ad: $49 per month. One of two promo boxes in the right column on every page.
 
 ## Free tools

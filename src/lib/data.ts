@@ -14,6 +14,9 @@ export type Product = {
   boosted?: boolean;
   logo: { glyph: string; from: string; to: string; fg?: string; url?: string };
   screenshots: string[];
+  // Premium only: "Why choose us" points and the maker's own FAQ
+  highlights: string[];
+  faqs: { q: string; a: string }[];
   week: number;
   year: number;
   maker: { name: string; handle?: string; avatar?: string; verified?: boolean };

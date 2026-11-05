@@ -11,6 +11,7 @@ import {
   Flame,
   Rocket,
   Search,
+  Send,
   SlidersHorizontal,
   WandSparkles,
   type LucideIcon,
@@ -27,6 +28,7 @@ const explore: NavItem[] = [
   { label: "Discover", icon: Flame, href: "/" },
   { label: "All products", icon: Boxes, href: "/products" },
   { label: "Pricing", icon: BadgeDollarSign, href: "/pricing" },
+  { label: "Directory submission", icon: Send, href: "/directory-submission" },
   { label: "Free tools", icon: WandSparkles, href: "/tools" },
 ];
 
@@ -107,19 +109,19 @@ export function LeftNav() {
         <div className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-white/15" />
         <div className="pointer-events-none absolute -bottom-10 right-6 size-20 rounded-full bg-white/10" />
         <p className="relative text-[11px] font-semibold uppercase tracking-wider text-white/70">
-          Free resource
+          Done for you
         </p>
         <h3 className="relative mt-1.5 font-semibold leading-snug">
-          900+ launch directories, ranked by DR
+          We submit you to 100+ directories
         </h3>
         <p className="relative mt-1 text-xs text-white/75">
-          Find where to list your SaaS or AI product next.
+          More backlinks and a higher DR, strongest sites first. From $49.
         </p>
         <Link
-          href="#"
+          href="/directory-submission"
           className="btn-pop relative mt-4 inline-flex items-center gap-1 rounded-lg bg-amber-300 px-3.5 py-1.5 text-xs font-bold text-slate-900 hover:bg-amber-200"
         >
-          Explore list <ArrowUpRight className="size-3.5" />
+          See packages <ArrowUpRight className="size-3.5" />
         </Link>
       </div>
     </div>

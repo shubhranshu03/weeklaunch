@@ -7,6 +7,7 @@ import { supabaseAdmin } from "./supabase/server";
 // page Dodo sends buyers back to, so whichever arrives first marks it paid.
 // Returns the order's launch so callers can link to it.
 export async function applyDodoPayment(p: Payment) {
+  if (p.metadata?.directory_order_id) return applyDirectoryPayment(p);
   const orderId = p.metadata?.order_id;
   if (!orderId) return null;
   const admin = supabaseAdmin();
@@ -72,4 +73,24 @@ export async function applyDodoPayment(p: Payment) {
 
   revalidateTag("products", "max");
   return order;
+}
+
+// A paid directory package goes to the admin queue as "paid"
+async function applyDirectoryPayment(p: Payment) {
+  const id = p.metadata.directory_order_id;
+  const succeeded = p.status === "succeeded";
+  if (!succeeded && p.status !== "failed" && p.status !== "cancelled")
+    return null;
+  await supabaseAdmin()
+    .from("directory_orders")
+    .update({
+      ...(succeeded && { status: "paid" }),
+      provider_payment_id: p.payment_id,
+      amount_cents: p.total_amount,
+      currency: p.currency,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("status", "pending_payment");
+  return null;
 }

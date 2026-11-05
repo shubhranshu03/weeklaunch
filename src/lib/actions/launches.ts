@@ -2,12 +2,12 @@
 
 import { revalidateTag } from "next/cache";
 import { getCurrentUser } from "../auth";
-import { FREE_QUEUE_WEEKS, PREMIUM_CAPACITY, productCategories } from "../data";
+import { FREE_QUEUE_WEEKS, productCategories } from "../data";
 import { createCheckout, paymentsConfigured } from "../dodo";
 import { nextFreeWeek, premiumLeft, weekLoad } from "../products";
 import { mediaPrefix } from "../supabase/env";
 import { supabaseAdmin } from "../supabase/server";
-import { weekKey, weeksAround } from "../weeks";
+import { weekKey, weekNumber, weeksAround } from "../weeks";
 
 export type LaunchInput = {
   name: string;
@@ -20,7 +20,23 @@ export type LaunchInput = {
   plan: "free" | "premium";
   week: { year: number; number: number };
   boost: boolean;
+  // Premium only
+  highlights: string[];
+  faqs: { q: string; a: string }[];
 };
+
+// Trims the Premium extras and drops empty or oversized entries
+function cleanExtras(input: LaunchInput) {
+  const highlights = input.highlights
+    .map((h) => h.trim().slice(0, 120))
+    .filter(Boolean)
+    .slice(0, 5);
+  const faqs = input.faqs
+    .map((f) => ({ q: f.q.trim().slice(0, 120), a: f.a.trim().slice(0, 500) }))
+    .filter((f) => f.q && f.a)
+    .slice(0, 5);
+  return { highlights, faqs };
+}
 
 type Result =
   | { ok: true; slug: string; checkoutUrl?: string }
@@ -116,14 +132,18 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
         ? "Pick one of the upcoming weeks."
         : "Every upcoming week is full right now. Please try again soon.",
     };
-  if (premium) {
-    const load = await weekLoad([week]);
-    if (premiumLeft(load[weekKey(week)]) === 0)
-      return {
-        ok: false,
-        error: `Week ${week.number} is full. Pick another week.`,
-      };
-  }
+  const load = (await weekLoad([week]))[weekKey(week)];
+  if (premium && premiumLeft(load) === 0)
+    return {
+      ok: false,
+      error: `Week ${week.number} is full. Pick another week.`,
+    };
+  // One Boost (sponsor card) per week
+  if (input.boost && load.boosted)
+    return {
+      ok: false,
+      error: `The Boost for Week ${week.number} is already taken. Untick it or pick another week.`,
+    };
 
   const [from, to] = palette[Math.floor(Math.random() * palette.length)];
   const slug = await uniqueSlug(name);
@@ -142,6 +162,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       logo_to: to,
       logo_url: ownFile(input.logo, user.id) ? input.logo : null,
       screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
+      ...(premium ? cleanExtras(input) : { highlights: [], faqs: [] }),
       // A premium launch holds its spot while the maker pays; it stays hidden until paid
       plan: premium ? "premium" : "free",
       status: paid ? "pending_payment" : "pending_review",
@@ -209,20 +230,37 @@ export async function payForLaunch(
   }
   if (!premium && !boost) return { ok: false, error: "Already paid." };
 
-  if (premium && product.plan !== "premium") {
-    const week = {
-      year: product.launch_year,
-      number: product.launch_week,
-      label: "",
+  const week = {
+    year: product.launch_year,
+    number: product.launch_week,
+    label: "",
+  };
+  if (week.number <= weekNumber(new Date()))
+    return {
+      ok: false,
+      error: `Week ${week.number} has already started, so it can't be paid for now.`,
     };
-    // Upgrading keeps the same spot, so only the Premium limit matters
-    const load = await weekLoad([week]);
-    if (load[weekKey(week)].premium >= PREMIUM_CAPACITY)
-      return {
-        ok: false,
-        error: `Premium spots for Week ${week.number} are sold out.`,
-      };
-  }
+
+  // Check the week again: an unpaid spot is only held for an hour, so it may
+  // have been taken since. This launch itself is left out of the count.
+  const load = (await weekLoad([week], product.id))[weekKey(week)];
+  if (premium && premiumLeft(load) === 0)
+    return {
+      ok: false,
+      error: `Premium spots for Week ${week.number} are sold out.`,
+    };
+  if (boost && load.boosted)
+    return {
+      ok: false,
+      error: `The Boost for Week ${week.number} is already taken.`,
+    };
+
+  // Hold the spot again while the maker pays
+  if (product.status === "pending_payment")
+    await supabaseAdmin()
+      .from("products")
+      .update({ created_at: new Date().toISOString() })
+      .eq("id", product.id);
 
   try {
     const checkoutUrl = await createCheckout({

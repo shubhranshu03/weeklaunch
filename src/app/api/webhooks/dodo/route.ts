@@ -33,6 +33,10 @@ export async function POST(request: Request) {
       .from("payments")
       .update({ status: "refunded", updated_at: new Date().toISOString() })
       .eq("provider_payment_id", event.data.payment_id);
+    await admin
+      .from("directory_orders")
+      .update({ status: "refunded", updated_at: new Date().toISOString() })
+      .eq("provider_payment_id", event.data.payment_id);
     return Response.json({ ok: true });
   }
 

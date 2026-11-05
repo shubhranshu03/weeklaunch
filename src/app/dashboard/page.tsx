@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Plus,
   Rocket,
+  Send,
   ShieldCheck,
   Triangle,
 } from "lucide-react";
@@ -20,6 +21,8 @@ import { PayButton } from "@/components/PayButton";
 import { ProductLogo } from "@/components/ProductRow";
 import { SiteShell } from "@/components/SiteShell";
 import { isAdmin, requireUser } from "@/lib/auth";
+import { getDirectoryPackage } from "@/lib/directories";
+import { supabaseAdmin } from "@/lib/supabase/server";
 import { PREMIUM_PRICE, type LaunchStatus, type Product } from "@/lib/data";
 import { getCurrentWeek, getMakerLaunches } from "@/lib/products";
 
@@ -98,12 +101,22 @@ async function Launches({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireUser("/dashboard");
-  const [launches, now, { paid, status: payStatus, payment_id }] =
-    await Promise.all([
-      getMakerLaunches(user.id),
-      getCurrentWeek(),
-      searchParams,
-    ]);
+  const [
+    launches,
+    now,
+    { paid, status: payStatus, payment_id, directory },
+    { data: dirOrders },
+  ] = await Promise.all([
+    getMakerLaunches(user.id),
+    getCurrentWeek(),
+    searchParams,
+    supabaseAdmin()
+      .from("directory_orders")
+      .select("id, package, product_name, status, created_at")
+      .eq("user_id", user.id)
+      .neq("status", "pending_payment")
+      .order("created_at", { ascending: false }),
+  ]);
 
   // Checkouts started before the return check land here directly; check them too
   if (typeof payment_id === "string")
@@ -142,6 +155,29 @@ async function Launches({
 
   return (
     <>
+      {directory && (
+        <p
+          className={`mt-4 flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
+            directory === "failed" || directory === "cancelled"
+              ? "bg-rose-50 text-rose-800"
+              : "bg-emerald-50 text-emerald-800"
+          }`}
+        >
+          {directory === "failed" || directory === "cancelled" ? (
+            <>
+              <CircleX className="size-4 shrink-0" />
+              The payment didn&apos;t go through, so you weren&apos;t charged.
+            </>
+          ) : (
+            <>
+              <CircleCheck className="size-4 shrink-0" />
+              Thanks! We&apos;ll start your directory submissions within 2
+              working days and email you the report.
+            </>
+          )}
+        </p>
+      )}
+
       {/* Dodo sends people back here with ?paid=<launch>&status=<result> */}
       {paid &&
         (payStatus === "failed" || payStatus === "cancelled" ? (
@@ -257,6 +293,42 @@ async function Launches({
             );
           })}
         </ul>
+      )}
+
+      {(dirOrders ?? []).length > 0 && (
+        <>
+          <h2 className="mb-3 mt-8 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Directory submissions
+          </h2>
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white">
+            {(dirOrders ?? []).map((o) => {
+              const pkg = getDirectoryPackage(o.package);
+              const label =
+                o.status === "done"
+                  ? "Done · report sent"
+                  : o.status === "in_progress"
+                    ? "In progress"
+                    : o.status === "refunded"
+                      ? "Refunded"
+                      : "Paid · starting soon";
+              return (
+                <li key={o.id} className="flex items-center gap-3 p-4">
+                  <span className="badge-pop flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-300 text-slate-900">
+                    <Send className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-slate-900">
+                      {o.product_name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {pkg?.count} directories · {label}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
       {upgrade && (

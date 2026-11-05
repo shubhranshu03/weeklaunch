@@ -180,7 +180,18 @@ export function Comments({
                 />
                 <div className="min-w-0 flex-1 rounded-2xl bg-slate-50 px-4 py-3">
                   <p className="flex items-center gap-1 text-sm">
-                    <span className="font-semibold text-slate-900">{name}</span>
+                    {c.author?.handle ? (
+                      <Link
+                        href={`/makers/${c.author.handle}`}
+                        className="font-semibold text-slate-900 hover:text-brand-700 hover:underline"
+                      >
+                        {name}
+                      </Link>
+                    ) : (
+                      <span className="font-semibold text-slate-900">
+                        {name}
+                      </span>
+                    )}
                     {c.author?.verified && (
                       <BadgeCheck
                         className="size-3.5 shrink-0 fill-sky-500 text-white"
