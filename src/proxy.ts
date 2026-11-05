@@ -10,9 +10,29 @@ import {
 // Pages that need an account; signed-out visitors go to sign-in first
 const privatePaths = ["/dashboard", "/profile", "/settings", "/admin"];
 
-// Keeps the Supabase session fresh on every page load
+const isPrivate = (pathname: string) =>
+  privatePaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+function toSignIn(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+  const url = request.nextUrl.clone();
+  url.pathname = "/signin";
+  url.search = `?next=${encodeURIComponent(pathname + search)}`;
+  return NextResponse.redirect(url);
+}
+
+// Keeps the Supabase session fresh and guards the account pages
 export async function proxy(request: NextRequest) {
   if (!supabaseConfigured) return NextResponse.next();
+
+  // Signed-out visitors have no session to refresh: no call to Supabase at all
+  const hasSession = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+  if (!hasSession)
+    return isPrivate(request.nextUrl.pathname)
+      ? toSignIn(request)
+      : NextResponse.next();
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -27,28 +47,15 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  // Checks the session's signature on our own server (refreshing it when it has
+  // expired), instead of asking Supabase on every page load
+  const { data, error } = await supabase.auth.getClaims();
 
-  // Only send people to sign-in when they're clearly signed out. If Supabase is
-  // slow or unreachable, let the page do its own check instead of signing them out.
-  const hasSession = request.cookies
-    .getAll()
-    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
-  const signedOut = !user && (!hasSession || !isAuthRetryableFetchError(error));
-
-  const { pathname, search } = request.nextUrl;
-  if (
-    signedOut &&
-    privatePaths.some((p) => pathname === p || pathname.startsWith(`${p}/`))
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/signin";
-    url.search = `?next=${encodeURIComponent(pathname + search)}`;
-    return NextResponse.redirect(url);
-  }
+  // If Supabase is slow or unreachable, let the page do its own check
+  // instead of signing the visitor out
+  const signedOut = !data?.claims && !isAuthRetryableFetchError(error);
+  if (signedOut && isPrivate(request.nextUrl.pathname))
+    return toSignIn(request);
 
   return response;
 }

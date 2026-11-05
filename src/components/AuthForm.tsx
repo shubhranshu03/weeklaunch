@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { siGoogle } from "simple-icons";
 import { Info, Loader2 } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { supabaseConfigured } from "@/lib/supabase/env";
+import { GoogleIcon } from "./GoogleIcon";
 import { LogoMark } from "./Logo";
 
 // Only send people back to pages on this site
@@ -67,9 +67,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
           {loading ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-              <path d={siGoogle.path} fill="currentColor" />
-            </svg>
+            <GoogleIcon className="size-5" />
           )}
           Continue with Google
         </button>

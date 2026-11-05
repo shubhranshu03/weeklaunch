@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { DirectoryOrderForm } from "@/components/DirectoryOrderForm";
 import { JsonLd } from "@/components/JsonLd";
+import { GoogleIcon } from "@/components/GoogleIcon";
 import { SiteShell } from "@/components/SiteShell";
 import { getCurrentUser } from "@/lib/auth";
 import {
@@ -528,8 +529,9 @@ async function Order() {
         </p>
         <Link
           href="/signin?next=/directory-submission%23order"
-          className="btn-pop mt-5 flex h-11 items-center rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600"
+          className="btn-pop mt-5 flex h-11 items-center gap-2.5 rounded-xl bg-white px-5 text-sm font-semibold text-slate-900 hover:bg-slate-50"
         >
+          <GoogleIcon className="size-5" />
           Continue with Google
         </Link>
       </div>

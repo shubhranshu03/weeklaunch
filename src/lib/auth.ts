@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { supabaseConfigured } from "./supabase/env";
 import { supabaseServer } from "./supabase/server";
 
@@ -21,28 +22,29 @@ export type Profile = {
 
 export type CurrentUser = { id: string; email: string; profile: Profile };
 
-// The signed-in visitor, or null. Checks the session with Supabase, so it can't be faked.
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+// The signed-in visitor, or null. The session's signature is checked on our own
+// server, so it can't be faked. Runs once per request, however many parts ask.
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   // Always render per visitor: the session check below reads the clock,
   // which Next.js doesn't allow while building a page ahead of time
   await cookies();
   await connection();
   if (!supabaseConfigured) return null;
   const supabase = await supabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) return null;
 
+  // A deleted account has no profile, so its leftover session stops working here
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", claims.sub)
     .single<Profile>();
   if (!profile) return null;
 
-  return { id: user.id, email: user.email ?? "", profile };
-}
+  return { id: claims.sub, email: claims.email ?? "", profile };
+});
 
 // For pages and actions that need an account
 export async function requireUser(next: string) {

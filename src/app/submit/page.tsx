@@ -3,6 +3,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/site";
 import { Suspense } from "react";
 import { CalendarDays, Clock, Gift, ShieldCheck } from "lucide-react";
+import { GoogleIcon } from "@/components/GoogleIcon";
 import { SiteShell } from "@/components/SiteShell";
 import { SubmitForm } from "@/components/SubmitForm";
 import Link from "next/link";
@@ -96,8 +97,9 @@ async function Form() {
         </p>
         <Link
           href="/signin?next=/submit"
-          className="btn-pop mt-5 flex h-11 items-center rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600"
+          className="btn-pop mt-5 flex h-11 items-center gap-2.5 rounded-xl bg-white px-5 text-sm font-semibold text-slate-900 hover:bg-slate-50"
         >
+          <GoogleIcon className="size-5" />
           Continue with Google
         </Link>
       </div>

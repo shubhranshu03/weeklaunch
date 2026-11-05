@@ -22,10 +22,23 @@ export async function createDirectoryOrder(
   if (!user) return { ok: false, error: "Please sign in first." };
 
   const pkg = getDirectoryPackage(input.package);
-  const dodoProductId = pkg && process.env[pkg.env];
   if (!pkg) return { ok: false, error: "Pick a package." };
-  if (!dodoProductId || !process.env.DODO_PAYMENTS_API_KEY)
-    return { ok: false, error: "Payments for this package aren't set up yet." };
+  // Read each setting by name so the host always passes it through
+  const dodoProductId = {
+    "30": process.env.DODO_DIR_30_PRODUCT_ID,
+    "50": process.env.DODO_DIR_50_PRODUCT_ID,
+    "100": process.env.DODO_DIR_100_PRODUCT_ID,
+  }[pkg.id];
+  if (!process.env.DODO_PAYMENTS_API_KEY || !dodoProductId) {
+    // Says which setting is missing, so it's quick to fix in the host settings
+    console.error(
+      `Directory checkout not set up: ${!process.env.DODO_PAYMENTS_API_KEY ? "DODO_PAYMENTS_API_KEY" : pkg.env} is missing`,
+    );
+    return {
+      ok: false,
+      error: `Payments for this package aren't set up yet (missing ${!process.env.DODO_PAYMENTS_API_KEY ? "DODO_PAYMENTS_API_KEY" : pkg.env}).`,
+    };
+  }
 
   const productName = input.productName.trim();
   const website = input.website.trim();
