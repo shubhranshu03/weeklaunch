@@ -258,7 +258,7 @@ async function Launches({
                   </p>
                   <p className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${st.className}`}
+                      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 font-medium ${st.className}`}
                     >
                       <st.icon className="size-3" />
                       {st.label}
@@ -270,12 +270,13 @@ async function Launches({
                     </span>
                   </p>
                 </div>
-                <div className="flex gap-2">
+                {/* On phones the button gets its own full-width row under the details */}
+                <div className="flex w-full gap-2 empty:hidden sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">
                   {status === "pending_payment" ? (
                     <PayButton
                       productId={p.id}
                       premium={p.premium ?? false}
-                      className="btn-pop flex h-9 items-center gap-1.5 rounded-lg bg-amber-300 px-3 text-xs font-bold text-slate-900 hover:bg-amber-200"
+                      className="btn-pop flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-amber-300 px-3 text-xs font-bold text-slate-900 hover:bg-amber-200 sm:w-auto"
                     >
                       <CreditCard className="size-3.5" />
                       Complete payment
@@ -283,7 +284,7 @@ async function Launches({
                   ) : status === "approved" ? (
                     <Link
                       href={`/products/${p.slug}`}
-                      className="btn-pop flex h-9 items-center gap-1 rounded-lg bg-amber-300 px-3 text-xs font-bold text-slate-900 hover:bg-amber-200"
+                      className="btn-pop flex h-9 items-center justify-center gap-1 rounded-lg bg-amber-300 px-3 text-xs font-bold text-slate-900 hover:bg-amber-200"
                     >
                       View <ArrowUpRight className="size-3.5" />
                     </Link>

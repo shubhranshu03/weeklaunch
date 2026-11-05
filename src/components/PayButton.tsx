@@ -22,7 +22,7 @@ export function PayButton({
   const [error, setError] = useState("");
 
   return (
-    <span className="inline-flex flex-col items-end gap-1">
+    <span className="inline-flex flex-col items-stretch gap-1 sm:items-end">
       <button
         type="button"
         disabled={pending}
