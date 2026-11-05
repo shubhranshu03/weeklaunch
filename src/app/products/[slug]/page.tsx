@@ -16,12 +16,22 @@ import { JsonLd } from "@/components/JsonLd";
 import { BadgePreview, CopyCode } from "@/components/LaunchBadge";
 import { badgeCode } from "@/lib/badge";
 import { SITE_URL } from "@/lib/site";
-import { ProductLogo, ProductRow, UpvoteButton } from "@/components/ProductRow";
+import {
+  PremiumBadge,
+  ProductLogo,
+  ProductRow,
+  UpvoteButton,
+} from "@/components/ProductRow";
 import { SiteShell } from "@/components/SiteShell";
-import { allProducts, getProduct, launchInfo, weeks } from "@/lib/data";
+import { getAllProducts, getComments, getProduct } from "@/lib/products";
+import { weekLabel } from "@/lib/weeks";
 
-export function generateStaticParams() {
-  return allProducts.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const products = await getAllProducts();
+  // Cache Components needs at least one; unknown slugs show the 404 page
+  return products.length
+    ? products.map((p) => ({ slug: p.slug }))
+    : [{ slug: "studyflow" }];
 }
 
 // Keeps "Name — tagline | WeekLaunch" within the ~60 characters Google shows
@@ -36,7 +46,7 @@ export async function generateMetadata({
   params,
 }: PageProps<"/products/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
   if (!product) return {};
   const url = `/products/${product.slug}`;
   const description = `${product.name}: ${product.tagline}. Launched on WeekLaunch in ${product.tags.join(", ")}. See upvotes, comments and more.`;
@@ -89,12 +99,14 @@ async function ProductDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
   if (!product) notFound();
 
-  const info = launchInfo(product);
-  const week = weeks.find((w) => w.number === info.week);
-  const related = allProducts
+  const [all, comments] = await Promise.all([
+    getAllProducts(),
+    getComments(product.id),
+  ]);
+  const related = all
     .filter((p) => p.slug !== product.slug && p.tags[0] === product.tags[0])
     .slice(0, 3);
 
@@ -106,7 +118,7 @@ async function ProductDetail({
       label: "Rating",
       value: product.rating ? product.rating.score.toFixed(1) : "New",
     },
-    { icon: CalendarDays, label: "Launched", value: `Week ${info.week}` },
+    { icon: CalendarDays, label: "Launched", value: `Week ${product.week}` },
   ];
 
   const pageUrl = `${SITE_URL}/products/${product.slug}`;
@@ -121,7 +133,7 @@ async function ProductDetail({
               "@type": "SoftwareApplication",
               name: product.name,
               description: product.tagline,
-              url: info.website,
+              url: product.website,
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web",
               keywords: product.tags.join(", "),
@@ -162,15 +174,11 @@ async function ProductDetail({
               {product.name}
               {product.verified && (
                 <BadgeCheck
-                  className="size-5 fill-brand-500 text-white"
-                  aria-label="Verified"
+                  className="size-5 fill-sky-500 text-white"
+                  aria-label="Verified maker"
                 />
               )}
-              {product.premium && (
-                <span className="badge-pop rounded-md bg-amber-300 px-1.5 py-px text-[11px] font-bold uppercase text-slate-900">
-                  Featured
-                </span>
-              )}
+              {product.premium && <PremiumBadge size="md" />}
             </h1>
             <p className="mt-1 text-slate-500">{product.tagline}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -186,14 +194,14 @@ async function ProductDetail({
           </div>
           <div className="flex items-center gap-3 sm:flex-col sm:items-end">
             <a
-              href={info.website}
+              href={product.website}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-pop flex h-11 items-center gap-1.5 rounded-xl bg-amber-300 px-4 text-sm font-bold text-slate-900 hover:bg-amber-200"
             >
               Visit website <ArrowUpRight className="size-4" />
             </a>
-            <UpvoteButton count={product.upvotes} />
+            <UpvoteButton productId={product.id} count={product.upvotes} />
           </div>
         </div>
 
@@ -212,56 +220,88 @@ async function ProductDetail({
         </dl>
       </section>
 
-      {/* Screenshots (placeholders until makers upload real ones) */}
-      <div
-        aria-hidden
-        className="no-scrollbar mt-4 flex snap-x gap-3 overflow-x-auto"
-      >
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="flex aspect-[16/10] w-[85%] shrink-0 snap-start items-center justify-center rounded-3xl border border-slate-200 sm:w-[60%]"
-            style={{
-              backgroundImage: `linear-gradient(${135 + i * 40}deg, ${product.logo.from}22, ${product.logo.to}44)`,
-            }}
-          >
-            <span
-              className="text-6xl font-bold opacity-30"
-              style={{ color: product.logo.to }}
+      {/* Screenshots (soft placeholders when the maker added none) */}
+      {product.screenshots.length > 0 ? (
+        <div className="no-scrollbar mt-4 flex snap-x gap-3 overflow-x-auto">
+          {product.screenshots.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element -- maker-uploaded screenshot from storage
+            <img
+              key={src}
+              src={src}
+              alt={`${product.name} screenshot ${i + 1}`}
+              className="aspect-[16/10] w-[85%] shrink-0 snap-start rounded-3xl border border-slate-200 bg-white object-cover sm:w-[60%]"
+            />
+          ))}
+        </div>
+      ) : (
+        <div
+          aria-hidden
+          className="no-scrollbar mt-4 flex snap-x gap-3 overflow-x-auto"
+        >
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex aspect-[16/10] w-[85%] shrink-0 snap-start items-center justify-center rounded-3xl border border-slate-200 sm:w-[60%]"
+              style={{
+                backgroundImage: `linear-gradient(${135 + i * 40}deg, ${product.logo.from}22, ${product.logo.to}44)`,
+              }}
             >
-              {product.logo.glyph}
-            </span>
-          </div>
-        ))}
-      </div>
+              <span
+                className="text-6xl font-bold opacity-30"
+                style={{ color: product.logo.to }}
+              >
+                {product.logo.glyph}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* About + maker */}
       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_240px]">
         <section className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
           <h2 className="font-semibold text-slate-900">About {product.name}</h2>
           <div className="mt-3 space-y-3 text-sm leading-relaxed text-slate-600">
+            {product.description
+              .split(/\n{2,}/)
+              .filter(Boolean)
+              .map((para, i) => (
+                <p key={i} className="whitespace-pre-line">
+                  {para}
+                </p>
+              ))}
             <p>
-              {product.name} —{" "}
-              {product.tagline[0].toLowerCase() + product.tagline.slice(1)}. It
-              was built for makers and teams who want to save time and skip the
-              busywork.
-            </p>
-            <p>
-              It launched on WeekLaunch in Week {info.week}
-              {week ? ` (${week.label}, ${week.year})` : ""} and is listed under{" "}
-              {product.tags.join(", ")}.
+              It launched on WeekLaunch in Week {product.week} (
+              {weekLabel(product.week)}, {product.year}) and is
+              listed under {product.tags.join(", ")}.
             </p>
           </div>
         </section>
         <section className="rounded-3xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-slate-900">Maker</h2>
           <div className="mt-3 flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-rose-400 font-bold text-slate-900">
-              {info.maker[0]}
-            </span>
+            {product.maker.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element -- Google or uploaded profile photo
+              <img
+                src={product.maker.avatar}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="size-10 rounded-full object-cover"
+              />
+            ) : (
+              <span className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-rose-400 font-bold text-slate-900">
+                {product.maker.name[0]}
+              </span>
+            )}
             <div>
-              <p className="text-sm font-semibold text-slate-900">
-                {info.maker}
+              <p className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+                {product.maker.name}
+                {product.maker.verified && (
+                  <BadgeCheck
+                    className="size-4 fill-sky-500 text-white"
+                    aria-label="Verified maker"
+                  />
+                )}
               </p>
               <p className="text-xs text-slate-500">Maker of {product.name}</p>
             </div>
@@ -278,7 +318,7 @@ async function ProductDetail({
               Maker? Add this to your website to show off your launch.
             </p>
           </div>
-          <BadgePreview week={info.week} />
+          <BadgePreview week={product.week} />
         </div>
         <div className="mt-4">
           <CopyCode code={badgeCode(product.slug, "light")} />
@@ -286,7 +326,12 @@ async function ProductDetail({
       </section>
 
       <div className="mt-4">
-        <Comments maker={info.maker} />
+        <Comments
+          productId={product.id}
+          maker={product.maker.name}
+          initial={comments}
+          total={product.comments}
+        />
       </div>
 
       {related.length > 0 && (

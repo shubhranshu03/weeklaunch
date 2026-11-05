@@ -58,7 +58,7 @@ export default function BadgesPage() {
                 s.theme === "dark" ? "bg-slate-800" : "bg-slate-50"
               }`}
             >
-              <BadgePreview theme={s.theme} week={45} />
+              <BadgePreview theme={s.theme} week={1} />
               <BadgePreview theme={s.theme} label="#1 Product of the week" />
             </div>
             <div className="min-w-0">

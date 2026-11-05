@@ -1,7 +1,19 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { CalendarDays, Clock, Gift, ShieldCheck } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
 import { SubmitForm } from "@/components/SubmitForm";
+import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
+import { FREE_QUEUE_WEEKS } from "@/lib/data";
+import { paymentsConfigured } from "@/lib/dodo";
+import {
+  getBoardWeeks,
+  nextFreeWeek,
+  premiumLeft,
+  weekLoad,
+} from "@/lib/products";
+import { weekKey } from "@/lib/weeks";
 
 export const metadata: Metadata = {
   title: "Submit your product — launch free or go Premium",
@@ -47,7 +59,52 @@ export default function SubmitPage() {
           </ul>
         </div>
       </div>
-      <SubmitForm />
+      <Suspense
+        fallback={
+          <div className="h-[600px] animate-pulse rounded-3xl bg-slate-200/60" />
+        }
+      >
+        <Form />
+      </Suspense>
     </SiteShell>
+  );
+}
+
+async function Form() {
+  if (!(await getCurrentUser()))
+    return (
+      <div className="flex flex-col items-center rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center">
+        <h2 className="text-xl font-semibold text-slate-900">
+          Sign in to launch
+        </h2>
+        <p className="mt-1 max-w-sm text-sm text-slate-500">
+          It takes one click with Google, and your launches stay linked to your
+          profile.
+        </p>
+        <Link
+          href="/signin?next=/submit"
+          className="btn-pop mt-5 flex h-11 items-center rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600"
+        >
+          Continue with Google
+        </Link>
+      </div>
+    );
+  const weeks = await getBoardWeeks();
+  const now = weeks.findIndex((w) => w.current);
+  const upcoming = weeks.slice(now + 1, now + 1 + FREE_QUEUE_WEEKS);
+  const [load, freeWeek] = await Promise.all([
+    weekLoad(upcoming),
+    nextFreeWeek(),
+  ]);
+  const premiumSpots = Object.fromEntries(
+    upcoming.map((w) => [w.number, premiumLeft(load[weekKey(w)])]),
+  );
+  return (
+    <SubmitForm
+      upcoming={upcoming}
+      premiumSpots={premiumSpots}
+      freeWeek={freeWeek ?? upcoming[upcoming.length - 1]}
+      paymentsReady={paymentsConfigured}
+    />
   );
 }

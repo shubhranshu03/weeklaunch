@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { JsonLd } from "@/components/JsonLd";
 import { Leaderboard } from "@/components/Leaderboard";
+import { getBoard, getBoardWeeks } from "@/lib/products";
 import { SiteShell } from "@/components/SiteShell";
-import { Testimonials } from "@/components/Testimonials";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <SiteShell after={<Testimonials />}>
+    <SiteShell>
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -37,7 +38,19 @@ export default function Home() {
       <h1 className="sr-only">
         This week&apos;s product launches on WeekLaunch
       </h1>
-      <Leaderboard />
+      <Suspense
+        fallback={
+          <div className="h-[600px] animate-pulse rounded-3xl bg-slate-200/60" />
+        }
+      >
+        <Board />
+      </Suspense>
     </SiteShell>
   );
+}
+
+async function Board() {
+  const weeks = await getBoardWeeks();
+  const board = await getBoard(weeks);
+  return <Leaderboard weeks={weeks} board={board} />;
 }

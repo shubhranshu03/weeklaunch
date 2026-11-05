@@ -15,7 +15,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { allProducts, productCategories } from "@/lib/data";
+import { productCategories, type Product } from "@/lib/data";
 import { ProductRow } from "./ProductRow";
 
 const icons: Record<string, { icon: LucideIcon; tint: string }> = {
@@ -34,7 +34,11 @@ const icons: Record<string, { icon: LucideIcon; tint: string }> = {
 
 // Every product is listed once, under its main (first) category
 
-export function ProductsDirectory() {
+export function ProductsDirectory({
+  products: allProducts,
+}: {
+  products: Product[];
+}) {
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
 
@@ -55,7 +59,7 @@ export function ProductsDirectory() {
           .sort((a, b) => b.upvotes - a.upvotes),
       }))
       .filter((g) => g.items.length > 0);
-  }, [category, query]);
+  }, [allProducts, category, query]);
 
   const countFor = (name: string) =>
     allProducts.filter((p) => p.tags[0] === name).length;

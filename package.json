@@ -9,11 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
+    "dodopayments": "^2.61.1",
     "lucide-react": "^1.66.0",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "simple-icons": "^16.36.0"
+    "server-only": "^0.0.1",
+    "simple-icons": "^16.36.0",
+    "standardwebhooks": "^1.1.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

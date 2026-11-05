@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import {
   ArrowUpRight,
+  Crown,
   BadgeCheck,
   MessageSquare,
   Star,
   Triangle,
 } from "lucide-react";
-import { launchInfo, type Product } from "@/lib/data";
+import type { Product } from "@/lib/data";
+import { toggleUpvote } from "@/lib/actions/community";
+import { setVoted, useAuth } from "@/lib/useAuth";
 
 const podium = [
   {
@@ -38,15 +42,26 @@ export function ProductLogo({
   name: string;
   size?: "sm" | "md" | "lg";
 }) {
+  const box =
+    size === "sm"
+      ? "size-10 rounded-full text-sm"
+      : size === "lg"
+        ? "badge-pop size-20 rounded-full text-3xl"
+        : "size-10 rounded-full text-base sm:size-[52px] sm:text-lg";
+
+  if (logo.url)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- maker-uploaded logo from storage
+      <img
+        src={logo.url}
+        alt={`${name} logo`}
+        className={`shrink-0 bg-white object-cover ${box}`}
+      />
+    );
+
   return (
     <div
-      className={`flex shrink-0 items-center justify-center font-bold ring-1 ring-inset ring-white/20 ${
-        size === "sm"
-          ? "size-10 rounded-full text-sm"
-          : size === "lg"
-            ? "badge-pop size-20 rounded-full text-3xl"
-            : "size-10 rounded-full text-base sm:size-[52px] sm:text-lg"
-      }`}
+      className={`flex shrink-0 items-center justify-center font-bold ring-1 ring-inset ring-white/20 ${box}`}
       style={{
         backgroundImage: `linear-gradient(135deg, ${logo.from}, ${logo.to})`,
         color: logo.fg ?? "#fff",
@@ -58,13 +73,57 @@ export function ProductLogo({
   );
 }
 
-export function UpvoteButton({ count }: { count: number }) {
-  const [voted, setVoted] = useState(false);
+// Marks a paid Premium launch, on every screen size
+export function PremiumBadge({ size = "sm" }: { size?: "sm" | "md" }) {
+  return (
+    <span
+      title="Premium launch"
+      className={`badge-pop inline-flex shrink-0 items-center gap-0.5 rounded-md bg-amber-300 font-bold uppercase tracking-wide text-slate-900 ${
+        size === "md"
+          ? "px-1.5 py-px text-[11px]"
+          : "px-1 py-px text-[9px] sm:px-1.5 sm:text-[10px]"
+      }`}
+    >
+      <Crown className={size === "md" ? "size-3" : "size-2.5"} />
+      Premium
+    </span>
+  );
+}
+
+export function UpvoteButton({
+  productId,
+  count,
+}: {
+  productId: string;
+  count: number;
+}) {
+  const { ready, user, votes } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [, startTransition] = useTransition();
+  // The saved count already includes this visitor's vote; adjust it as they click
+  const [initial, setInitial] = useState<boolean | null>(null);
+  if (ready && initial === null) setInitial(votes.has(productId));
+  const voted = votes.has(productId);
+  const shown = count - (initial ? 1 : 0) + (voted ? 1 : 0);
+
+  const onClick = () => {
+    if (!user) {
+      router.push(`/signin?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    const next = !voted;
+    setVoted(productId, next);
+    startTransition(async () => {
+      const res = await toggleUpvote(productId, next);
+      if (!res.ok) setVoted(productId, !next);
+    });
+  };
 
   return (
     <button
       type="button"
-      onClick={() => setVoted((v) => !v)}
+      onClick={onClick}
       aria-pressed={voted}
       aria-label={voted ? "Remove upvote" : "Upvote"}
       className={`btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums sm:h-14 sm:w-12 sm:gap-1 ${
@@ -77,7 +136,7 @@ export function UpvoteButton({ count }: { count: number }) {
         key={String(voted)}
         className={`size-3 ${voted ? "animate-pop fill-white" : "fill-current"}`}
       />
-      {count + (voted ? 1 : 0)}
+      {Math.max(0, shown)}
     </button>
   );
 }
@@ -120,15 +179,11 @@ export function ProductRow({
               </h3>
               {product.verified && (
                 <BadgeCheck
-                  className="size-4 shrink-0 fill-brand-500 text-white"
-                  aria-label="Verified"
+                  className="size-4 shrink-0 fill-sky-500 text-white"
+                  aria-label="Verified maker"
                 />
               )}
-              {product.premium && (
-                <span className="badge-pop hidden rounded-md bg-amber-300 px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-slate-900 sm:inline">
-                  Featured
-                </span>
-              )}
+              {product.premium && <PremiumBadge />}
             </div>
             <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-slate-500 sm:line-clamp-1">
               {product.tagline}
@@ -163,7 +218,7 @@ export function ProductRow({
 
         {top && (
           <a
-            href={launchInfo(product).website}
+            href={product.website}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-pop hidden h-9 shrink-0 items-center gap-1 rounded-lg bg-amber-300 px-3 text-sm font-bold text-slate-900 hover:bg-amber-200 sm:flex"
@@ -171,7 +226,7 @@ export function ProductRow({
             Visit <ArrowUpRight className="size-4" />
           </a>
         )}
-        <UpvoteButton count={product.upvotes} />
+        <UpvoteButton productId={product.id} count={product.upvotes} />
       </div>
     </li>
   );

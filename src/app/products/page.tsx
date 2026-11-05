@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { JsonLd } from "@/components/JsonLd";
 import { ProductsDirectory } from "@/components/ProductsDirectory";
 import { SiteShell } from "@/components/SiteShell";
-import { allProducts } from "@/lib/data";
+import { getAllProducts } from "@/lib/products";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -15,6 +16,21 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   return (
     <SiteShell>
+      <Suspense
+        fallback={
+          <div className="h-[600px] animate-pulse rounded-3xl bg-slate-200/60" />
+        }
+      >
+        <Directory />
+      </Suspense>
+    </SiteShell>
+  );
+}
+
+async function Directory() {
+  const allProducts = await getAllProducts();
+  return (
+    <>
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -33,7 +49,7 @@ export default function ProductsPage() {
           },
         }}
       />
-      <ProductsDirectory />
-    </SiteShell>
+      <ProductsDirectory products={allProducts} />
+    </>
   );
 }

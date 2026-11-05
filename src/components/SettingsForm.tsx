@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ImagePlus, Info, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Check, ImagePlus, Info, Loader2, LogOut, Trash2 } from "lucide-react";
+import { deleteAccount, updateProfile } from "@/lib/actions/account";
+import type { Profile } from "@/lib/auth";
+import { supabaseBrowser } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/upload";
+import { setSessionUser } from "@/lib/useAuth";
 
 const input =
   "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
@@ -76,48 +82,110 @@ function Toggle({
   );
 }
 
-export function SettingsForm() {
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [notify, setNotify] = useState({
-    launch: true,
-    comments: true,
-    newsletter: false,
+export function SettingsForm({
+  profile,
+  email,
+}: {
+  profile: Profile;
+  email: string;
+}) {
+  const router = useRouter();
+  const [form, setForm] = useState({
+    name: profile.name,
+    handle: profile.handle,
+    bio: profile.bio,
+    website: profile.website,
+    x_handle: profile.x_handle,
+    location: profile.location,
+    avatar_url: profile.avatar_url,
+    notify: profile.notify,
   });
-  const [saved, setSaved] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
+    null,
+  );
+  const [uploading, setUploading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  const set = <K extends keyof typeof form>(
+    key: K,
+    value: (typeof form)[K],
+  ) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setMessage(null);
+  };
+
+  const signOut = async () => {
+    await supabaseBrowser().auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <form
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
-        setSaved(true);
+        startTransition(async () => {
+          const res = await updateProfile(form);
+          if (res.ok) {
+            setSessionUser({
+              name: form.name || form.handle,
+              handle: form.handle,
+              avatar: form.avatar_url,
+            });
+            router.refresh();
+          }
+          setMessage(
+            res.ok
+              ? { ok: true, text: "Saved." }
+              : { ok: false, text: res.error },
+          );
+        });
       }}
     >
       <Card title="Profile" note="This is what other makers see.">
         <div className="flex items-center gap-4">
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen file
+          {form.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- Google or uploaded profile photo
             <img
-              src={photo}
-              alt="Profile photo preview"
+              src={form.avatar_url}
+              alt="Profile photo"
+              referrerPolicy="no-referrer"
               className="size-16 rounded-full object-cover"
             />
           ) : (
             <span className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-rose-400 text-2xl font-bold text-slate-900">
-              A
+              {(form.name || form.handle)[0]?.toUpperCase()}
             </span>
           )}
           <label className="btn-pop flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-semibold text-slate-900">
-            <ImagePlus className="size-3.5" />
+            {uploading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <ImagePlus className="size-3.5" />
+            )}
             Change photo
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
               className="sr-only"
-              onChange={(e) => {
+              disabled={uploading}
+              onChange={async (e) => {
                 const file = e.target.files?.[0];
-                if (file) setPhoto(URL.createObjectURL(file));
+                e.target.value = "";
+                if (!file) return;
+                setUploading(true);
+                try {
+                  set(
+                    "avatar_url",
+                    await uploadImage(file, profile.id, "avatar"),
+                  );
+                } catch (err) {
+                  setMessage({ ok: false, text: (err as Error).message });
+                } finally {
+                  setUploading(false);
+                }
               }}
             />
           </label>
@@ -126,7 +194,9 @@ export function SettingsForm() {
           <Field label="Name">
             <input
               className={input}
-              defaultValue="Ashu M."
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              maxLength={50}
               autoComplete="name"
             />
           </Field>
@@ -137,7 +207,10 @@ export function SettingsForm() {
               </span>
               <input
                 className={`${input} rounded-l-none`}
-                defaultValue="ashubuilds"
+                value={form.handle}
+                onChange={(e) => set("handle", e.target.value.toLowerCase())}
+                maxLength={20}
+                autoCapitalize="none"
               />
             </span>
           </Field>
@@ -145,7 +218,9 @@ export function SettingsForm() {
         <Field label="Bio">
           <textarea
             className={`${input} h-24 resize-none py-3`}
-            defaultValue="Indie maker building tools for students and small teams. Shipping something new every month."
+            value={form.bio}
+            onChange={(e) => set("bio", e.target.value)}
+            placeholder="What are you building?"
             maxLength={160}
           />
         </Field>
@@ -154,32 +229,47 @@ export function SettingsForm() {
             <input
               className={input}
               type="url"
-              defaultValue="https://example.com"
+              value={form.website}
+              onChange={(e) => set("website", e.target.value)}
+              placeholder="https://you.com"
             />
           </Field>
           <Field label="X (Twitter) username">
-            <input className={input} defaultValue="ashubuilds" />
+            <input
+              className={input}
+              value={form.x_handle}
+              onChange={(e) => set("x_handle", e.target.value)}
+              maxLength={30}
+              autoCapitalize="none"
+            />
           </Field>
         </div>
         <Field label="Location">
-          <input className={input} defaultValue="India" />
+          <input
+            className={input}
+            value={form.location}
+            onChange={(e) => set("location", e.target.value)}
+            maxLength={50}
+          />
         </Field>
       </Card>
 
-      <Card title="Account">
+      <Card title="Account" note="You sign in with Google.">
         <Field label="Email">
           <input
-            className={input}
+            className={`${input} bg-slate-50 text-slate-500`}
             type="email"
-            defaultValue="you@company.com"
-            autoComplete="email"
+            value={email}
+            readOnly
           />
         </Field>
         <button
           type="button"
-          className="btn-pop flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-slate-900"
+          onClick={signOut}
+          className="btn-pop flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-slate-900"
         >
-          Change password
+          <LogOut className="size-4" />
+          Sign out
         </button>
       </Card>
 
@@ -187,29 +277,37 @@ export function SettingsForm() {
         <Toggle
           label="Launch updates"
           hint="When your launch goes live or gets approved."
-          on={notify.launch}
-          onChange={(v) => setNotify((n) => ({ ...n, launch: v }))}
+          on={form.notify.launch}
+          onChange={(v) => set("notify", { ...form.notify, launch: v })}
         />
         <Toggle
           label="New comments"
           hint="When someone comments on your product."
-          on={notify.comments}
-          onChange={(v) => setNotify((n) => ({ ...n, comments: v }))}
+          on={form.notify.comments}
+          onChange={(v) => set("notify", { ...form.notify, comments: v })}
         />
         <Toggle
           label="The Monday Launch newsletter"
           hint="Last week's top products, every Monday."
-          on={notify.newsletter}
-          onChange={(v) => setNotify((n) => ({ ...n, newsletter: v }))}
+          on={form.notify.newsletter}
+          onChange={(v) => set("notify", { ...form.notify, newsletter: v })}
         />
       </Card>
 
       <div className="badge-pop sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 pl-4">
-        <p className="flex items-center gap-2 text-xs text-slate-500">
-          {saved ? (
+        <p
+          className={`flex items-center gap-2 text-xs ${
+            message?.ok === false ? "text-rose-600" : "text-slate-500"
+          }`}
+        >
+          {message ? (
             <>
-              <Info className="size-4 shrink-0 text-amber-600" />
-              Preview only — changes will save once accounts are connected.
+              {message.ok ? (
+                <Check className="size-4 shrink-0 text-emerald-600" />
+              ) : (
+                <Info className="size-4 shrink-0" />
+              )}
+              {message.text}
             </>
           ) : (
             "Remember to save your changes."
@@ -217,9 +315,14 @@ export function SettingsForm() {
         </p>
         <button
           type="submit"
-          className="btn-pop flex h-10 items-center gap-1.5 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600"
+          disabled={pending || uploading}
+          className="btn-pop flex h-10 items-center gap-1.5 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-70"
         >
-          <Check className="size-4" />
+          {pending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Check className="size-4" />
+          )}
           Save changes
         </button>
       </div>
@@ -234,7 +337,20 @@ export function SettingsForm() {
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              className="btn-pop flex h-10 items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  const res = await deleteAccount();
+                  if (!res.ok) {
+                    setMessage({ ok: false, text: res.error });
+                    return;
+                  }
+                  await supabaseBrowser().auth.signOut();
+                  router.push("/");
+                  router.refresh();
+                })
+              }
+              className="btn-pop flex h-10 items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white disabled:opacity-70"
             >
               <Trash2 className="size-4" />
               Yes, delete my account

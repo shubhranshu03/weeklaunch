@@ -1,12 +1,15 @@
 import { ImageResponse } from "next/og";
-import { allProducts, getProduct } from "@/lib/data";
+import { getAllProducts, getProduct } from "@/lib/products";
 
 export const alt = "Product launched on WeekLaunch";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export function generateStaticParams() {
-  return allProducts.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const products = await getAllProducts();
+  return products.length
+    ? products.map((p) => ({ slug: p.slug }))
+    : [{ slug: "studyflow" }];
 }
 
 // Share image for each product page
@@ -16,7 +19,7 @@ export default async function ProductImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
   const name = product?.name ?? "WeekLaunch";
   const tagline = product?.tagline ?? "Launch your product";
   const logo = product?.logo ?? { glyph: "W", from: "#9f85ff", to: "#5a32db" };

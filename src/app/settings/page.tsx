@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { SettingsForm } from "@/components/SettingsForm";
 import { SiteShell } from "@/components/SiteShell";
+import { requireUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -18,7 +20,18 @@ export default function SettingsPage() {
           Manage your profile, account and emails.
         </p>
       </div>
-      <SettingsForm />
+      <Suspense
+        fallback={
+          <div className="h-96 animate-pulse rounded-3xl bg-slate-200/60" />
+        }
+      >
+        <Settings />
+      </Suspense>
     </SiteShell>
   );
+}
+
+async function Settings() {
+  const user = await requireUser("/settings");
+  return <SettingsForm profile={user.profile} email={user.email} />;
 }

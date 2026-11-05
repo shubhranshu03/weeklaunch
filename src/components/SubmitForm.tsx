@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   ArrowLeft,
+  BadgeCheck,
   ArrowRight,
   Check,
   CheckCircle2,
@@ -20,11 +21,21 @@ import {
   Triangle,
   Trash2,
   X,
+  Loader2,
 } from "lucide-react";
-import { CURRENT_WEEK, productCategories, weeks } from "@/lib/data";
+import { createLaunch } from "@/lib/actions/launches";
+import {
+  BOOST_PRICE,
+  PREMIUM_CAPACITY,
+  PREMIUM_PRICE,
+  WEEK_CAPACITY,
+  productCategories,
+} from "@/lib/data";
+import { uploadImage } from "@/lib/upload";
+import { useAuth } from "@/lib/useAuth";
+import type { Week } from "@/lib/weeks";
 
 const steps = ["Basics", "Details", "Launch", "Review"];
-const upcoming = weeks.filter((w) => w.number > CURRENT_WEEK);
 
 type Form = {
   name: string;
@@ -48,19 +59,11 @@ const empty: Form = {
   logo: null,
   shots: [],
   plan: "premium",
-  week: 46,
+  week: 0,
   boost: false,
 };
 
 const MAX_SHOTS = 5;
-
-// Sample availability until it comes from the database
-const PREMIUM_CAPACITY = 5;
-const premiumSpots: Record<number, number> = { 46: 3, 47: 0, 48: 5 };
-const freeWeek = upcoming[upcoming.length - 1].number;
-
-const PREMIUM_PRICE = 29;
-const BOOST_PRICE = 19;
 
 const plans = [
   {
@@ -76,7 +79,8 @@ const plans = [
       ["Backlink after you add our badge", true],
       ["Choose your launch week", false],
       ["Pinned at the top all week", false],
-      ["FEATURED tag and Visit button", false],
+      ["PREMIUM tag and Visit button", false],
+      ["Blue verified tick on your profile", false],
       ["Mention in the Monday newsletter", false],
     ],
   },
@@ -93,7 +97,8 @@ const plans = [
       ["Dofollow backlink, no badge needed", true],
       ["Choose your launch week", true],
       ["Pinned at the top all week", true],
-      ["FEATURED tag and Visit button", true],
+      ["PREMIUM tag and Visit button", true],
+      ["Blue verified tick on your profile", true],
       ["Mention in the Monday newsletter", true],
     ],
   },
@@ -164,11 +169,75 @@ function errorsFor(step: number, f: Form) {
   return e;
 }
 
-export function SubmitForm() {
+export function SubmitForm({
+  upcoming,
+  premiumSpots,
+  freeWeek: freeWeekInfo,
+  paymentsReady,
+}: {
+  // The next few launch weeks; the last one is the free queue week
+  upcoming: Week[];
+  // Premium spots still open, by week number
+  premiumSpots: Record<number, number>;
+  // Where a free launch goes: 3 weeks out, or later if those weeks are full
+  freeWeek: Week;
+  paymentsReady: boolean;
+}) {
+  const freeWeek = freeWeekInfo.number;
+  // Every week a launch can land in, including a free week further out
+  const allWeeks = upcoming.some((w) => w.number === freeWeek)
+    ? upcoming
+    : [...upcoming, freeWeekInfo];
+  const firstOpen =
+    upcoming.find((w) => premiumSpots[w.number] > 0)?.number ?? freeWeek;
+  const fresh = (): Form =>
+    paymentsReady
+      ? { ...empty, week: firstOpen }
+      : { ...empty, plan: "free", week: freeWeek };
+
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<Form>(empty);
+  const [form, setForm] = useState<Form>(fresh);
   const [showErrors, setShowErrors] = useState(false);
   const [done, setDone] = useState(false);
+  const [uploading, setUploading] = useState(0);
+  const [error, setError] = useState("");
+  const [submitting, startSubmit] = useTransition();
+
+  const upload = async (file: File, kind: string) => {
+    if (!user) throw new Error("Please sign in again.");
+    setUploading((n) => n + 1);
+    try {
+      return await uploadImage(file, user.id, kind);
+    } finally {
+      setUploading((n) => n - 1);
+    }
+  };
+
+  const submit = () => {
+    setError("");
+    startSubmit(async () => {
+      const yearOf = allWeeks.find((w) => w.number === form.week)!.year;
+      const res = await createLaunch({
+        name: form.name,
+        website: form.website,
+        tagline: form.tagline,
+        description: form.description,
+        categories: form.categories,
+        logo: form.logo,
+        shots: form.shots,
+        plan: form.plan,
+        week: { year: yearOf, number: form.week },
+        boost: form.boost,
+      });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      if (res.checkoutUrl) window.location.assign(res.checkoutUrl);
+      else setDone(true);
+    });
+  };
 
   const errors = showErrors ? errorsFor(step, form) : {};
   const set = <K extends keyof Form>(key: K, value: Form[K]) =>
@@ -180,7 +249,7 @@ export function SubmitForm() {
       return;
     }
     setShowErrors(false);
-    if (step === steps.length - 1) setDone(true);
+    if (step === steps.length - 1) submit();
     else setStep(step + 1);
   };
 
@@ -194,15 +263,23 @@ export function SubmitForm() {
           : f.categories,
     }));
 
-  const addShots = (files: FileList | null) => {
+  const addShots = async (files: FileList | null) => {
     if (!files) return;
-    const urls = Array.from(files)
+    const picked = Array.from(files)
       .filter((f) => f.type.startsWith("image/"))
-      .map((f) => URL.createObjectURL(f));
-    setForm((f) => ({
-      ...f,
-      shots: [...f.shots, ...urls].slice(0, MAX_SHOTS),
-    }));
+      .slice(0, MAX_SHOTS - form.shots.length);
+    setError("");
+    for (const file of picked) {
+      try {
+        const url = await upload(file, "shot");
+        setForm((f) => ({
+          ...f,
+          shots: [...f.shots, url].slice(0, MAX_SHOTS),
+        }));
+      } catch (err) {
+        setError((err as Error).message);
+      }
+    }
   };
   const moveShot = (i: number) =>
     setForm((f) => {
@@ -213,7 +290,7 @@ export function SubmitForm() {
   const removeShot = (i: number) =>
     setForm((f) => ({ ...f, shots: f.shots.filter((_, j) => j !== i) }));
 
-  const week = weeks.find((w) => w.number === form.week)!;
+  const week = allWeeks.find((w) => w.number === form.week)!;
   const total =
     (form.plan === "premium" ? PREMIUM_PRICE : 0) +
     (form.boost ? BOOST_PRICE : 0);
@@ -243,7 +320,7 @@ export function SubmitForm() {
           <button
             type="button"
             onClick={() => {
-              setForm(empty);
+              setForm(fresh());
               setStep(0);
               setDone(false);
             }}
@@ -367,9 +444,16 @@ export function SubmitForm() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
                     className="sr-only"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
-                      if (file) set("logo", URL.createObjectURL(file));
+                      e.target.value = "";
+                      if (!file) return;
+                      setError("");
+                      try {
+                        set("logo", await upload(file, "logo"));
+                      } catch (err) {
+                        setError((err as Error).message);
+                      }
                     }}
                   />
                 </label>
@@ -518,6 +602,8 @@ export function SubmitForm() {
                         key={p.id}
                         type="button"
                         aria-pressed={on}
+                        // Premium needs payments to be set up
+                        disabled={premium && !paymentsReady}
                         onClick={() =>
                           setForm((f) => ({
                             ...f,
@@ -527,12 +613,10 @@ export function SubmitForm() {
                                 ? freeWeek
                                 : premiumSpots[f.week] > 0
                                   ? f.week
-                                  : upcoming.find(
-                                      (w) => premiumSpots[w.number] > 0,
-                                    )!.number,
+                                  : firstOpen,
                           }))
                         }
-                        className={`relative flex flex-col rounded-2xl p-4 text-left transition ${
+                        className={`relative flex flex-col rounded-2xl p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${
                           on
                             ? "badge-pop bg-brand-50"
                             : "border-[1.5px] border-slate-200 hover:border-slate-300"
@@ -715,7 +799,11 @@ export function SubmitForm() {
                 </div>
                 {form.plan === "free" && (
                   <p className="mt-2 text-xs text-slate-500">
-                    Free launches get the next open week. Go Premium to choose
+                    Free launches get the next open week: yours is{" "}
+                    <strong className="text-slate-700">
+                      Week {freeWeekInfo.number} ({freeWeekInfo.label})
+                    </strong>
+                    . Each week has {WEEK_CAPACITY} spots. Go Premium to choose
                     any week.
                   </p>
                 )}
@@ -731,6 +819,7 @@ export function SubmitForm() {
                 <input
                   type="checkbox"
                   checked={form.boost}
+                  disabled={!paymentsReady}
                   onChange={(e) => set("boost", e.target.checked)}
                   className="mt-1 size-4 accent-brand-500"
                 />
@@ -839,7 +928,8 @@ export function SubmitForm() {
           )}
           <button
             type="submit"
-            className={`btn-pop flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold ${
+            disabled={submitting || uploading > 0}
+            className={`btn-pop flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold disabled:opacity-70 ${
               step === steps.length - 1
                 ? "bg-amber-300 text-slate-900 hover:bg-amber-200"
                 : "bg-brand-500 text-white hover:bg-brand-600"
@@ -849,10 +939,24 @@ export function SubmitForm() {
               ? total > 0
                 ? `Pay $${total} & submit`
                 : "Submit for free"
-              : "Continue"}
-            <ArrowRight className="size-4" />
+              : uploading > 0
+                ? "Uploading…"
+                : "Continue"}
+            {submitting || uploading > 0 ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ArrowRight className="size-4" />
+            )}
           </button>
         </div>
+        {error && (
+          <p
+            role="alert"
+            className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700"
+          >
+            {error}
+          </p>
+        )}
       </form>
 
       {/* Live preview */}
@@ -860,7 +964,7 @@ export function SubmitForm() {
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           Preview on the board
         </p>
-        <BoardPreview form={form} />
+        <BoardPreview form={form} upcoming={upcoming} />
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
           Launching Week {week.number} · {week.label}. Need help?{" "}
           <Link
@@ -877,7 +981,7 @@ export function SubmitForm() {
 }
 
 // Mini copy of the home board, showing where the product will appear
-function BoardPreview({ form }: { form: Form }) {
+function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
   const premium = form.plan === "premium";
   const tags = form.categories.length ? form.categories : ["Category"];
 
@@ -916,9 +1020,15 @@ function BoardPreview({ form }: { form: Form }) {
             {form.name || "Your product"}
           </span>
           {premium && (
-            <span className="badge-pop shrink-0 rounded bg-amber-300 px-1 text-[8px] font-bold uppercase leading-4 text-slate-900">
-              Featured
-            </span>
+            <>
+              <BadgeCheck
+                className="size-3.5 shrink-0 fill-sky-500 text-white"
+                aria-label="Verified maker"
+              />
+              <span className="badge-pop shrink-0 rounded bg-amber-300 px-1 text-[8px] font-bold uppercase leading-4 text-slate-900">
+                Premium
+              </span>
+            </>
           )}
         </span>
         <span className="block truncate text-xs text-slate-500">

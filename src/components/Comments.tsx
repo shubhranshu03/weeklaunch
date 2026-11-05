@@ -1,29 +1,114 @@
 "use client";
 
-import { useState } from "react";
-import { MessageSquare, Send } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useTransition } from "react";
+import { BadgeCheck, MessageSquare, Send, Trash2 } from "lucide-react";
+import { addComment, deleteComment } from "@/lib/actions/community";
+import type { CommentItem } from "@/lib/products";
+import { useAuth } from "@/lib/useAuth";
 
-type Comment = { name: string; color: string; text: string; time: string };
+const colors = ["#0ea5e9", "#ec4899", "#10b981", "#f59e0b", "#7c5cff"];
 
-const sample: Comment[] = [
-  {
-    name: "Sam R.",
-    color: "#0ea5e9",
-    text: "Congrats on the launch! Tried it this morning and the onboarding is really smooth.",
-    time: "2h ago",
-  },
-  {
-    name: "Lena K.",
-    color: "#ec4899",
-    text: "Is there a team plan coming? Would love to roll this out to my whole team.",
-    time: "5h ago",
-  },
-];
+function timeAgo(iso: string) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 86400 * 30) return `${Math.floor(s / 86400)}d ago`;
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
-// Comments are kept in the page only until there's a database
-export function Comments({ maker }: { maker: string }) {
-  const [comments, setComments] = useState(sample);
+function Avatar({
+  name,
+  src,
+  id,
+}: {
+  name: string;
+  src: string | null;
+  id: string;
+}) {
+  if (src)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- Google or uploaded profile photo
+      <img
+        src={src}
+        alt=""
+        referrerPolicy="no-referrer"
+        className="size-9 shrink-0 rounded-full object-cover"
+      />
+    );
+  return (
+    <span
+      className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+      style={{ backgroundColor: colors[id.charCodeAt(0) % colors.length] }}
+    >
+      {name[0]?.toUpperCase()}
+    </span>
+  );
+}
+
+export function Comments({
+  productId,
+  maker,
+  initial,
+  total,
+}: {
+  productId: string;
+  maker: string;
+  initial: CommentItem[];
+  // Count on the product, which includes older comments from before accounts
+  total: number;
+}) {
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const [comments, setComments] = useState(initial);
+  const [added, setAdded] = useState(0);
   const [text, setText] = useState("");
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  const post = () => {
+    const body = text.trim();
+    if (!body || !user) return;
+    setError("");
+    startTransition(async () => {
+      const res = await addComment(productId, body);
+      if (!res.ok) {
+        setError(res.error === "signin" ? "Please sign in again." : res.error);
+        return;
+      }
+      setComments((c) => [
+        {
+          id: res.id,
+          body,
+          created_at: res.created_at,
+          user_id: user.id,
+          author: {
+            name: user.name,
+            handle: user.handle,
+            avatar_url: user.avatar,
+          },
+        },
+        ...c,
+      ]);
+      setAdded((n) => n + 1);
+      setText("");
+    });
+  };
+
+  const remove = (id: string) =>
+    startTransition(async () => {
+      const res = await deleteComment(productId, id);
+      if (res.ok) {
+        setComments((c) => c.filter((x) => x.id !== id));
+        setAdded((n) => n - 1);
+      }
+    });
 
   return (
     <section
@@ -37,57 +122,98 @@ export function Comments({ maker }: { maker: string }) {
         <MessageSquare className="size-4 text-brand-600" />
         Comments
         <span className="text-sm font-normal text-slate-400">
-          {comments.length}
+          {Math.max(total + added, comments.length)}
         </span>
       </h2>
 
-      <form
-        className="mt-4 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!text.trim()) return;
-          setComments((c) => [
-            { name: "You", color: "#7c5cff", text: text.trim(), time: "now" },
-            ...c,
-          ]);
-          setText("");
-        }}
-      >
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={`Say something nice to ${maker}…`}
-          aria-label="Write a comment"
-          className="h-11 min-w-0 flex-1 rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100"
-        />
-        <button
-          type="submit"
-          aria-label="Post comment"
-          className="btn-pop flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white hover:bg-brand-600"
+      {user ? (
+        <form
+          className="mt-4 flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            post();
+          }}
         >
-          <Send className="size-4" />
-        </button>
-      </form>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={`Say something nice to ${maker}…`}
+            aria-label="Write a comment"
+            maxLength={1000}
+            className="h-11 min-w-0 flex-1 rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100"
+          />
+          <button
+            type="submit"
+            disabled={pending || !text.trim()}
+            aria-label="Post comment"
+            className="btn-pop flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-60"
+          >
+            <Send className="size-4" />
+          </button>
+        </form>
+      ) : (
+        <Link
+          href={`/signin?next=${encodeURIComponent(pathname)}`}
+          className="mt-4 flex h-11 items-center justify-center rounded-xl border-[1.5px] border-dashed border-slate-300 text-sm font-medium text-slate-600 hover:border-slate-900 hover:text-slate-900"
+        >
+          Sign in to join the conversation
+        </Link>
+      )}
+      {error && (
+        <p className="mt-2 text-xs font-medium text-rose-600">{error}</p>
+      )}
 
-      <ul className="mt-5 space-y-4">
-        {comments.map((c, i) => (
-          <li key={`${c.name}-${i}`} className="flex gap-3">
-            <span
-              className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-              style={{ backgroundColor: c.color }}
-            >
-              {c.name[0]}
-            </span>
-            <div className="min-w-0 flex-1 rounded-2xl bg-slate-50 px-4 py-3">
-              <p className="text-sm">
-                <span className="font-semibold text-slate-900">{c.name}</span>{" "}
-                <span className="text-xs text-slate-400">· {c.time}</span>
-              </p>
-              <p className="mt-1 text-sm text-slate-600">{c.text}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {comments.length === 0 ? (
+        <p className="mt-5 text-sm text-slate-400">
+          No comments yet. Start the conversation!
+        </p>
+      ) : (
+        <ul className="mt-5 space-y-4">
+          {comments.map((c) => {
+            const name = c.author?.name || c.author?.handle || "Maker";
+            return (
+              <li key={c.id} className="flex gap-3">
+                <Avatar
+                  name={name}
+                  src={c.author?.avatar_url ?? null}
+                  id={c.user_id}
+                />
+                <div className="min-w-0 flex-1 rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="flex items-center gap-1 text-sm">
+                    <span className="font-semibold text-slate-900">{name}</span>
+                    {c.author?.verified && (
+                      <BadgeCheck
+                        className="size-3.5 shrink-0 fill-sky-500 text-white"
+                        aria-label="Verified maker"
+                      />
+                    )}
+                    <span
+                      className="text-xs text-slate-400"
+                      suppressHydrationWarning
+                    >
+                      · {timeAgo(c.created_at)}
+                    </span>
+                    {user?.id === c.user_id && (
+                      <button
+                        type="button"
+                        onClick={() => remove(c.id)}
+                        disabled={pending}
+                        aria-label="Delete comment"
+                        className="ml-auto rounded-md p-1 text-slate-400 hover:bg-white hover:text-rose-600"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    )}
+                  </p>
+                  <p className="mt-1 whitespace-pre-line break-words text-sm text-slate-600">
+                    {c.body}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ReviewGrid } from "./Testimonials";
 import {
   ArrowRight,
   Check,
@@ -9,7 +8,6 @@ import {
   PanelRight,
   Rocket,
   Rows3,
-  Star,
 } from "lucide-react";
 
 const launchPlans = [
@@ -36,7 +34,8 @@ const launchPlans = [
     icon: Crown,
     features: [
       "Skip the queue — pick any launch week",
-      "FEATURED tag and a Visit button",
+      "PREMIUM tag and a Visit button",
+      "Blue verified tick on your profile and launches",
       "Pinned at the top for your whole week",
       "Permanent dofollow backlink",
       "Shared in the Monday newsletter",
@@ -68,7 +67,7 @@ const adPlans = [
     name: "Right sidebar ad",
     price: "$49",
     period: "per month",
-    blurb: "Your promo box in the right column on every page.",
+    blurb: "One of two promo boxes in the right column on every page.",
     icon: PanelRight,
     features: [
       "On every page for 30 days",
@@ -87,11 +86,15 @@ export const faqs = [
   },
   {
     q: "What's the difference between Free and Premium?",
-    a: "Premium skips the queue so you pick your exact week, pins you at the top of the board all week, adds the FEATURED tag and Visit button, and gives you a permanent dofollow backlink plus a mention in our Monday newsletter.",
+    a: "Premium skips the queue so you pick your exact week, pins you at the top of the board all week, adds the PREMIUM tag and Visit button, gives you a blue verified tick on your profile and every launch, and gives you a permanent dofollow backlink plus a mention in our Monday newsletter.",
   },
   {
     q: "When does my Premium launch go live?",
     a: "You choose the week. Your product goes live on Monday at 00:00 UTC and stays pinned at the top until Sunday night.",
+  },
+  {
+    q: "How many products launch each week?",
+    a: "At most 25, so every launch gets noticed. Up to 5 of them are Premium and pinned at the top. When a week is full, free launches move to the next week with space.",
   },
   {
     q: "Is the backlink dofollow?",
@@ -111,7 +114,7 @@ export const faqs = [
   },
   {
     q: "How many ad spots are there?",
-    a: "One center feed spot per week and one right sidebar spot per month, so your ad is never shared with anyone else.",
+    a: "One center feed spot per week and two right sidebar spots per month, so only a couple of ads ever share the page.",
   },
   {
     q: "What do I need to send for an ad?",
@@ -295,13 +298,6 @@ export function Pricing() {
           ))}
         </div>
       </div>
-
-      {/* Reviews */}
-      <h2 className="mb-3 mt-10 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <Star className="size-3.5" />
-        What makers say
-      </h2>
-      <ReviewGrid />
 
       {/* FAQ */}
       <h2 className="mb-3 mt-10 text-xs font-semibold uppercase tracking-wider text-slate-400">
