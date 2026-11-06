@@ -97,6 +97,10 @@ export const faqs = [
     a: "At most 25, so every launch gets noticed. Up to 5 of them are Premium and pinned at the top. When a week is full, free launches move to the next week with space.",
   },
   {
+    q: "Can my free launch go live sooner?",
+    a: "Yes. After you submit, share your launch card on 3 different platforms (like X, LinkedIn and Reddit) and paste the post links in My launches. Your launch moves up to the next week with space and is reviewed first.",
+  },
+  {
     q: "Is the backlink dofollow?",
     a: "Premium launches always get a dofollow link. Free launches get one too once you add our small launch badge to your website.",
   },

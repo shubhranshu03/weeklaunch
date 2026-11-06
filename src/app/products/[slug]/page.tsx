@@ -26,7 +26,12 @@ import {
   UpvoteButton,
 } from "@/components/ProductRow";
 import { SiteShell } from "@/components/SiteShell";
-import { getAllProducts, getComments, getProduct } from "@/lib/products";
+import {
+  getAllProducts,
+  getComments,
+  getProduct,
+  getUpcomingLaunch,
+} from "@/lib/products";
 import { weekLabel, weekStart } from "@/lib/weeks";
 
 export async function generateStaticParams() {
@@ -50,7 +55,20 @@ export async function generateMetadata({
 }: PageProps<"/products/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProduct(slug);
-  if (!product) return {};
+  if (!product) {
+    // Not live yet: a "coming soon" page that shows the maker's share card
+    const upcoming = await getUpcomingLaunch(slug);
+    if (!upcoming) return {};
+    const title = `${upcoming.name} is launching on WeekLaunch`;
+    const card = `/share/${upcoming.slug}`;
+    return {
+      title,
+      description: upcoming.tagline,
+      robots: { index: false, follow: true },
+      openGraph: { title, description: upcoming.tagline, images: [card] },
+      twitter: { card: "summary_large_image", title, images: [card] },
+    };
+  }
   const url = `/products/${product.slug}`;
   // Under ~160 characters: the tagline, then the start of the maker's own description
   const lead = `${product.name}: ${product.tagline}.`;
@@ -111,7 +129,11 @@ async function ProductDetail({
 }) {
   const { slug } = await params;
   const product = await getProduct(slug);
-  if (!product) notFound();
+  if (!product) {
+    const upcoming = await getUpcomingLaunch(slug);
+    if (!upcoming) notFound();
+    return <ComingSoon launch={upcoming} />;
+  }
 
   const [all, comments] = await Promise.all([
     getAllProducts(),
@@ -542,5 +564,58 @@ function MakerLink({
     </Link>
   ) : (
     <div className={className}>{children}</div>
+  );
+}
+
+// Shown at a launch's link before its week starts, so shared links never 404
+function ComingSoon({
+  launch,
+}: {
+  launch: NonNullable<Awaited<ReturnType<typeof getUpcomingLaunch>>>;
+}) {
+  const date = weekStart(launch.week).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+  return (
+    <section className="mt-4 overflow-hidden rounded-3xl border border-slate-200 bg-white">
+      <div className="bg-gradient-to-br from-brand-500 to-indigo-600 px-6 py-10 text-center text-white sm:py-14">
+        <div className="mx-auto w-fit">
+          <ProductLogo logo={launch.logo} name={launch.name} size="lg" />
+        </div>
+        <h1 className="mt-5 text-3xl font-semibold tracking-tight">
+          {launch.name}
+        </h1>
+        <p className="mx-auto mt-2 max-w-md text-white/80">{launch.tagline}</p>
+        <span className="badge-pop mt-6 inline-flex items-center gap-1.5 rounded-md bg-amber-300 px-3 py-1 text-sm font-bold text-slate-900">
+          <CalendarDays className="size-4" />
+          Launching {date} · Week {launch.week}
+        </span>
+      </div>
+      <div className="p-6 text-center">
+        <p className="text-sm text-slate-600">
+          {launch.maker.name} is launching {launch.name} on WeekLaunch. Come
+          back on launch day to upvote it and leave a comment.
+        </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          <Link
+            href="/"
+            className="btn-pop flex h-11 items-center rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600"
+          >
+            See this week&apos;s launches
+          </Link>
+          {launch.maker.handle && (
+            <Link
+              href={`/makers/${launch.maker.handle}`}
+              className="btn-pop flex h-11 items-center rounded-xl bg-white px-5 text-sm font-semibold text-slate-900"
+            >
+              About the maker
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

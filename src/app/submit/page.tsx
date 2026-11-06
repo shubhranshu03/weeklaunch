@@ -124,6 +124,7 @@ async function Form() {
       )}
       freeWeek={freeWeek}
       paymentsReady={paymentsConfigured}
+      siteUrl={SITE_URL}
     />
   );
 }

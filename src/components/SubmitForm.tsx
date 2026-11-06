@@ -33,7 +33,8 @@ import {
 } from "@/lib/data";
 import { uploadImage } from "@/lib/upload";
 import { useAuth } from "@/lib/useAuth";
-import type { Week } from "@/lib/weeks";
+import { weekLabel, type Week } from "@/lib/weeks";
+import { ShareKit } from "./ShareKit";
 
 const steps = ["Basics", "Details", "Launch", "Review"];
 
@@ -182,6 +183,7 @@ export function SubmitForm({
   boostTaken,
   freeWeek: freeWeekInfo,
   paymentsReady,
+  siteUrl,
 }: {
   // The next few launch weeks; the last one is the free queue week
   upcoming: Week[];
@@ -192,6 +194,8 @@ export function SubmitForm({
   // Where a free launch goes: 3 weeks out, or later if those weeks are full
   freeWeek: Week;
   paymentsReady: boolean;
+  // The live address, for share links
+  siteUrl: string;
 }) {
   const freeWeek = freeWeekInfo.number;
   // Every week a launch can land in, including a free week further out
@@ -209,7 +213,12 @@ export function SubmitForm({
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(fresh);
   const [showErrors, setShowErrors] = useState(false);
-  const [done, setDone] = useState(false);
+  // The saved launch, once submitted, for the share kit
+  const [done, setDone] = useState<{
+    id: string;
+    slug: string;
+    week: number;
+  } | null>(null);
   const [uploading, setUploading] = useState(0);
   const [error, setError] = useState("");
   const [submitting, startSubmit] = useTransition();
@@ -250,7 +259,7 @@ export function SubmitForm({
         return;
       }
       if (res.checkoutUrl) window.location.assign(res.checkoutUrl);
-      else setDone(true);
+      else setDone({ id: res.id, slug: res.slug, week: res.week });
     });
   };
 
@@ -320,7 +329,7 @@ export function SubmitForm({
         </h2>
         <p className="mt-2 max-w-md text-slate-500">
           We&apos;ll review it within 24 hours. It goes live on Monday of Week{" "}
-          {week.number} ({week.label}).{" "}
+          {done.week} ({weekLabel(done.week)}).{" "}
           {form.plan === "premium" &&
             "Your Premium launch is pinned at the top."}
         </p>
@@ -336,12 +345,34 @@ export function SubmitForm({
             onClick={() => {
               setForm(fresh());
               setStep(0);
-              setDone(false);
+              setDone(null);
             }}
             className="btn-pop flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-slate-900"
           >
             Submit another
           </button>
+        </div>
+
+        <div className="mt-10 w-full max-w-2xl border-t border-slate-100 pt-8">
+          <h3 className="text-lg font-semibold text-slate-900">
+            Tell people you&apos;re launching
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Share your card now, so your supporters are ready to upvote on
+            launch day.
+          </p>
+          <div className="mt-5">
+            <ShareKit
+              productId={done.id}
+              slug={done.slug}
+              name={form.name}
+              tagline={form.tagline}
+              website={form.website}
+              week={done.week}
+              free={form.plan === "free"}
+              siteUrl={siteUrl}
+            />
+          </div>
         </div>
       </div>
     );
@@ -1149,7 +1180,7 @@ function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
 
 // Premium makers explain why to pick them and answer common questions.
 // Both show on the product page, and the FAQ is marked up for search and AI answers.
-function PremiumExtras({
+export function PremiumExtras({
   name,
   highlights,
   faqs,

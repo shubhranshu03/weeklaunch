@@ -34,6 +34,7 @@ export type ProductRowDb = {
   logo_url: string | null;
   screenshots: string[];
   highlights: string[] | null;
+  share_links?: string[] | null;
   faqs: { q: string; a: string }[] | null;
   plan: "free" | "premium";
   boosted: boolean;
@@ -177,6 +178,34 @@ export async function getProduct(slug: string): Promise<Product | null> {
     .lte("launch_week", weekNumber(new Date()))
     .maybeSingle<ProductRowDb>();
   return data ? toProduct(data) : null;
+}
+
+// A launch that isn't live yet (in review, or approved for a later week), so its
+// shared link can show a "coming soon" page and share card. Only what makers
+// would share anyway: name, tagline, logo, week and maker.
+export async function getUpcomingLaunch(slug: string) {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products", `product:${slug}`);
+  if (!supabaseConfigured) return null;
+  const { data } = await supabaseAdmin()
+    .from("products")
+    .select(select)
+    .eq("slug", slug)
+    .in("status", ["pending_review", "approved"])
+    .maybeSingle<ProductRowDb>();
+  if (!data) return null;
+  const p = toProduct(data);
+  return {
+    slug: p.slug,
+    name: p.name,
+    tagline: p.tagline,
+    logo: p.logo,
+    week: p.week,
+    premium: p.premium,
+    maker: p.maker,
+    live: data.status === "approved" && p.week <= weekNumber(new Date()),
+  };
 }
 
 export type PublicMaker = {
@@ -354,5 +383,6 @@ export async function getMakerLaunches(userId: string) {
   return ((data ?? []) as ProductRowDb[]).map((r) => ({
     product: toProduct(r),
     status: r.status,
+    shareLinks: r.share_links ?? [],
   }));
 }

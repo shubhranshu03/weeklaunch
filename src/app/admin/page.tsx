@@ -62,8 +62,14 @@ async function Queue() {
       "*, maker:profiles!products_maker_id_fkey(name, handle, avatar_url, verified)",
     )
     .eq("status", "pending_review")
+    // Makers who shared on 3 platforms are reviewed first
+    .order("shared_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
-  const queue = ((data ?? []) as ProductRowDb[]).map(toProduct);
+  const rows = (data ?? []) as ProductRowDb[];
+  const queue = rows.map(toProduct);
+  const shares = Object.fromEntries(
+    rows.map((r) => [r.id, r.share_links ?? []]),
+  );
 
   if (queue.length === 0)
     return (
@@ -96,6 +102,28 @@ async function Queue() {
             </div>
             <ReviewButtons productId={p.id} />
           </div>
+          {shares[p.id]?.length > 0 && (
+            <div className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm">
+              <p className="font-semibold text-amber-900">
+                Shared on {shares[p.id].length} posts: check them before
+                approving
+              </p>
+              <ul className="mt-1 space-y-0.5">
+                {shares[p.id].map((l) => (
+                  <li key={l} className="truncate">
+                    <a
+                      href={l}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="text-brand-700 hover:underline"
+                    >
+                      {l.replace(/^https?:\/\/(www\.)?/, "")}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p className="mt-3 whitespace-pre-line text-sm text-slate-600">
             {p.description}
           </p>

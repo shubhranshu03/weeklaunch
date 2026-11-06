@@ -39,7 +39,7 @@ function cleanExtras(input: LaunchInput) {
 }
 
 type Result =
-  | { ok: true; slug: string; checkoutUrl?: string }
+  | { ok: true; slug: string; id: string; week: number; checkoutUrl?: string }
   | { ok: false; error: string };
 
 const palette = [
@@ -175,7 +175,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
     return { ok: false, error: "Couldn't save your launch. Please try again." };
 
   revalidateTag("products", "max");
-  if (!paid) return { ok: true, slug };
+  if (!paid) return { ok: true, slug, id: product.id, week: week.number };
 
   try {
     const checkoutUrl = await createCheckout({
@@ -185,7 +185,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       premium,
       boost: input.boost,
     });
-    return { ok: true, slug, checkoutUrl };
+    return { ok: true, slug, id: product.id, week: week.number, checkoutUrl };
   } catch {
     return {
       ok: false,
@@ -277,4 +277,114 @@ export async function payForLaunch(
       error: "The payment page didn't open. Please try again.",
     };
   }
+}
+
+export type LaunchEdit = {
+  name: string;
+  website: string;
+  tagline: string;
+  description: string;
+  categories: string[];
+  logo: string | null;
+  shots: string[];
+  highlights: string[];
+  faqs: { q: string; a: string }[];
+};
+
+// A maker updates their own launch. The address (slug), plan and week stay the
+// same. A new website on an approved launch goes back to review, so a launch
+// can't be approved and then pointed somewhere else.
+export async function updateLaunch(
+  productId: string,
+  input: LaunchEdit,
+): Promise<
+  { ok: true; slug: string; inReview: boolean } | { ok: false; error: string }
+> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Please sign in again." };
+
+  const admin = supabaseAdmin();
+  const { data: current } = await admin
+    .from("products")
+    .select("id, slug, plan, status, website, logo_url")
+    .eq("id", productId)
+    .eq("maker_id", user.id)
+    .maybeSingle();
+  if (!current) return { ok: false, error: "Launch not found." };
+  if (current.status === "rejected")
+    return {
+      ok: false,
+      error: "This launch wasn't approved, so it can't be edited.",
+    };
+
+  const name = input.name.trim();
+  const website = input.website.trim();
+  const tagline = input.tagline.trim();
+  const description = input.description.trim();
+  const tags = input.categories.filter((c) =>
+    productCategories.some((p) => p.name === c),
+  );
+  if (!name || name.length > 40)
+    return { ok: false, error: "Add your product name." };
+  if (!/^https?:\/\/\S+\.\S+/.test(website))
+    return {
+      ok: false,
+      error: "Add a full link, like https://yourproduct.com",
+    };
+  if (tagline.length < 10 || tagline.length > 60)
+    return { ok: false, error: "Write a tagline of 10 to 60 characters." };
+  if (description.length < 40 || description.length > 1000)
+    return {
+      ok: false,
+      error: "Write a description of 40 to 1000 characters.",
+    };
+  if (tags.length === 0 || tags.length > 3)
+    return { ok: false, error: "Pick one to three categories." };
+
+  // Keep the old logo, or take one this maker uploaded
+  const logo =
+    input.logo === current.logo_url || ownFile(input.logo, user.id)
+      ? input.logo
+      : current.logo_url;
+  const websiteChanged = website !== current.website;
+  const backToReview = current.status === "approved" && websiteChanged;
+
+  const extras =
+    current.plan === "premium"
+      ? cleanExtras({
+          ...input,
+          plan: "premium",
+          week: { year: 0, number: 0 },
+          boost: false,
+        })
+      : {};
+
+  const { error } = await admin
+    .from("products")
+    .update({
+      name,
+      website,
+      tagline,
+      description,
+      tags,
+      logo_url: logo,
+      logo_glyph: name.slice(0, 2).replace(/\s/g, "").toUpperCase() || "W",
+      screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
+      ...extras,
+      ...(backToReview && { status: "pending_review" }),
+    })
+    .eq("id", current.id);
+  if (error)
+    return {
+      ok: false,
+      error: "Couldn't save your changes. Please try again.",
+    };
+
+  revalidateTag("products", "max");
+  revalidateTag(`product:${current.slug}`, "max");
+  return {
+    ok: true,
+    slug: current.slug,
+    inReview: backToReview || current.status === "pending_review",
+  };
 }

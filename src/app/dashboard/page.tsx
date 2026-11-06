@@ -11,17 +11,22 @@ import {
   Crown,
   Hourglass,
   MessageSquare,
+  PencilLine,
   Plus,
   Rocket,
   Send,
+  Share2,
+  ChevronDown,
   ShieldCheck,
   Triangle,
 } from "lucide-react";
 import { PayButton } from "@/components/PayButton";
 import { ProductLogo } from "@/components/ProductRow";
+import { ShareKit } from "@/components/ShareKit";
 import { SiteShell } from "@/components/SiteShell";
 import { isAdmin, requireUser } from "@/lib/auth";
 import { getDirectoryPackage } from "@/lib/directories";
+import { SITE_URL } from "@/lib/site";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { PREMIUM_PRICE, type LaunchStatus, type Product } from "@/lib/data";
 import { getCurrentWeek, getMakerLaunches } from "@/lib/products";
@@ -241,8 +246,11 @@ async function Launches({
         </div>
       ) : (
         <ul className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white">
-          {launches.map(({ product: p, status }) => {
-            const st = statusStyle[phase(p, status)];
+          {launches.map(({ product: p, status, shareLinks }) => {
+            const ph = phase(p, status);
+            const st = statusStyle[ph];
+            // In review or coming up: worth sharing before launch day
+            const canShare = ph === "pending_review" || ph === "scheduled";
             return (
               <li
                 key={p.id}
@@ -272,6 +280,15 @@ async function Launches({
                 </div>
                 {/* On phones the button gets its own full-width row under the details */}
                 <div className="flex w-full gap-2 empty:hidden sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">
+                  {status !== "rejected" && (
+                    <Link
+                      href={`/dashboard/launches/${p.id}`}
+                      className="btn-pop flex h-9 items-center justify-center gap-1.5 rounded-lg bg-white px-3 text-xs font-semibold text-slate-900"
+                    >
+                      <PencilLine className="size-3.5" />
+                      Edit
+                    </Link>
+                  )}
                   {status === "pending_payment" ? (
                     <PayButton
                       productId={p.id}
@@ -290,6 +307,32 @@ async function Launches({
                     </Link>
                   ) : null}
                 </div>
+                {canShare && (
+                  <details className="group w-full rounded-2xl bg-slate-50 px-4 py-3">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                      <span className="flex items-center gap-2">
+                        <Share2 className="size-4 text-brand-600" />
+                        {shareLinks.length
+                          ? "Shared · in the fast lane"
+                          : "Share on 3 platforms, launch sooner"}
+                      </span>
+                      <ChevronDown className="size-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
+                    </summary>
+                    <div className="mt-4">
+                      <ShareKit
+                        productId={p.id}
+                        slug={p.slug}
+                        name={p.name}
+                        tagline={p.tagline}
+                        website={p.website}
+                        week={p.week}
+                        free={!p.premium}
+                        siteUrl={SITE_URL}
+                        sharedLinks={shareLinks}
+                      />
+                    </div>
+                  </details>
+                )}
               </li>
             );
           })}
