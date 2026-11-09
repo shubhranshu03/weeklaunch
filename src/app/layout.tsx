@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -86,6 +87,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         {children}
+        <Script
+          src="http://127.0.0.1:8787/t.js"
+          data-site="31809f6acd479f2b3c84"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
