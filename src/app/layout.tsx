@@ -89,7 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         <Script
           src="http://127.0.0.1:8787/t.js"
-          data-site="31809f6acd479f2b3c84"
+          data-site="9209229d7b03e5bc2d76"
           strategy="afterInteractive"
         />
       </body>
