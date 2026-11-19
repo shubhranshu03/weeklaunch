@@ -3,13 +3,7 @@ import Link from "next/link";
 export function LogoMark({ className = "size-8" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden>
-      <defs>
-        <linearGradient id="wl-mark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#9f85ff" />
-          <stop offset="1" stopColor="#5a32db" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="10" fill="url(#wl-mark)" />
+      <rect width="32" height="32" rx="10" fill="#b3261e" />
       {/* A "W" whose last stroke launches upward */}
       <path
         d="M7 12l4 11 5-9 5 9 4.5-14"
@@ -39,7 +33,7 @@ export function Logo() {
       aria-label="WeekLaunch home"
     >
       <LogoMark />
-      <span className="text-lg font-semibold tracking-tight text-stone-950">
+      <span className="font-display text-xl font-black tracking-tight text-ink">
         weeklaunch
       </span>
     </Link>

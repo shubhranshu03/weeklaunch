@@ -8,7 +8,9 @@ import {
   PanelRight,
   Rocket,
   Rows3,
+  PanelTop,
 } from "lucide-react";
+import { EAR_AD_PRICE } from "@/lib/data";
 
 const launchPlans = [
   {
@@ -47,6 +49,21 @@ const launchPlans = [
 ];
 
 const adPlans = [
+  {
+    id: "ears",
+    name: "Front page ear ad",
+    price: `$${EAR_AD_PRICE}`,
+    period: "per week",
+    blurb: "One of two small boxes beside the big title at the top of the home page.",
+    icon: PanelTop,
+    features: [
+      "The first thing every visitor sees",
+      "Your name, one line and a link",
+      "Two spots, left and right",
+      "Click stats at the end of the week",
+    ],
+    cta: "Book a week",
+  },
   {
     id: "center",
     name: "Center feed ad",
@@ -118,7 +135,7 @@ export const faqs = [
   },
   {
     q: "How many ad spots are there?",
-    a: "One center feed spot per week and two right sidebar spots per month, so only a couple of ads ever share the page.",
+    a: "Two front page ear spots and one center feed spot per week, plus two right sidebar spots per month, so only a couple of ads ever share the page.",
   },
   {
     q: "What do I need to send for an ad?",
@@ -142,6 +159,23 @@ export const faqs = [
 function Placement({ spot }: { spot: string }) {
   const block = "rounded-[3px] bg-slate-200";
   const hot = "rounded-[3px] bg-brand-500";
+  if (spot === "ears")
+    return (
+      <div
+        aria-hidden
+        className="flex h-24 w-full flex-col gap-1.5 rounded-xl border-[1.5px] border-slate-900 bg-slate-50 p-2"
+      >
+        <div className="grid h-6 grid-cols-[1fr_3fr_1fr] gap-1.5">
+          <div className={hot} />
+          <div className={block} />
+          <div className={hot} />
+        </div>
+        <div className="grid flex-1 grid-cols-[2.2fr_1.2fr] gap-1.5">
+          <div className={block} />
+          <div className={block} />
+        </div>
+      </div>
+    );
   return (
     <div
       aria-hidden
@@ -269,7 +303,7 @@ export function Pricing() {
           <Megaphone className="size-3.5" />
           Advertise
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {adPlans.map((p) => (
             <article
               key={p.id}

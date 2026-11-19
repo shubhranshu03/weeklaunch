@@ -1,22 +1,120 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f9fc;
-  --foreground: #0f172a;
+  --background: #f3ede0;
+  --foreground: #1b1813;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand-50: #f4f1ff;
-  --color-brand-100: #ebe5ff;
-  --color-brand-200: #d9ceff;
-  --color-brand-400: #9f85ff;
-  --color-brand-500: #7c5cff;
-  --color-brand-600: #6a43f5;
-  --color-brand-700: #5a32db;
+  /* Sharper corners, like cut paper */
+  --radius-lg: 0.1875rem;
+  --radius-xl: 0.25rem;
+  --radius-2xl: 0.25rem;
+  --radius-3xl: 0.375rem;
+  --radius-4xl: 0.5rem;
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-serif: var(--font-source-serif), Georgia, serif;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Colors stay as CSS variables so the night edition can swap them */
+@theme {
+  /* Newspaper theme: brand is press red, slate is warm ink on newsprint */
+  --color-brand-50: #f8ebe7;
+  --color-brand-100: #f1d5cf;
+  --color-brand-200: #e3aba3;
+  --color-brand-400: #cf5a4f;
+  --color-brand-500: #b3261e;
+  --color-brand-600: #9c1f18;
+  --color-brand-700: #7f1913;
+  --color-slate-50: #ece5d6;
+  --color-slate-100: #e3d9c6;
+  --color-slate-200: #d2c6af;
+  --color-slate-300: #b9ad97;
+  --color-slate-400: #93887a;
+  --color-slate-500: #6f665a;
+  --color-slate-600: #564e44;
+  --color-slate-700: #3f3931;
+  --color-slate-800: #2b2620;
+  --color-slate-900: #1b1813;
+  --color-slate-950: #110f0c;
+  --color-white: #faf6ec;
+  --color-indigo-500: #3f3931;
+  --color-indigo-600: #2b2620;
+  --color-indigo-950: #1b1813;
+  --color-fuchsia-600: #b3261e;
+  --color-violet-500: #7f1913;
+  --color-sky-50: #e7edf0;
+  --color-sky-500: #2f5d7c;
+  --color-pink-50: #f3e8e8;
+  --color-pink-500: #8a4b5c;
+  --color-paper: #f3ede0;
+  --color-paper-dark: #e8dfcc;
+  --color-ink: #1b1813;
+  --color-ink-soft: #5b5348;
+  --color-rule: #b9ad97;
+  --color-press: #b3261e;
+  /* Lines and stamp shadows on buttons */
+  --color-line: #1b1813;
+  /* Raised cards (bg-white) */
+  --color-card: #faf6ec;
+}
+
+/* Night edition: dark newsprint with cream ink */
+:root[data-theme="night"] {
+  color-scheme: dark;
+  --background: #1a1713;
+  --foreground: #ece4d3;
+  --color-paper: #1a1713;
+  --color-paper-dark: #12100d;
+  --color-ink: #ece4d3;
+  --color-ink-soft: #b3a992;
+  --color-rule: #4a4339;
+  --color-press: #e0574b;
+  --color-line: #cfc4ad;
+  --color-card: #24201a;
+  --color-brand-50: #3a1f1a;
+  --color-brand-100: #4d2620;
+  --color-brand-200: #7a3329;
+  --color-brand-400: #e0574b;
+  --color-brand-500: #c8352b;
+  --color-brand-600: #b02c23;
+  --color-brand-700: #f0a197;
+  --color-slate-50: #221e19;
+  --color-slate-100: #2c2721;
+  --color-slate-200: #3d372f;
+  --color-slate-300: #574f44;
+  --color-slate-400: #8a806f;
+  --color-slate-500: #a89e8a;
+  --color-slate-600: #c2b8a3;
+  --color-slate-700: #d6ccb6;
+  --color-slate-800: #e3dac6;
+  --color-slate-900: #ece4d3;
+  --color-slate-950: #f6f0e3;
+  --color-indigo-500: #3d372f;
+  --color-indigo-600: #2c2721;
+  --color-indigo-950: #12100d;
+  --color-sky-50: #1c2a33;
+  --color-sky-500: #6fa3c4;
+  --color-pink-50: #33222a;
+  --color-pink-500: #c27f93;
+}
+/* White stays cream for text on red; only white surfaces turn dark */
+:root[data-theme="night"] .bg-white {
+  background-color: var(--color-card);
+}
+/* Bright badges keep dark text at night */
+:root[data-theme="night"]
+  :is(.bg-amber-200, .bg-amber-300, .bg-amber-400, .bg-emerald-300, .bg-yellow-300) {
+  color: #1b1813;
+}
+
+h1,
+h2 {
+  font-family: var(--font-playfair), Georgia, serif;
 }
 
 body {
@@ -74,8 +172,8 @@ body {
 
 /* Outlined buttons with a hard offset shadow that "press" on click */
 @utility btn-pop {
-  border: 1.5px solid #0f172a;
-  box-shadow: 2px 2px 0 #0f172a;
+  border: 1.5px solid var(--color-line);
+  box-shadow: 2px 2px 0 var(--color-line);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -83,16 +181,45 @@ body {
     color 0.15s ease;
   &:hover {
     transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0 #0f172a;
+    box-shadow: 3px 3px 0 var(--color-line);
   }
   &:active {
     transform: translate(2px, 2px);
-    box-shadow: 0 0 0 #0f172a;
+    box-shadow: 0 0 0 #1b1813;
   }
 }
 
 /* Static badge version (no hover motion) */
 @utility badge-pop {
-  border: 1.5px solid #0f172a;
-  box-shadow: 1.5px 1.5px 0 #0f172a;
+  border: 1.5px solid var(--color-line);
+  box-shadow: 1.5px 1.5px 0 var(--color-line);
+}
+
+/* Newspaper front page: a drop cap for the lead story */
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 800;
+  font-size: 3.4em;
+  line-height: 0.85;
+  padding: 0.08em 0.1em 0 0;
+}
+
+/* Ink-stamp buttons on the front page */
+@utility ink-pop {
+  border: 1.5px solid var(--color-line);
+  box-shadow: 2px 2px 0 var(--color-line);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--color-line);
+  }
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 #1b1813;
+  }
 }

@@ -97,11 +97,14 @@ export function UpvoteButton({
   productId,
   count,
   week,
+  variant = "default",
 }: {
   productId: string;
   count: number;
   // The launch's week; votes count only while it's running
   week: number;
+  // "paper" is the ink-on-newsprint style used on the home page
+  variant?: "default" | "paper";
 }) {
   // Worked out in the browser; while the page loads the button stays usable
   const nowWeek = useSyncExternalStore(
@@ -152,7 +155,13 @@ export function UpvoteButton({
             : "Upvote"
           : `${Math.max(0, shown)} upvotes, voting closed`
       }
-      className={`btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
+      className={variant === "paper" ? `ink-pop flex h-10 min-w-[4.5rem] shrink-0 items-center justify-center gap-1.5 rounded-sm px-3 font-sans text-sm font-bold tabular-nums disabled:cursor-default ${
+        voted
+          ? "bg-press text-white"
+          : open
+            ? "bg-paper text-ink hover:bg-white"
+            : "bg-paper-dark text-ink-soft"
+      }` : `btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
         voted
           ? "bg-brand-500 text-white"
           : open

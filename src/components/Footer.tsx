@@ -70,11 +70,14 @@ function GitHubIcon() {
   );
 }
 
-export function Footer() {
+export function Footer({ cta = true }: { cta?: boolean }) {
   return (
-    <footer className="mt-12 border-t border-slate-200 bg-white">
+    <footer
+      className={`border-t-[3px] border-double border-ink bg-paper-dark ${cta ? "mt-16" : ""}`}
+    >
       <div className="mx-auto max-w-[1320px] px-4 sm:px-6">
-        {/* Call to action */}
+        {/* Call to action (the newspaper home has its own) */}
+        {cta && (
         <div className="relative -mt-12 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 to-indigo-600 p-6 text-white sm:p-8">
           <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/15" />
           <div className="pointer-events-none absolute -bottom-16 right-32 size-32 rounded-full bg-white/10" />
@@ -96,6 +99,7 @@ export function Footer() {
             </Link>
           </div>
         </div>
+        )}
 
         {/* Links */}
         <div className="grid gap-10 py-12 md:grid-cols-[1.4fr_repeat(4,1fr)]">

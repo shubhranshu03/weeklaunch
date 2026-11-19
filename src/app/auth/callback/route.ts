@@ -6,7 +6,7 @@ function safeNext(next: string | null) {
   return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
 }
 
-// Google sends people here after they sign in
+// Google sign-in, email confirmation and password reset links all land here
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");

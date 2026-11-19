@@ -364,6 +364,23 @@ export async function weekLoad(weeks: Week[], exceptId?: string) {
 export const premiumLeft = (l: WeekLoad) =>
   Math.max(0, Math.min(PREMIUM_CAPACITY - l.premium, WEEK_CAPACITY - l.total));
 
+// Spots still open in each week, for the "sold out" stamp on the home page.
+// Cached for a few minutes so the home page stays fast.
+export type WeekSpace = { left: number; premiumLeft: number };
+export async function getWeekSpace(weeks: Week[]) {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products");
+  const load = await weekLoad(weeks);
+  const space: Record<string, WeekSpace> = {};
+  for (const key in load)
+    space[key] = {
+      left: Math.max(0, WEEK_CAPACITY - load[key].total),
+      premiumLeft: premiumLeft(load[key]),
+    };
+  return space;
+}
+
 // Free launches queue 3 weeks out, or the first later week with room
 export async function nextFreeWeek(): Promise<Week | null> {
   const weeks = weeksAround(new Date(), 0, FREE_QUEUE_WEEKS + 12).slice(

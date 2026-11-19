@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { JsonLd } from "@/components/JsonLd";
-import { Leaderboard } from "@/components/Leaderboard";
-import { getBoard, getBoardWeeks } from "@/lib/products";
-import { SiteShell } from "@/components/SiteShell";
+import { Footer } from "@/components/Footer";
+import { FrontPage } from "@/components/paper/FrontPage";
+import { Masthead } from "@/components/paper/Masthead";
+import {
+  getBoard,
+  getBoardWeeks,
+  getWeekSpace,
+  getLastWeekBest,
+} from "@/lib/products";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+// The home page is laid out as a weekly newspaper front page
 export default function Home() {
   return (
-    <SiteShell>
+    <div
+      className="flex flex-1 flex-col bg-paper"
+    >
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -27,19 +36,34 @@ export default function Home() {
       <h1 className="sr-only">
         This week&apos;s product launches on WeekLaunch
       </h1>
-      <Suspense
-        fallback={
-          <div className="h-[600px] animate-pulse rounded-3xl bg-slate-200/60" />
-        }
-      >
-        <Board />
-      </Suspense>
-    </SiteShell>
+      <div className="mx-auto w-full max-w-[1320px] flex-1 px-4 pb-20 sm:px-6">
+        <Masthead />
+        <Suspense
+          fallback={
+            <div className="mt-8 h-[600px] animate-pulse bg-paper-dark/60" />
+          }
+        >
+          <Edition />
+        </Suspense>
+      </div>
+      <Footer cta={false} />
+    </div>
   );
 }
 
-async function Board() {
+async function Edition() {
   const weeks = await getBoardWeeks();
-  const board = await getBoard(weeks);
-  return <Leaderboard weeks={weeks} board={board} />;
+  const [board, lastWeek, space] = await Promise.all([
+    getBoard(weeks),
+    getLastWeekBest(),
+    getWeekSpace(weeks),
+  ]);
+  return (
+    <FrontPage
+      weeks={weeks}
+      board={board}
+      lastWeek={lastWeek}
+      space={space}
+    />
+  );
 }
