@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Rocket } from "lucide-react";
 import { AskAI } from "./AskAI";
+import { FooterScene } from "./FooterScene";
 import { Logo } from "./Logo";
 
 // Footer links that already have a page; the rest are placeholders
@@ -73,32 +74,34 @@ function GitHubIcon() {
 export function Footer({ cta = true }: { cta?: boolean }) {
   return (
     <footer
-      className={`border-t-[3px] border-double border-ink bg-paper-dark ${cta ? "mt-16" : ""}`}
+      className={`relative border-t-[3px] border-double border-ink bg-paper-dark ${cta ? "mt-16" : ""}`}
     >
-      <div className="mx-auto max-w-[1320px] px-4 sm:px-6">
+      <FooterScene />
+      {/* Bottom padding leaves the street of the scene clear of the text */}
+      <div className="relative mx-auto max-w-[1320px] px-4 pb-36 sm:px-6 sm:pb-52">
         {/* Call to action (the newspaper home has its own) */}
         {cta && (
-        <div className="relative -mt-12 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 to-indigo-600 p-6 text-white sm:p-8">
-          <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/15" />
-          <div className="pointer-events-none absolute -bottom-16 right-32 size-32 rounded-full bg-white/10" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Ready to launch?
-              </h2>
-              <p className="mt-1 text-sm text-white/80">
-                Join next Monday&apos;s board. Your first product is free.
-              </p>
+          <div className="relative -mt-12 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 to-indigo-600 p-6 text-white sm:p-8">
+            <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/15" />
+            <div className="pointer-events-none absolute -bottom-16 right-32 size-32 rounded-full bg-white/10" />
+            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Ready to launch?
+                </h2>
+                <p className="mt-1 text-sm text-white/80">
+                  Join next Monday&apos;s board. Your first product is free.
+                </p>
+              </div>
+              <Link
+                href="/submit"
+                className="btn-pop flex h-11 shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-amber-300 px-5 text-sm font-bold text-slate-900 hover:bg-amber-200 sm:self-auto"
+              >
+                <Rocket className="size-4" />
+                Launch your product
+              </Link>
             </div>
-            <Link
-              href="/submit"
-              className="btn-pop flex h-11 shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-amber-300 px-5 text-sm font-bold text-slate-900 hover:bg-amber-200 sm:self-auto"
-            >
-              <Rocket className="size-4" />
-              Launch your product
-            </Link>
           </div>
-        </div>
         )}
 
         {/* Links */}
