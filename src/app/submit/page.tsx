@@ -8,15 +8,11 @@ import { SiteShell } from "@/components/SiteShell";
 import { SubmitForm } from "@/components/SubmitForm";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { FREE_QUEUE_WEEKS } from "@/lib/data";
+import { PREMIUM_WEEKS_AHEAD } from "@/lib/data";
+import { weeksAround } from "@/lib/weeks";
 import { paymentsConfigured } from "@/lib/dodo";
 import { freeLaunchUsed } from "@/lib/limits";
-import {
-  getBoardWeeks,
-  nextFreeWeek,
-  premiumLeft,
-  weekLoad,
-} from "@/lib/products";
+import { nextFreeWeek, premiumLeft, weekLoad } from "@/lib/products";
 import { weekKey } from "@/lib/weeks";
 
 export const metadata: Metadata = {
@@ -106,9 +102,8 @@ async function Form() {
         </Link>
       </div>
     );
-  const weeks = await getBoardWeeks();
-  const now = weeks.findIndex((w) => w.current);
-  const upcoming = weeks.slice(now + 1, now + 1 + FREE_QUEUE_WEEKS);
+  // Premium can pick any of the next 12 weeks
+  const upcoming = weeksAround(new Date(), 0, PREMIUM_WEEKS_AHEAD).slice(1);
   const freeWeek = (await nextFreeWeek()) ?? upcoming[upcoming.length - 1];
   const weeksShown = upcoming.some((w) => w.number === freeWeek.number)
     ? upcoming

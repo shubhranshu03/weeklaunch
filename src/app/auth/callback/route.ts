@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { safeNext } from "@/lib/safeNext";
 import { supabaseServer } from "@/lib/supabase/server";
-
-// Only send people back to pages on this site
-function safeNext(next: string | null) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
 
 // Google sign-in, email confirmation and password reset links all land here
 export async function GET(request: NextRequest) {

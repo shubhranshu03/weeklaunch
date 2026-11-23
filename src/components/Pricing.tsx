@@ -294,7 +294,7 @@ export function Pricing() {
                 ))}
               </ul>
               <Link
-                href="/contact"
+                href="/contact?topic=Advertising"
                 className="btn-pop mt-6 flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-500 text-sm font-bold text-white hover:bg-brand-600"
               >
                 {p.cta} <ArrowRight className="size-4" />

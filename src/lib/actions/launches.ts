@@ -2,7 +2,7 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUser } from "../auth";
-import { FREE_QUEUE_WEEKS, WEEK_CAPACITY, productCategories } from "../data";
+import { PREMIUM_WEEKS_AHEAD, WEEK_CAPACITY, productCategories } from "../data";
 import { createCheckout, paymentsConfigured } from "../dodo";
 import { launchBlock } from "../limits";
 import {
@@ -63,15 +63,13 @@ const palette = [
 const reservedSlugs = new Set(["mac"]);
 
 function slugify(name: string) {
-  const slug = (
-
+  const slug =
     name
       .toLowerCase()
       .normalize("NFKD")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
-      .slice(0, 40) || "product"
-  );
+      .slice(0, 40) || "product";
   return reservedSlugs.has(slug) ? `${slug}-app` : slug;
 }
 
@@ -137,7 +135,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
 
   // Premium picks any upcoming week with room; free launches join the queue.
   // Every week holds 25 launches at most, 5 of them Premium.
-  const upcoming = weeksAround(new Date(), 0, FREE_QUEUE_WEEKS).slice(1);
+  const upcoming = weeksAround(new Date(), 0, PREMIUM_WEEKS_AHEAD).slice(1);
   const week = premium
     ? upcoming.find(
         (w) => w.year === input.week.year && w.number === input.week.number,
@@ -241,7 +239,9 @@ export async function payForLaunch(
 
   const { data: product } = await supabaseAdmin()
     .from("products")
-    .select("id, name, plan, boosted, status, launch_year, launch_week, created_at")
+    .select(
+      "id, name, plan, boosted, status, launch_year, launch_week, created_at",
+    )
     .eq("id", productId)
     .eq("maker_id", user.id)
     .maybeSingle();
@@ -296,7 +296,10 @@ export async function payForLaunch(
     if (blocked) return { ok: false, error: blocked };
 
     const hold = (created_at: string) =>
-      supabaseAdmin().from("products").update({ created_at }).eq("id", product.id);
+      supabaseAdmin()
+        .from("products")
+        .update({ created_at })
+        .eq("id", product.id);
     await hold(new Date().toISOString());
     const clash = await launchBlock(user.id, limits, product.id);
     if (clash) {
@@ -348,7 +351,11 @@ export async function submitWithoutBoost(
   if (blocked) return { ok: false, error: blocked };
 
   // Its week may have filled up or started since
-  let week = { year: product.launch_year, number: product.launch_week, label: "" };
+  let week = {
+    year: product.launch_year,
+    number: product.launch_week,
+    label: "",
+  };
   const open =
     week.number > weekNumber(new Date()) &&
     (await weekLoad([week], product.id))[weekKey(week)].total < WEEK_CAPACITY;
@@ -368,7 +375,8 @@ export async function submitWithoutBoost(
     })
     .eq("id", product.id)
     .eq("status", "pending_payment");
-  if (error) return { ok: false, error: "Couldn't submit it. Please try again." };
+  if (error)
+    return { ok: false, error: "Couldn't submit it. Please try again." };
 
   revalidateTag("products", "max");
   revalidatePath("/dashboard");

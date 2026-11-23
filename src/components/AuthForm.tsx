@@ -4,15 +4,12 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { CheckCircle2, Eye, EyeOff, Info, Loader2 } from "lucide-react";
+// Only send people back to pages on this site (shared with the sign-in callback)
+import { safeNext } from "@/lib/safeNext";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { GoogleIcon } from "./GoogleIcon";
 import { LogoMark } from "./Logo";
-
-// Only send people back to pages on this site
-export function safeNext(next: string | null) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
 
 export const MIN_PASSWORD = 8;
 
@@ -138,7 +135,9 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     e.preventDefault();
     if (!supabaseConfigured) return setError("Sign-in isn't set up yet.");
     if (password.length < MIN_PASSWORD)
-      return setError(`Your password needs at least ${MIN_PASSWORD} characters.`);
+      return setError(
+        `Your password needs at least ${MIN_PASSWORD} characters.`,
+      );
     setBusy(true);
     setError("");
     setNotice("");

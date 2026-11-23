@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ArrowUpRight, BadgeCheck, Crown, Zap } from "lucide-react";
 import { ProductLogo } from "@/components/ProductRow";
 import { DirectoryOrderButtons } from "@/components/DirectoryOrderButtons";
+import { MessageButton } from "@/components/MessageButton";
 import { ReviewButtons } from "@/components/ReviewButtons";
 import { SiteShell } from "@/components/SiteShell";
 import { isAdmin, requireUser } from "@/lib/auth";
@@ -47,6 +48,20 @@ export default function AdminPage() {
         }
       >
         <DirectoryOrders />
+      </Suspense>
+
+      <h2 className="mt-10 text-lg font-semibold tracking-tight text-slate-900">
+        Messages
+      </h2>
+      <p className="mt-0.5 text-sm text-slate-500">
+        From the contact page. Reply by email, then mark it done.
+      </p>
+      <Suspense
+        fallback={
+          <div className="mt-4 h-40 animate-pulse rounded-3xl bg-slate-200/60" />
+        }
+      >
+        <Messages />
       </Suspense>
     </SiteShell>
   );
@@ -235,6 +250,83 @@ async function DirectoryOrders() {
           </li>
         );
       })}
+    </ul>
+  );
+}
+
+type Message = {
+  id: string;
+  name: string;
+  email: string;
+  topic: string;
+  message: string;
+  handled: boolean;
+  created_at: string;
+};
+
+async function Messages() {
+  const user = await requireUser("/admin");
+  if (!isAdmin(user.email)) notFound();
+
+  const { data, error } = await supabaseAdmin()
+    .from("contact_messages")
+    .select("id, name, email, topic, message, handled, created_at")
+    .order("handled", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error)
+    return (
+      <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        Messages aren&apos;t set up yet: run migration 009 in Supabase.
+      </p>
+    );
+  const messages = (data ?? []) as Message[];
+  if (messages.length === 0)
+    return (
+      <p className="mt-4 rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
+        No messages yet.
+      </p>
+    );
+
+  return (
+    <ul className="mt-4 space-y-3">
+      {messages.map((m) => (
+        <li
+          key={m.id}
+          className={`rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 ${
+            m.handled ? "opacity-60" : ""
+          }`}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-semibold text-slate-900">
+                {m.name}{" "}
+                <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                  {m.topic}
+                </span>
+              </p>
+              <a
+                href={`mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(`Re: ${m.topic}`)}`}
+                className="text-sm font-medium text-brand-700 hover:underline"
+              >
+                {m.email}
+              </a>
+              <p className="text-xs text-slate-400">
+                {new Date(m.created_at).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "UTC",
+                })}{" "}
+                UTC
+              </p>
+            </div>
+            <MessageButton id={m.id} handled={m.handled} />
+          </div>
+          <p className="mt-3 whitespace-pre-line break-words text-sm text-slate-700">
+            {m.message}
+          </p>
+        </li>
+      ))}
     </ul>
   );
 }

@@ -40,6 +40,8 @@ export const WEEK_CAPACITY = 25;
 export const PREMIUM_CAPACITY = 5;
 // How many weeks ahead free launches are queued
 export const FREE_QUEUE_WEEKS = 3;
+// How far ahead a Premium launch can pick its week
+export const PREMIUM_WEEKS_AHEAD = 12;
 
 export const productCategories = [
   { name: "AI", blurb: "Assistants, agents and smart tools" },

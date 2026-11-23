@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -22,10 +22,13 @@ import {
   Trash2,
   X,
   Loader2,
+  Wand2,
 } from "lucide-react";
+import { autofillFromSite, type AutofillFields } from "@/lib/actions/autofill";
 import { createLaunch } from "@/lib/actions/launches";
 import {
   BOOST_PRICE,
+  FREE_QUEUE_WEEKS,
   PREMIUM_CAPACITY,
   PREMIUM_PRICE,
   WEEK_CAPACITY,
@@ -91,7 +94,7 @@ const plans = [
       ["Your own product page", true],
       ["Upvotes and comments", true],
       ["Backlink after you add our badge", true],
-      ["Choose your launch week", false],
+      ["Choose your launch week (up to 12 weeks ahead)", false],
       ["Pinned at the top all week", false],
       ["PREMIUM tag and Visit button", false],
       ["Blue verified tick on your profile", false],
@@ -109,7 +112,7 @@ const plans = [
       ["Your own product page", true],
       ["Upvotes and comments", true],
       ["Dofollow backlink, no badge needed", true],
-      ["Choose your launch week", true],
+      ["Choose your launch week (up to 12 weeks ahead)", true],
       ["Pinned at the top all week", true],
       ["PREMIUM tag and Visit button", true],
       ["Blue verified tick on your profile", true],
@@ -193,7 +196,7 @@ export function SubmitForm({
   freeUsed: freeUsedBefore,
   siteUrl,
 }: {
-  // The next few launch weeks; the last one is the free queue week
+  // The weeks a Premium launch can pick (the next 12)
   upcoming: Week[];
   // Premium spots still open, by week number
   premiumSpots: Record<number, number>;
@@ -223,7 +226,13 @@ export function SubmitForm({
   const [freeUsed, setFreeUsed] = useState(freeUsedBefore);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(fresh);
+  const formRef = useRef(form);
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
   const [showErrors, setShowErrors] = useState(false);
+  // Premium sees 6 weeks first, then can open the rest
+  const [allWeeksOpen, setAllWeeksOpen] = useState(false);
   // The saved launch, once submitted, for the share kit
   const [done, setDone] = useState<{
     id: string;
@@ -233,6 +242,11 @@ export function SubmitForm({
   const [uploading, setUploading] = useState(0);
   const [error, setError] = useState("");
   const [submitting, startSubmit] = useTransition();
+  const [filling, startFill] = useTransition();
+  const [fillNote, setFillNote] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
   // Each week has one Boost; it's switched off for weeks where it's sold
   const boostSold = !!boostTaken[form.week];
   const boost = form.boost && !boostSold;
@@ -275,6 +289,77 @@ export function SubmitForm({
         if (form.plan === "free") setFreeUsed(true);
         setDone({ id: res.id, slug: res.slug, week: res.week });
       }
+    });
+  };
+
+  // Fills only what the maker hasn't typed yet, then says what it filled
+  const applyAutofill = (a: AutofillFields) => {
+    // The latest form, so anything typed while the site loaded is kept
+    const f = formRef.current;
+    const next = { ...f };
+    const filled: string[] = [];
+    if (!f.name.trim() && a.name) {
+      next.name = a.name;
+      filled.push("name");
+    }
+    if (!f.tagline.trim() && a.tagline.length >= 10) {
+      next.tagline = a.tagline;
+      filled.push("tagline");
+    }
+    if (!f.description.trim() && a.description.length >= 40) {
+      next.description = a.description.slice(0, 1000);
+      filled.push("description");
+    }
+    const cats = a.categories.filter((c) =>
+      productCategories.some((p) => p.name === c),
+    );
+    if (f.categories.length === 0 && cats.length) {
+      next.categories = cats;
+      filled.push("categories");
+    }
+    if (!f.logo && a.logo) {
+      next.logo = a.logo;
+      filled.push("logo");
+    }
+    if (f.shots.length === 0 && a.shots.length) {
+      next.shots = a.shots;
+      filled.push("cover image");
+    }
+    if (f.app.platform === "web" && a.app) {
+      next.app = a.app;
+      filled.push("Mac app details");
+    }
+    setForm(next);
+    return filled;
+  };
+
+  const autofill = () => {
+    setFillNote(null);
+    if (!/^https?:\/\/\S+\.\S+/.test(form.website.trim())) {
+      setFillNote({
+        ok: false,
+        text: "Add your full website link first, like https://yourproduct.com",
+      });
+      return;
+    }
+    startFill(async () => {
+      const res = await autofillFromSite(form.website);
+      if (!res.ok) {
+        setFillNote({ ok: false, text: res.error });
+        return;
+      }
+      const filled = applyAutofill(res.fields);
+      setFillNote(
+        filled.length
+          ? {
+              ok: true,
+              text: `Filled in ${filled.join(", ")} from your site. Check each step before you submit.`,
+            }
+          : {
+              ok: false,
+              text: "We opened your site but there was nothing new to fill in.",
+            },
+      );
     });
   };
 
@@ -330,6 +415,30 @@ export function SubmitForm({
     setForm((f) => ({ ...f, shots: f.shots.filter((_, j) => j !== i) }));
 
   const week = allWeeks.find((w) => w.number === form.week)!;
+  // Week cards: Premium gets all 12 (6 until opened, plus the chosen one);
+  // free launches see the next few, with their queue week
+  const pickerWeeks =
+    form.plan === "premium"
+      ? upcoming.filter(
+          (w, i) => allWeeksOpen || i < 6 || w.number === form.week,
+        )
+      : [
+          ...upcoming.slice(0, FREE_QUEUE_WEEKS),
+          ...(upcoming
+            .slice(0, FREE_QUEUE_WEEKS)
+            .some((w) => w.number === freeWeek)
+            ? []
+            : [freeWeekInfo]),
+        ];
+  // The board preview's week tabs: three weeks around the chosen one
+  const at = Math.max(
+    0,
+    allWeeks.findIndex((w) => w.number === form.week),
+  );
+  const previewWeeks = allWeeks.slice(
+    Math.max(0, at - 1),
+    Math.max(0, at - 1) + 3,
+  );
   const total =
     (form.plan === "premium" ? PREMIUM_PRICE : 0) + (boost ? BOOST_PRICE : 0);
 
@@ -477,6 +586,54 @@ export function SubmitForm({
         <div className="mt-7 space-y-5">
           {step === 0 && (
             <>
+              <div className="rounded-2xl border-[1.5px] border-dashed border-brand-300 bg-brand-50/40 p-4">
+                <Field
+                  label="Website"
+                  hint="Start here: we can fill in the rest"
+                  error={errors.website}
+                >
+                  <span className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      className={input}
+                      type="url"
+                      value={form.website}
+                      onChange={(e) => set("website", e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          autofill();
+                        }
+                      }}
+                      placeholder="https://yourproduct.com"
+                    />
+                    <button
+                      type="button"
+                      onClick={autofill}
+                      disabled={filling}
+                      className="btn-pop flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-500 px-4 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-70"
+                    >
+                      {filling ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="size-4" />
+                      )}
+                      {filling ? "Reading your site…" : "Autofill"}
+                    </button>
+                  </span>
+                </Field>
+                {fillNote && (
+                  <p
+                    role="status"
+                    className={`mt-2 rounded-xl px-3 py-2 text-sm ${
+                      fillNote.ok
+                        ? "bg-emerald-50 text-emerald-800"
+                        : "bg-amber-50 text-amber-800"
+                    }`}
+                  >
+                    {fillNote.text}
+                  </p>
+                )}
+              </div>
               <Field label="Product name" error={errors.name}>
                 <input
                   className={input}
@@ -484,15 +641,6 @@ export function SubmitForm({
                   onChange={(e) => set("name", e.target.value)}
                   placeholder="e.g. StudyFlow"
                   maxLength={40}
-                />
-              </Field>
-              <Field label="Website" error={errors.website}>
-                <input
-                  className={input}
-                  type="url"
-                  value={form.website}
-                  onChange={(e) => set("website", e.target.value)}
-                  placeholder="https://yourproduct.com"
                 />
               </Field>
               <PlatformFields
@@ -827,7 +975,7 @@ export function SubmitForm({
                   Launch week
                 </span>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  {upcoming.map((w) => {
+                  {pickerWeeks.map((w) => {
                     const premium = form.plan === "premium";
                     const left = premiumSpots[w.number] ?? 0;
                     const soldOut = premium && left === 0;
@@ -908,6 +1056,18 @@ export function SubmitForm({
                     );
                   })}
                 </div>
+                {form.plan === "premium" &&
+                  upcoming.length > 6 &&
+                  !allWeeksOpen && (
+                    <button
+                      type="button"
+                      onClick={() => setAllWeeksOpen(true)}
+                      className="mt-2 text-sm font-semibold text-brand-700 hover:underline"
+                    >
+                      Show {upcoming.length - 6} more weeks (up to Week{" "}
+                      {upcoming[upcoming.length - 1].number})
+                    </button>
+                  )}
                 {form.plan === "free" && (
                   <p className="mt-2 text-xs text-slate-500">
                     Free launches get the next open week: yours is{" "}
@@ -1089,7 +1249,7 @@ export function SubmitForm({
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           Preview on the board
         </p>
-        <BoardPreview form={{ ...form, boost }} upcoming={upcoming} />
+        <BoardPreview form={{ ...form, boost }} upcoming={previewWeeks} />
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
           Launching Week {week.number} · {week.label}. Need help?{" "}
           <Link
