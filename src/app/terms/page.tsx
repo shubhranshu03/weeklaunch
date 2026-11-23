@@ -28,6 +28,10 @@ export default function TermsPage() {
         <ul>
           <li>You own what you submit and are responsible for it.</li>
           <li>
+            Each person gets one free product. Further products need a paid
+            Premium launch.
+          </li>
+          <li>
             You give us permission to show your product name, logo, images and
             description on WeekLaunch and in our newsletter.
           </li>
@@ -50,7 +54,9 @@ export default function TermsPage() {
         <p>
           Premium launches and ads are paid in advance. If your launch or ad has
           not gone live yet, you can cancel for a full refund. Once it is live,
-          payments are not refundable.
+          payments are not refundable. A refund removes what that payment
+          bought. A refunded Premium launch becomes your free product, or is
+          removed if you already have one.
         </p>
       </section>
       <section>

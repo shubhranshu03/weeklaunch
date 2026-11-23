@@ -1,12 +1,18 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
 import type { Payment } from "dodopayments/resources/payments";
+import { applyFullRefund } from "./refunds";
 import { supabaseAdmin } from "./supabase/server";
 
 // Records a Dodo payment against our order. Used by both the webhook and the
 // page Dodo sends buyers back to, so whichever arrives first marks it paid.
 // Returns the order's launch so callers can link to it.
 export async function applyDodoPayment(p: Payment) {
+  // A refunded payment still says "succeeded", so look at the refund first
+  if (p.status === "succeeded" && p.refund_status === "full") {
+    await applyFullRefund(p);
+    return null;
+  }
   if (p.metadata?.directory_order_id) return applyDirectoryPayment(p);
   const orderId = p.metadata?.order_id;
   if (!orderId) return null;
@@ -38,7 +44,8 @@ export async function applyDodoPayment(p: Payment) {
       updated_at: now,
     })
     .eq("id", orderId)
-    .neq("status", "succeeded")
+    // Never "refunded": an old return link or repeated webhook can't undo a refund
+    .in("status", ["pending", "failed"])
     .select("user_id, product_id, premium, boost")
     .maybeSingle();
   if (!order) return null;
@@ -70,6 +77,17 @@ export async function applyDodoPayment(p: Payment) {
       .from("profiles")
       .update({ verified: true })
       .eq("id", order.user_id);
+
+  // A refund that landed while the perks were being granted still wins
+  const { data: latest } = await admin
+    .from("payments")
+    .select("status")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (latest?.status === "refunded") {
+    await applyFullRefund(p);
+    return null;
+  }
 
   revalidateTag("products", "max");
   return order;

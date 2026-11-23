@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { Suspense, useState, useSyncExternalStore } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 import { weekNumber } from "@/lib/weeks";
@@ -79,10 +79,29 @@ function EarAd({ side }: { side: "left" | "right" }) {
 
 // The newspaper masthead: date line, nameplate and section links.
 // `compact` is the smaller nameplate used on every page but the home page.
+// The address isn't known while Next builds the shell of a product or maker page,
+// so it's read inside Suspense. Without this those pages fail when the cache is cleared.
 export function Masthead({ compact = false }: { compact?: boolean }) {
+  return (
+    <Suspense fallback={<MastheadView compact={compact} pathname={null} />}>
+      <MastheadAtPath compact={compact} />
+    </Suspense>
+  );
+}
+
+function MastheadAtPath({ compact }: { compact: boolean }) {
+  return <MastheadView compact={compact} pathname={usePathname()} />;
+}
+
+function MastheadView({
+  compact,
+  pathname,
+}: {
+  compact: boolean;
+  pathname: string | null;
+}) {
   const today = useToday();
   const issue = useIssue();
-  const pathname = usePathname();
   const { ready, user } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -113,7 +132,7 @@ export function Masthead({ compact = false }: { compact?: boolean }) {
             </Link>
           ) : (
             <Link
-              href={`/signin?next=${encodeURIComponent(pathname)}`}
+              href={`/signin?next=${encodeURIComponent(pathname ?? "/")}`}
               className={`font-semibold text-ink underline-offset-4 hover:underline ${
                 ready ? "" : "opacity-0"
               }`}
@@ -160,7 +179,7 @@ export function Masthead({ compact = false }: { compact?: boolean }) {
           </Link>
           {!compact && (
             <p className="mt-3 font-serif text-sm italic text-ink-soft sm:text-base">
-              New products from indie makers, ranked by votes. A new edition
+              New products from indie makers, with a vote every week. A new edition
               every Monday.
             </p>
           )}

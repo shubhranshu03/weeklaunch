@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight, Megaphone, Triangle } from "lucide-react";
 import { getLastWeekBest } from "@/lib/products";
+import { voteRanks } from "@/lib/ranks";
 import { ProductLogo } from "./ProductRow";
 
 const chips = ["bg-brand-500", "bg-sky-500", "bg-pink-500"];
@@ -66,6 +67,7 @@ export function RightRail() {
 async function HallOfFame() {
   const { week, products } = await getLastWeekBest();
   if (products.length === 0) return null;
+  const ranks = voteRanks(products);
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4">
@@ -79,7 +81,7 @@ async function HallOfFame() {
         <ArrowRight className="size-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-brand-600" />
       </Link>
       <ul className="mt-3 space-y-1">
-        {products.map((p, i) => (
+        {products.map((p) => (
           <li key={p.slug}>
             <Link
               href={`/products/${p.slug}`}
@@ -88,9 +90,9 @@ async function HallOfFame() {
               <div className="relative">
                 <ProductLogo logo={p.logo} name={p.name} size="sm" />
                 <span
-                  className={`absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${chips[i]}`}
+                  className={`absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${chips[(ranks.get(p.slug) ?? 1) - 1]}`}
                 >
-                  {i + 1}
+                  {ranks.get(p.slug)}
                 </span>
               </div>
               <div className="min-w-0 flex-1">

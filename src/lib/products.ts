@@ -273,7 +273,12 @@ export async function getLastWeekBest() {
   if (recent.length < 2) return { week: recent[0], products: [] };
   const last = recent[0];
   const board = await getBoard([last]);
-  return { week: last, products: board[weekKey(last)].slice(0, 3) };
+  // Winners are decided by votes alone: being pinned doesn't make a winner
+  const products = board[weekKey(last)]
+    .filter((p) => p.upvotes > 0)
+    .sort((a, b) => b.upvotes - a.upvotes)
+    .slice(0, 3);
+  return { week: last, products };
 }
 
 export type CommentItem = {

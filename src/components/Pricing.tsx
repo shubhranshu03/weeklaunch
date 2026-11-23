@@ -17,9 +17,10 @@ const launchPlans = [
     name: "Free launch",
     price: "$0",
     period: "forever",
-    blurb: "List your product on a weekly board.",
+    blurb: "List your first product on a weekly board.",
     icon: Rocket,
     features: [
+      "One free product per account",
       "Listed on a weekly launch board",
       "Your own product page",
       "Upvotes and comments",
@@ -99,7 +100,7 @@ const adPlans = [
 export const faqs = [
   {
     q: "Is the free launch really free?",
-    a: "Yes. You get a spot on a weekly board, your own product page, upvotes and comments — no card needed. Free launches join a queue, so your week may be a few weeks out.",
+    a: "Yes, for one product per account. Every product after that needs Premium ($29). You get a spot on a weekly board, your own product page, upvotes and comments — no card needed. Free launches join a queue, so your week may be a few weeks out.",
   },
   {
     q: "What's the difference between Free and Premium?",
@@ -107,7 +108,7 @@ export const faqs = [
   },
   {
     q: "When does my Premium launch go live?",
-    a: "You choose the week. Your product goes live on Monday at 00:00 UTC and stays pinned at the top until Sunday night.",
+    a: "You choose the week. Your product goes live on Monday at 00:00 UTC and stays pinned at the top until Sunday night. Pinning never changes your rank, which comes only from votes.",
   },
   {
     q: "How many products launch each week?",
@@ -127,7 +128,7 @@ export const faqs = [
   },
   {
     q: "Can I launch the same product again?",
-    a: "Yes, for a big update or new version. We ask for at least 3 months between launches of the same product so the board stays fresh.",
+    a: "Yes, for a big update or new version, as a Premium launch if you've used your free one. We ask for at least 3 months between launches of the same product so the board stays fresh.",
   },
   {
     q: "Can I buy an ad without launching a product?",
@@ -232,7 +233,7 @@ export function Pricing() {
           Launch it. Promote it.
         </h1>
         <p className="mx-auto mt-2 max-w-md text-slate-500">
-          Launching is free. Pay only when you want more eyes on your product.
+          Your first product launches free. Every one after that is Premium.
         </p>
       </div>
 

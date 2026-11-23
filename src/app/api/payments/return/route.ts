@@ -47,7 +47,10 @@ export async function GET(request: NextRequest) {
 
     if (order && order.user_id === user.id) {
       await applyDodoPayment(payment);
-      status = payment.status ?? "processing";
+      status =
+        payment.refund_status === "full"
+          ? "refunded"
+          : (payment.status ?? "processing");
       if (order.product_id) back.searchParams.set("paid", order.product_id);
     }
   } catch {

@@ -160,8 +160,8 @@ export function MakerProfile({
       </h2>
       {launches.length > 0 ? (
         <ol className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white">
-          {launches.map((p, i) => (
-            <ProductRow key={p.slug} product={p} rank={i + 4} />
+          {launches.map((p) => (
+            <ProductRow key={p.slug} product={p} />
           ))}
         </ol>
       ) : (

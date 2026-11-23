@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUser } from "../auth";
-import { FREE_QUEUE_WEEKS, productCategories } from "../data";
+import { FREE_QUEUE_WEEKS, WEEK_CAPACITY, productCategories } from "../data";
 import { createCheckout, paymentsConfigured } from "../dodo";
+import { launchBlock } from "../limits";
 import { nextFreeWeek, premiumLeft, weekLoad } from "../products";
 import { mediaPrefix } from "../supabase/env";
 import { supabaseAdmin } from "../supabase/server";
@@ -117,6 +118,10 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       error: "Payments aren't set up yet. Choose the free launch for now.",
     };
 
+  const limits = { free: !premium, unpaid: paid };
+  const blocked = await launchBlock(user.id, limits);
+  if (blocked) return { ok: false, error: blocked };
+
   // Premium picks any upcoming week with room; free launches join the queue.
   // Every week holds 25 launches at most, 5 of them Premium.
   const upcoming = weeksAround(new Date(), 0, FREE_QUEUE_WEEKS).slice(1);
@@ -174,6 +179,20 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
   if (error || !product)
     return { ok: false, error: "Couldn't save your launch. Please try again." };
 
+  // Check again now it's saved, so requests sent at the same moment can't both
+  // get through. If this check fails, the launch mustn't stay either.
+  const clash = await launchBlock(user.id, limits, product.id).catch(
+    () => "Couldn't check your launches. Please try again.",
+  );
+  if (clash) {
+    await supabaseAdmin().from("products").delete().eq("id", product.id);
+    return {
+      ok: false,
+      error:
+        "Another submission from your account came in at the same moment. Check My launches, then try again.",
+    };
+  }
+
   revalidateTag("products", "max");
   if (!paid) return { ok: true, slug, id: product.id, week: week.number };
 
@@ -207,7 +226,7 @@ export async function payForLaunch(
 
   const { data: product } = await supabaseAdmin()
     .from("products")
-    .select("id, name, plan, boosted, status, launch_year, launch_week")
+    .select("id, name, plan, boosted, status, launch_year, launch_week, created_at")
     .eq("id", productId)
     .eq("maker_id", user.id)
     .maybeSingle();
@@ -256,11 +275,20 @@ export async function payForLaunch(
     };
 
   // Hold the spot again while the maker pays
-  if (product.status === "pending_payment")
-    await supabaseAdmin()
-      .from("products")
-      .update({ created_at: new Date().toISOString() })
-      .eq("id", product.id);
+  if (product.status === "pending_payment") {
+    const limits = { free: product.plan !== "premium", unpaid: true };
+    const blocked = await launchBlock(user.id, limits, product.id);
+    if (blocked) return { ok: false, error: blocked };
+
+    const hold = (created_at: string) =>
+      supabaseAdmin().from("products").update({ created_at }).eq("id", product.id);
+    await hold(new Date().toISOString());
+    const clash = await launchBlock(user.id, limits, product.id);
+    if (clash) {
+      await hold(product.created_at);
+      return { ok: false, error: clash };
+    }
+  }
 
   try {
     const checkoutUrl = await createCheckout({
@@ -277,6 +305,59 @@ export async function payForLaunch(
       error: "The payment page didn't open. Please try again.",
     };
   }
+}
+
+// Someone who backed out of paying for a Boost can still use their free product
+export async function submitWithoutBoost(
+  productId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Please sign in again." };
+
+  const admin = supabaseAdmin();
+  const { data: product } = await admin
+    .from("products")
+    .select("id, launch_year, launch_week")
+    .eq("id", productId)
+    .eq("maker_id", user.id)
+    .eq("plan", "free")
+    .eq("status", "pending_payment")
+    .maybeSingle();
+  if (!product) return { ok: false, error: "Launch not found." };
+
+  const blocked = await launchBlock(
+    user.id,
+    { free: true, unpaid: false },
+    product.id,
+  );
+  if (blocked) return { ok: false, error: blocked };
+
+  // Its week may have filled up or started since
+  let week = { year: product.launch_year, number: product.launch_week, label: "" };
+  const open =
+    week.number > weekNumber(new Date()) &&
+    (await weekLoad([week], product.id))[weekKey(week)].total < WEEK_CAPACITY;
+  if (!open) {
+    const next = await nextFreeWeek();
+    if (!next)
+      return { ok: false, error: "Every upcoming week is full right now." };
+    week = next;
+  }
+
+  const { error } = await admin
+    .from("products")
+    .update({
+      status: "pending_review",
+      launch_year: week.year,
+      launch_week: week.number,
+    })
+    .eq("id", product.id)
+    .eq("status", "pending_payment");
+  if (error) return { ok: false, error: "Couldn't submit it. Please try again." };
+
+  revalidateTag("products", "max");
+  revalidatePath("/dashboard");
+  return { ok: true };
 }
 
 export type LaunchEdit = {

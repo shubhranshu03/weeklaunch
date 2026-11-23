@@ -1,6 +1,6 @@
 import { dodo } from "@/lib/dodo";
 import { applyDodoPayment } from "@/lib/payments";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { applyFullRefund } from "@/lib/refunds";
 
 // Dodo Payments calls this after a payment succeeds, fails or is refunded.
 // Add it in Dodo: Developer → Webhooks → https://<your site>/api/webhooks/dodo
@@ -17,8 +17,6 @@ export async function POST(request: Request) {
     return new Response("Invalid signature", { status: 401 });
   }
 
-  const admin = supabaseAdmin();
-
   if (event.type === "payment.succeeded" || event.type === "payment.failed") {
     // The event says what happened; the payment's own status is the source of truth
     await applyDodoPayment({
@@ -29,14 +27,10 @@ export async function POST(request: Request) {
   }
 
   if (event.type === "refund.succeeded") {
-    await admin
-      .from("payments")
-      .update({ status: "refunded", updated_at: new Date().toISOString() })
-      .eq("provider_payment_id", event.data.payment_id);
-    await admin
-      .from("directory_orders")
-      .update({ status: "refunded", updated_at: new Date().toISOString() })
-      .eq("provider_payment_id", event.data.payment_id);
+    const payment = await dodo().payments.retrieve(event.data.payment_id);
+    // Part refunds keep their perks; several that add up to the total don't
+    if (!event.data.is_partial || payment.refund_status === "full")
+      await applyFullRefund(payment);
     return Response.json({ ok: true });
   }
 

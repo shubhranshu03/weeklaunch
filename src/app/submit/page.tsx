@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { FREE_QUEUE_WEEKS } from "@/lib/data";
 import { paymentsConfigured } from "@/lib/dodo";
+import { freeLaunchUsed } from "@/lib/limits";
 import {
   getBoardWeeks,
   nextFreeWeek,
@@ -21,7 +22,7 @@ import { weekKey } from "@/lib/weeks";
 export const metadata: Metadata = {
   title: "Submit your product — launch free or go Premium",
   description:
-    "Launch your product on WeekLaunch in about 3 minutes. Add your details, pick a launch week and go live on Monday. Free launches available.",
+    "Launch your product on WeekLaunch in about 3 minutes. Add your details, pick a launch week and go live on Monday. Your first product is free.",
   alternates: { canonical: "/submit" },
 };
 
@@ -29,7 +30,7 @@ const highlights = [
   { icon: CalendarDays, text: "Live every Monday" },
   { icon: Clock, text: "Takes about 3 minutes" },
   { icon: ShieldCheck, text: "Reviewed within 24 hours" },
-  { icon: Gift, text: "Free option available" },
+  { icon: Gift, text: "First product free" },
 ];
 
 export default function SubmitPage() {
@@ -42,7 +43,7 @@ export default function SubmitPage() {
           url: `${SITE_URL}/submit`,
           name: "Submit your product to WeekLaunch",
           description:
-            "Launch your product on a weekly board for free, or go Premium to pick your week and get pinned at the top.",
+            "Launch your first product on a weekly board for free, or go Premium to pick your week and get pinned at the top.",
           isPartOf: { "@id": `${SITE_URL}/#website` },
         }}
       />
@@ -85,7 +86,8 @@ export default function SubmitPage() {
 }
 
 async function Form() {
-  if (!(await getCurrentUser()))
+  const user = await getCurrentUser();
+  if (!user)
     return (
       <div className="flex flex-col items-center rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center">
         <h2 className="text-xl font-semibold text-slate-900">
@@ -124,6 +126,7 @@ async function Form() {
       )}
       freeWeek={freeWeek}
       paymentsReady={paymentsConfigured}
+      freeUsed={await freeLaunchUsed(user.id)}
       siteUrl={SITE_URL}
     />
   );

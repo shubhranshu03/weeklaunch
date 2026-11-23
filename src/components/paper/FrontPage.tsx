@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { PREMIUM_PRICE, type Product } from "@/lib/data";
 import type { WeekSpace } from "@/lib/products";
+import { voteRanks } from "@/lib/ranks";
 import { weekKey, weekStart, type Week } from "@/lib/weeks";
 import { ProductLogo, UpvoteButton } from "../ProductRow";
 
@@ -90,6 +91,9 @@ function Kicker({ children }: { children: React.ReactNode }) {
   );
 }
 
+const rankLabel = (rank: number | null) =>
+  rank ? `No. ${rank} by votes` : "No votes yet";
+
 function Premium() {
   return (
     <span className="ml-2 rounded-sm border border-ink px-1 py-px align-middle font-sans text-[9px] font-bold uppercase tracking-wider text-ink">
@@ -129,12 +133,16 @@ function Byline({ product }: { product: Product }) {
   );
 }
 
-// The #1 launch, laid out as the front page's headline story
+// The top of the board (a pinned Premium launch, or else the most upvoted)
 function LeadStory({
   product,
+  rank,
+  current,
   soldOut,
 }: {
   product: Product;
+  rank: number | null;
+  current: boolean;
   soldOut: boolean;
 }) {
   const shot = product.screenshots[0];
@@ -146,7 +154,14 @@ function LeadStory({
   return (
     <article className="flex min-w-0 flex-col gap-4">
       <Kicker>
-        Leading this week{product.premium && <Premium />}
+        {product.premium
+          ? `Featured · ${rankLabel(rank)}`
+          : rank === 1
+            ? current
+              ? "Leading this week"
+              : "Won this week"
+            : rankLabel(rank)}
+        {product.premium && <Premium />}
       </Kicker>
       <Link href={`/products/${product.slug}`} className="group">
         <h2 className="font-display text-4xl font-black leading-[1.02] tracking-tight text-ink group-hover:text-press sm:text-6xl">
@@ -180,7 +195,9 @@ function LeadStory({
           )}
         </Link>
         <figcaption className="mt-2 font-sans text-[11px] italic text-ink-soft">
-          {product.name}, launched this week on WeekLaunch.
+          {product.premium
+            ? `${product.name} paid to be featured. Its rank comes only from votes.`
+            : `${product.name}, launched this week on WeekLaunch.`}
         </figcaption>
       </figure>
 
@@ -216,12 +233,20 @@ function LeadStory({
   );
 }
 
-// #2 and #3: smaller stories in the side column
-function SideStory({ product, rank }: { product: Product; rank: number }) {
+// The next two on the board, each with its real rank by votes
+function SideStory({
+  product,
+  rank,
+}: {
+  product: Product;
+  rank: number | null;
+}) {
   return (
     <article className="flex flex-col gap-2.5 py-5 first:pt-0 last:pb-0">
       <Kicker>
-        No. {rank} this week{product.premium && <Premium />}
+        {product.premium && "Featured · "}
+        {rankLabel(rank)}
+        {product.premium && <Premium />}
       </Kicker>
       <Link
         href={`/products/${product.slug}`}
@@ -251,7 +276,13 @@ function SideStory({ product, rank }: { product: Product; rank: number }) {
 }
 
 // Everything below the top 3, as a ruled results table
-function FullChart({ products, from }: { products: Product[]; from: number }) {
+function FullChart({
+  products,
+  ranks,
+}: {
+  products: Product[];
+  ranks: Map<string, number | null>;
+}) {
   return (
     <section aria-label="The rest of this week's launches">
       <div className="flex items-baseline justify-between border-b-2 border-ink pb-1.5">
@@ -259,14 +290,16 @@ function FullChart({ products, from }: { products: Product[]; from: number }) {
           The full chart
         </h2>
         <span className="font-sans text-[11px] uppercase tracking-[0.14em] text-ink-soft">
-          Ranked by votes
+          {products.some((p) => p.premium)
+            ? "Premium pinned · numbers are rank by votes"
+            : "Numbers are rank by votes"}
         </span>
       </div>
       <ol className="divide-y divide-rule">
-        {products.map((p, i) => (
+        {products.map((p) => (
           <li key={p.slug} className="flex items-center gap-3 py-3.5 sm:gap-4">
             <span className="w-8 shrink-0 font-display text-2xl font-black tabular-nums text-ink/35">
-              {from + i}
+              {ranks.get(p.slug) ?? "–"}
             </span>
             <Link
               href={`/products/${p.slug}`}
@@ -384,6 +417,7 @@ function SideHeading({ children }: { children: React.ReactNode }) {
 
 function LastWeek({ week, products }: { week?: Week; products: Product[] }) {
   if (!week || products.length === 0) return null;
+  const ranks = voteRanks(products);
   return (
     <section>
       <SideHeading>Last week&apos;s winners</SideHeading>
@@ -391,14 +425,14 @@ function LastWeek({ week, products }: { week?: Week; products: Product[] }) {
         Week {week.number} · {week.label}
       </p>
       <ol className="mt-2 divide-y divide-rule">
-        {products.map((p, i) => (
+        {products.map((p) => (
           <li key={p.slug}>
             <Link
               href={`/products/${p.slug}`}
               className="group flex items-baseline gap-3 py-2.5"
             >
               <span className="font-display text-xl font-black text-press">
-                {i + 1}
+                {ranks.get(p.slug)}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-serif font-semibold text-ink group-hover:text-press">
@@ -468,7 +502,7 @@ function NextEdition() {
         Be in next Monday&apos;s edition
       </p>
       <p className="mt-1 font-serif text-sm italic text-paper/75">
-        Free to list. Your launch gets its own page and a week on the chart.
+        Your first product is free. Each launch gets its own page and a week on the chart.
       </p>
       <Link
         href="/submit"
@@ -546,7 +580,7 @@ export function FrontPage({
   space = {},
 }: {
   weeks: Week[];
-  // Approved launches for each week, keyed "year-week", already ranked
+  // Approved launches for each week, keyed "year-week": Premium first, then by votes
   board: Record<string, Product[]>;
   lastWeek: { week?: Week; products: Product[] };
   // Spots still open per week, keyed "year-week"
@@ -565,6 +599,7 @@ export function FrontPage({
   const weekSpace = isCurrent || isFuture ? space[weekKey(selected)] : undefined;
   const soldOut = weekSpace?.left === 0;
   const chart = rest.slice(2);
+  const ranks = voteRanks(products);
 
   return (
     <div className="text-ink">
@@ -630,11 +665,20 @@ export function FrontPage({
       ) : (
         <div className="grid-cols-[minmax(0,1fr)] mt-8 grid gap-x-10 gap-y-12 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="grid-cols-[minmax(0,1fr)] grid min-w-0 gap-x-10 gap-y-12 xl:grid-cols-[minmax(0,1fr)_280px]">
-            <LeadStory product={lead} soldOut={soldOut} />
+            <LeadStory
+              product={lead}
+              rank={ranks.get(lead.slug) ?? null}
+              current={isCurrent}
+              soldOut={soldOut}
+            />
             {runnersUp.length > 0 && (
               <div className="divide-y divide-rule border-t-2 border-ink pt-5 xl:border-l xl:border-t-0 xl:border-ink/40 xl:pl-8 xl:pt-0">
-                {runnersUp.map((p, i) => (
-                  <SideStory key={p.slug} product={p} rank={i + 2} />
+                {runnersUp.map((p) => (
+                  <SideStory
+                    key={p.slug}
+                    product={p}
+                    rank={ranks.get(p.slug) ?? null}
+                  />
                 ))}
               </div>
             )}
@@ -643,7 +687,7 @@ export function FrontPage({
             </div>
             {chart.length > 0 && (
               <div className="xl:col-span-2">
-                <FullChart products={chart} from={4} />
+                <FullChart products={chart} ranks={ranks} />
               </div>
             )}
           </div>

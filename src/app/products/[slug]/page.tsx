@@ -539,8 +539,8 @@ async function ProductDetail({
             More in {product.tags[0]}
           </h2>
           <ol className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white">
-            {related.map((p, i) => (
-              <ProductRow key={p.slug} product={p} rank={i + 4} />
+            {related.map((p) => (
+              <ProductRow key={p.slug} product={p} />
             ))}
           </ol>
         </section>

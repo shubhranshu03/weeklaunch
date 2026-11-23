@@ -183,14 +183,17 @@ export function ProductRow({
   rank,
 }: {
   product: Product;
-  rank: number;
+  // Rank by votes. Left out in lists that aren't a ranking; null with no votes
+  rank?: number | null;
 }) {
-  const top = rank <= 3 ? podium[rank - 1] : null;
+  const top = rank && rank <= 3 ? podium[rank - 1] : null;
 
   return (
     <li className={`group ${top?.row ?? "bg-white"}`}>
       <div className="flex items-center gap-2.5 px-3 py-4 transition hover:bg-slate-50/70 sm:gap-4 sm:px-4 sm:py-5">
-        <div className="flex w-8 shrink-0 justify-center sm:w-9">
+        <div
+          className={`w-8 shrink-0 justify-center sm:w-9 ${rank === undefined ? "hidden" : "flex"}`}
+        >
           {top ? (
             <span
               className={`badge-pop rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase ${top.chip}`}
@@ -199,7 +202,7 @@ export function ProductRow({
             </span>
           ) : (
             <span className="text-sm font-semibold tabular-nums text-slate-300">
-              {String(rank).padStart(2, "0")}
+              {rank ? String(rank).padStart(2, "0") : "–"}
             </span>
           )}
         </div>

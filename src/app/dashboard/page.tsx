@@ -24,6 +24,7 @@ import { PayButton } from "@/components/PayButton";
 import { ProductLogo } from "@/components/ProductRow";
 import { ShareKit } from "@/components/ShareKit";
 import { SiteShell } from "@/components/SiteShell";
+import { SubmitWithoutBoost } from "@/components/SubmitWithoutBoost";
 import { isAdmin, requireUser } from "@/lib/auth";
 import { getDirectoryPackage } from "@/lib/directories";
 import { SITE_URL } from "@/lib/site";
@@ -185,7 +186,12 @@ async function Launches({
 
       {/* Dodo sends people back here with ?paid=<launch>&status=<result> */}
       {paid &&
-        (payStatus === "failed" || payStatus === "cancelled" ? (
+        (payStatus === "refunded" ? (
+          <p className="mt-4 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            <CircleX className="size-4 shrink-0" />
+            This payment was refunded, so what it paid for has been removed.
+          </p>
+        ) : payStatus === "failed" || payStatus === "cancelled" ? (
           <p className="mt-4 flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-800">
             <CircleX className="size-4 shrink-0" />
             The payment didn&apos;t go through, so you weren&apos;t charged. Try
@@ -288,6 +294,9 @@ async function Launches({
                       <PencilLine className="size-3.5" />
                       Edit
                     </Link>
+                  )}
+                  {status === "pending_payment" && !p.premium && (
+                    <SubmitWithoutBoost productId={p.id} />
                   )}
                   {status === "pending_payment" ? (
                     <PayButton

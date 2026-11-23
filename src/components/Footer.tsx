@@ -87,7 +87,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
                 Ready to launch?
               </h2>
               <p className="mt-1 text-sm text-white/80">
-                Join next Monday&apos;s board. Free to list, live in minutes.
+                Join next Monday&apos;s board. Your first product is free.
               </p>
             </div>
             <Link

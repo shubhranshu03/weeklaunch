@@ -40,7 +40,7 @@ WeekLaunch publishes a new launch leaderboard every Monday at 00:00 UTC. Makers 
 
 ## Pricing
 
-- Free launch: $0. Listed on a weekly board, own product page, upvotes and comments; free launches join a queue.
+- Free launch: $0, one product per account (further products need Premium). Listed on a weekly board, own product page, upvotes and comments; free launches join a queue.
 - Premium launch: $29 one-time. Pick any launch week, pinned at the top for the whole week, PREMIUM tag, a verified maker tick, dofollow backlink and a Monday newsletter mention.
 - Center feed ad: $19 per week. A sponsor card in the launch list after the top 3.
 - Directory submission: $49 for 30+ directories, $99 for 50+, $149 for 100+. Done for you, strongest sites first, with a report of every live link.

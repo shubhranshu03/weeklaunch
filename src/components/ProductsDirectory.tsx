@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { productCategories, type Product } from "@/lib/data";
+import { voteRanks } from "@/lib/ranks";
 import { ProductRow } from "./ProductRow";
 
 const icons: Record<string, { icon: LucideIcon; tint: string }> = {
@@ -48,6 +49,8 @@ export function ProductsDirectory({
       .filter((c) => category === "All" || c.name === category)
       .map((c) => ({
         ...c,
+        // Ranked within the whole category, so searching doesn't change a rank
+        ranks: voteRanks(allProducts.filter((p) => p.tags[0] === c.name)),
         items: allProducts
           .filter((p) => p.tags[0] === c.name)
           .filter(
@@ -162,8 +165,12 @@ export function ProductsDirectory({
                   </span>
                 </div>
                 <ol className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_1px_3px_rgb(15_23_42/0.04)]">
-                  {g.items.map((p, i) => (
-                    <ProductRow key={p.slug} product={p} rank={i + 1} />
+                  {g.items.map((p) => (
+                    <ProductRow
+                      key={p.slug}
+                      product={p}
+                      rank={g.ranks.get(p.slug)}
+                    />
                   ))}
                 </ol>
               </section>

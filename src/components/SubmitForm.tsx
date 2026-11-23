@@ -81,6 +81,7 @@ const plans = [
     blurb: "A good way to get started",
     icon: Rocket,
     features: [
+      ["One free product per account", true],
       ["Listed on a weekly launch board", true],
       ["Your own product page", true],
       ["Upvotes and comments", true],
@@ -183,6 +184,7 @@ export function SubmitForm({
   boostTaken,
   freeWeek: freeWeekInfo,
   paymentsReady,
+  freeUsed: freeUsedBefore,
   siteUrl,
 }: {
   // The next few launch weeks; the last one is the free queue week
@@ -194,6 +196,8 @@ export function SubmitForm({
   // Where a free launch goes: 3 weeks out, or later if those weeks are full
   freeWeek: Week;
   paymentsReady: boolean;
+  // Each account gets one free product
+  freeUsed: boolean;
   // The live address, for share links
   siteUrl: string;
 }) {
@@ -210,6 +214,7 @@ export function SubmitForm({
       : { ...empty, plan: "free", week: freeWeek };
 
   const { user } = useAuth();
+  const [freeUsed, setFreeUsed] = useState(freeUsedBefore);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(fresh);
   const [showErrors, setShowErrors] = useState(false);
@@ -259,7 +264,10 @@ export function SubmitForm({
         return;
       }
       if (res.checkoutUrl) window.location.assign(res.checkoutUrl);
-      else setDone({ id: res.id, slug: res.slug, week: res.week });
+      else {
+        if (form.plan === "free") setFreeUsed(true);
+        setDone({ id: res.id, slug: res.slug, week: res.week });
+      }
     });
   };
 
@@ -349,7 +357,7 @@ export function SubmitForm({
             }}
             className="btn-pop flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-slate-900"
           >
-            Submit another
+            {freeUsed ? "Launch another with Premium" : "Submit another"}
           </button>
         </div>
 
@@ -648,7 +656,7 @@ export function SubmitForm({
                         type="button"
                         aria-pressed={on}
                         // Premium needs payments to be set up
-                        disabled={premium && !paymentsReady}
+                        disabled={premium ? !paymentsReady : freeUsed}
                         onClick={() =>
                           setForm((f) => ({
                             ...f,
@@ -679,7 +687,9 @@ export function SubmitForm({
                               {p.title}
                             </span>
                             <span className="mt-0.5 block text-xs text-slate-500">
-                              {p.blurb}
+                              {!premium && freeUsed
+                                ? "You've used your one free product"
+                                : p.blurb}
                             </span>
                           </span>
                           <span
@@ -731,6 +741,12 @@ export function SubmitForm({
                     );
                   })}
                 </div>
+                {freeUsed && (
+                  <p className="mt-2 text-xs font-medium text-slate-700">
+                    Your free product is used. Launch this one with Premium for
+                    ${PREMIUM_PRICE}.
+                  </p>
+                )}
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-4">
@@ -1053,8 +1069,8 @@ function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
     >
       <span className="flex w-8 shrink-0 justify-center">
         {premium ? (
-          <span className="badge-pop rounded-md bg-brand-500 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
-            1st
+          <span className="badge-pop rounded-md bg-brand-500 px-1 py-0.5 text-[8px] font-bold uppercase text-white">
+            Pin
           </span>
         ) : (
           <span className="text-xs font-semibold text-slate-300">—</span>
@@ -1117,7 +1133,7 @@ function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
   const ghostRow = (
     <li aria-hidden className="flex items-center gap-2.5 px-3 py-4 opacity-45">
       <span className="w-8 shrink-0 text-center text-xs font-semibold text-slate-300">
-        {premium ? "02" : "01"}
+        —
       </span>
       <span className="size-10 shrink-0 rounded-full bg-slate-200" />
       <span className="min-w-0 flex-1 space-y-1.5">
@@ -1171,7 +1187,7 @@ function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
       </ol>
       <p className="border-t border-slate-100 bg-slate-50/60 px-3 py-2 text-[11px] text-slate-500">
         {premium
-          ? "Premium: pinned at the top all week."
+          ? "Premium: pinned at the top. Your rank still comes from votes."
           : "Free: ranked by upvotes among other launches."}
       </p>
     </div>
