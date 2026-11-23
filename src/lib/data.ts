@@ -23,6 +23,8 @@ export type Product = {
   year: number;
   // Web app, Mac app and so on, with the Mac details
   app: PlatformInfo;
+  // Free launches: the WeekLaunch badge was found on the maker's site
+  badgeVerified?: boolean;
   maker: { name: string; handle?: string; avatar?: string; verified?: boolean };
 };
 

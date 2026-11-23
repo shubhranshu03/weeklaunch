@@ -56,12 +56,24 @@ export function BadgePreview({
   );
 }
 
-export function CopyCode({ code }: { code: string }) {
+export function CopyCode({
+  code,
+  wrap = false,
+}: {
+  code: string;
+  wrap?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
 
   return (
     <div className="relative">
-      <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 pr-24 text-xs leading-relaxed text-slate-100">
+      <pre
+        className={`rounded-xl bg-slate-900 p-4 pr-24 text-xs leading-relaxed text-slate-100 ${
+          wrap
+            ? "max-h-72 overflow-y-auto whitespace-pre-wrap break-words"
+            : "overflow-x-auto"
+        }`}
+      >
         <code>{code}</code>
       </pre>
       <button

@@ -53,6 +53,8 @@ export type ProductRowDb = {
   price_model?: PriceModel | null;
   get_from?: GetFrom[] | null;
   apple_silicon?: boolean | null;
+  // Missing until migration 008 has run
+  badge_verified_at?: string | null;
   maker?: {
     name: string;
     handle: string;
@@ -110,6 +112,7 @@ export function toProduct(r: ProductRowDb): Product {
       getFrom: r.get_from ?? [],
       appleSilicon: r.apple_silicon ?? null,
     },
+    badgeVerified: !!r.badge_verified_at,
   };
 }
 

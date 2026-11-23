@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ArrowUpRight, Crown, Zap } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, Crown, Zap } from "lucide-react";
 import { ProductLogo } from "@/components/ProductRow";
 import { DirectoryOrderButtons } from "@/components/DirectoryOrderButtons";
 import { ReviewButtons } from "@/components/ReviewButtons";
@@ -92,6 +92,16 @@ async function Queue() {
                 {p.name}
                 {p.premium && <Crown className="size-3.5 text-amber-500" />}
                 {p.boosted && <Zap className="size-3.5 text-brand-600" />}
+                {!p.premium &&
+                  (p.badgeVerified ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                      <BadgeCheck className="size-3" /> Badge on site
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                      No badge yet
+                    </span>
+                  ))}
               </p>
               <p className="text-sm text-slate-500">{p.tagline}</p>
               <p className="mt-1 text-xs text-slate-400">

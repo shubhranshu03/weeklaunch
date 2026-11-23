@@ -297,7 +297,11 @@ async function ProductDetail({
             <a
               href={product.website}
               target="_blank"
-              rel="noopener noreferrer"
+              rel={
+                product.premium || product.badgeVerified
+                  ? "noopener"
+                  : "noopener nofollow"
+              }
               className="btn-pop flex h-11 items-center gap-1.5 rounded-xl bg-amber-300 px-4 text-sm font-bold text-slate-900 hover:bg-amber-200"
             >
               Visit website <ArrowUpRight className="size-4" />

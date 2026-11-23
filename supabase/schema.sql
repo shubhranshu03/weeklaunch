@@ -110,6 +110,10 @@ alter table public.products
     check (get_from <@ array['app_store', 'download', 'homebrew']::text[]),
   add column if not exists apple_silicon boolean;
 
+-- When the WeekLaunch badge was found on a free launch's site (also in migrations/008_badge.sql)
+alter table public.products
+  add column if not exists badge_verified_at timestamptz;
+
 create index if not exists products_week_idx
   on public.products (launch_year, launch_week) where status = 'approved';
 create index if not exists products_maker_idx on public.products (maker_id);

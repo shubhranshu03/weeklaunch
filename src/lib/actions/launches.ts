@@ -474,6 +474,9 @@ export async function updateLaunch(
       ...(("platform" in current || app.value.platform !== "web") &&
         platformColumns(app.value)),
       ...(backToReview && { status: "pending_review" }),
+      // The badge was checked on the old site
+      ...(websiteChanged &&
+        "badge_verified_at" in current && { badge_verified_at: null }),
     })
     .eq("id", current.id);
   if (error)

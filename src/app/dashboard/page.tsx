@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
+  BadgeCheck,
   ArrowUpRight,
   CalendarClock,
   CircleCheck,
@@ -20,6 +21,7 @@ import {
   ShieldCheck,
   Triangle,
 } from "lucide-react";
+import { BadgeStep } from "@/components/BadgeStep";
 import { PayButton } from "@/components/PayButton";
 import { ProductLogo } from "@/components/ProductRow";
 import { ShareKit } from "@/components/ShareKit";
@@ -110,7 +112,7 @@ async function Launches({
   const [
     launches,
     now,
-    { paid, status: payStatus, payment_id, directory },
+    { paid, status: payStatus, payment_id, directory, badge },
     { data: dirOrders },
   ] = await Promise.all([
     getMakerLaunches(user.id),
@@ -181,6 +183,14 @@ async function Launches({
               working days and email you the report.
             </>
           )}
+        </p>
+      )}
+
+      {badge === "verified" && (
+        <p className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          <CircleCheck className="size-4 shrink-0" />
+          Badge found, thanks! Your launch is in the review queue, and your link
+          becomes a dofollow backlink.
         </p>
       )}
 
@@ -257,6 +267,12 @@ async function Launches({
             const st = statusStyle[ph];
             // In review or coming up: worth sharing before launch day
             const canShare = ph === "pending_review" || ph === "scheduled";
+            // Free launches still waiting for the badge on their site
+            const needsBadge =
+              !p.premium &&
+              !p.badgeVerified &&
+              status !== "rejected" &&
+              status !== "pending_payment";
             return (
               <li
                 key={p.id}
@@ -316,6 +332,27 @@ async function Launches({
                     </Link>
                   ) : null}
                 </div>
+                {needsBadge && (
+                  <details
+                    open
+                    className="group w-full rounded-2xl border-[1.5px] border-amber-300 bg-amber-50/60 px-4 py-3"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                      <span className="flex items-center gap-2">
+                        <BadgeCheck className="size-4 text-amber-600" />
+                        Add our badge to your site to get reviewed
+                      </span>
+                      <ChevronDown className="size-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
+                    </summary>
+                    <div className="mt-4">
+                      <BadgeStep
+                        productId={p.id}
+                        slug={p.slug}
+                        website={p.website}
+                      />
+                    </div>
+                  </details>
+                )}
                 {canShare && (
                   <details className="group w-full rounded-2xl bg-slate-50 px-4 py-3">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">

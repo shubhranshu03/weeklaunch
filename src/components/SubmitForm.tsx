@@ -35,6 +35,7 @@ import { platformLabel, webApp, type PlatformInfo } from "@/lib/platforms";
 import { uploadImage } from "@/lib/upload";
 import { useAuth } from "@/lib/useAuth";
 import { weekLabel, type Week } from "@/lib/weeks";
+import { BadgeStep } from "./BadgeStep";
 import { PlatformFields, platformIncomplete } from "./PlatformFields";
 import { ShareKit } from "./ShareKit";
 
@@ -171,8 +172,7 @@ function errorsFor(step: number, f: Form) {
     if (!f.name.trim()) e.name = "Add your product name.";
     if (!/^https?:\/\/\S+\.\S+/.test(f.website.trim()))
       e.website = "Add a full link, like https://yourproduct.com";
-    if (platformIncomplete(f.app))
-      e.app = "Fill in the Mac app details.";
+    if (platformIncomplete(f.app)) e.app = "Fill in the Mac app details.";
     if (f.tagline.trim().length < 10)
       e.tagline = "Write a tagline of at least 10 characters.";
   }
@@ -332,6 +332,44 @@ export function SubmitForm({
   const week = allWeeks.find((w) => w.number === form.week)!;
   const total =
     (form.plan === "premium" ? PREMIUM_PRICE : 0) + (boost ? BOOST_PRICE : 0);
+
+  if (done && form.plan === "free") {
+    return (
+      <div className="rounded-3xl border border-slate-200 bg-white px-5 py-10 sm:px-8">
+        <div className="text-center">
+          <span className="badge-pop inline-flex size-14 items-center justify-center rounded-2xl bg-emerald-300 text-slate-900">
+            <CheckCircle2 className="size-7" />
+          </span>
+          <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-900">
+            One last step: add our badge
+          </h2>
+          <p className="mx-auto mt-2 max-w-lg text-slate-500">
+            {form.name} is saved for Week {done.week} ({weekLabel(done.week)}).
+            Free launches show the WeekLaunch badge on their site. Once
+            it&apos;s found, we review your launch and your link becomes a
+            dofollow backlink.
+          </p>
+        </div>
+        <div className="mx-auto mt-8 max-w-2xl">
+          <BadgeStep
+            productId={done.id}
+            slug={done.slug}
+            website={form.website.trim()}
+            next="/dashboard?badge=verified"
+          />
+          <p className="mt-5 text-center text-sm text-slate-500">
+            Need more time?{" "}
+            <Link
+              href="/dashboard"
+              className="font-semibold text-brand-700 hover:underline"
+            >
+              Do it later from your dashboard
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (done) {
     return (
