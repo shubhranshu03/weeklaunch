@@ -30,6 +30,7 @@ WeekLaunch publishes a new launch leaderboard every Monday at 00:00 UTC. Makers 
 
 - [This week's launches](${SITE_URL}/): the current weekly leaderboard
 - [All products](${SITE_URL}/products): every product, grouped by category
+- [New Mac apps](${SITE_URL}/products/mac): Mac apps launched on WeekLaunch, with price, where to get them and Apple Silicon support
 - [Submit a product](${SITE_URL}/submit): launch for free or with Premium
 - [Pricing](${SITE_URL}/pricing): plans for launches and ads
 - [Directory submission](${SITE_URL}/directory-submission): we submit your product to 30, 50 or 100+ directories for you

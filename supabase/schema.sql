@@ -100,6 +100,16 @@ create table if not exists public.products (
   created_at timestamptz not null default now()
 );
 
+-- What it runs on, plus details for Mac apps (also in migrations/007_platforms.sql)
+alter table public.products
+  add column if not exists platform text not null default 'web'
+    check (platform in ('web', 'mac', 'ios', 'android', 'chrome', 'windows', 'other')),
+  add column if not exists price_model text
+    check (price_model is null or price_model in ('free', 'paid', 'freemium')),
+  add column if not exists get_from text[] not null default '{}'
+    check (get_from <@ array['app_store', 'download', 'homebrew']::text[]),
+  add column if not exists apple_silicon boolean;
+
 create index if not exists products_week_idx
   on public.products (launch_year, launch_week) where status = 'approved';
 create index if not exists products_maker_idx on public.products (maker_id);

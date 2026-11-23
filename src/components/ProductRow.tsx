@@ -93,6 +93,22 @@ export function PremiumBadge({ size = "sm" }: { size?: "sm" | "md" }) {
   );
 }
 
+// Marks a Mac app wherever a launch is listed
+export function MacBadge({ paper = false }: { paper?: boolean }) {
+  return (
+    <span
+      title="Mac app"
+      className={
+        paper
+          ? "ml-2 inline-flex items-center rounded-sm border border-ink px-1 py-px align-middle font-sans text-[9px] font-bold uppercase tracking-wider text-ink"
+          : "inline-flex shrink-0 items-center gap-0.5 rounded-md border border-slate-300 bg-white px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-slate-700"
+      }
+    >
+      Mac
+    </span>
+  );
+}
+
 export function UpvoteButton({
   productId,
   count,
@@ -224,6 +240,7 @@ export function ProductRow({
                 />
               )}
               {product.premium && <PremiumBadge />}
+              {product.app.platform === "mac" && <MacBadge />}
             </div>
             <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-slate-500 sm:line-clamp-1">
               {product.tagline}

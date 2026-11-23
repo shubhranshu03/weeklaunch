@@ -31,9 +31,11 @@ import {
   WEEK_CAPACITY,
   productCategories,
 } from "@/lib/data";
+import { platformLabel, webApp, type PlatformInfo } from "@/lib/platforms";
 import { uploadImage } from "@/lib/upload";
 import { useAuth } from "@/lib/useAuth";
 import { weekLabel, type Week } from "@/lib/weeks";
+import { PlatformFields, platformIncomplete } from "./PlatformFields";
 import { ShareKit } from "./ShareKit";
 
 const steps = ["Basics", "Details", "Launch", "Review"];
@@ -52,6 +54,7 @@ type Form = {
   // Premium only: shown on the product page and to search engines
   highlights: string[];
   faqs: { q: string; a: string }[];
+  app: PlatformInfo;
 };
 
 const MAX_EXTRAS = 5;
@@ -69,6 +72,7 @@ const empty: Form = {
   boost: false,
   highlights: ["", "", ""],
   faqs: [{ q: "", a: "" }],
+  app: webApp,
 };
 
 const MAX_SHOTS = 5;
@@ -167,6 +171,8 @@ function errorsFor(step: number, f: Form) {
     if (!f.name.trim()) e.name = "Add your product name.";
     if (!/^https?:\/\/\S+\.\S+/.test(f.website.trim()))
       e.website = "Add a full link, like https://yourproduct.com";
+    if (platformIncomplete(f.app))
+      e.app = "Fill in the Mac app details.";
     if (f.tagline.trim().length < 10)
       e.tagline = "Write a tagline of at least 10 characters.";
   }
@@ -258,6 +264,7 @@ export function SubmitForm({
         boost,
         highlights: form.highlights,
         faqs: form.faqs,
+        app: form.app,
       });
       if (!res.ok) {
         setError(res.error);
@@ -450,6 +457,11 @@ export function SubmitForm({
                   placeholder="https://yourproduct.com"
                 />
               </Field>
+              <PlatformFields
+                value={form.app}
+                onChange={(v) => set("app", v)}
+                showErrors={!!errors.app}
+              />
               <Field
                 label="Tagline"
                 hint={`${form.tagline.length}/60`}
@@ -923,6 +935,7 @@ export function SubmitForm({
                 ["Website", form.website],
                 ["Tagline", form.tagline],
                 ["Categories", form.categories.join(", ")],
+                ["Platform", platformLabel(form.app.platform)],
                 [
                   "Plan",
                   form.plan === "premium"

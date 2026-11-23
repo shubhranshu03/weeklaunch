@@ -1,3 +1,5 @@
+import type { PlatformInfo } from "./platforms";
+
 export type Product = {
   id: string;
   slug: string;
@@ -19,6 +21,8 @@ export type Product = {
   faqs: { q: string; a: string }[];
   week: number;
   year: number;
+  // Web app, Mac app and so on, with the Mac details
+  app: PlatformInfo;
   maker: { name: string; handle?: string; avatar?: string; verified?: boolean };
 };
 
@@ -28,8 +32,6 @@ export type LaunchStatus =
 // Pricing, in US dollars
 export const PREMIUM_PRICE = 29;
 export const BOOST_PRICE = 19;
-// One of the two "ear" ad boxes beside the home page title, per week
-export const EAR_AD_PRICE = 29;
 // Launches allowed in one week, free and Premium together
 export const WEEK_CAPACITY = 25;
 // Of those, how many can be Premium

@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { EditLaunchForm } from "@/components/EditLaunchForm";
 import { SiteShell } from "@/components/SiteShell";
 import { requireUser } from "@/lib/auth";
-import type { ProductRowDb } from "@/lib/products";
+import { toProduct, type ProductRowDb } from "@/lib/products";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -94,6 +94,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
         shots: data.screenshots,
         highlights: data.highlights ?? [],
         faqs: data.faqs ?? [],
+        app: toProduct(data).app,
       }}
     />
   );

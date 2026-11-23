@@ -5,6 +5,11 @@ import { getCurrentUser } from "../auth";
 import { FREE_QUEUE_WEEKS, WEEK_CAPACITY, productCategories } from "../data";
 import { createCheckout, paymentsConfigured } from "../dodo";
 import { launchBlock } from "../limits";
+import {
+  cleanPlatform,
+  platformColumns,
+  type PlatformInfo,
+} from "../platforms";
 import { nextFreeWeek, premiumLeft, weekLoad } from "../products";
 import { mediaPrefix } from "../supabase/env";
 import { supabaseAdmin } from "../supabase/server";
@@ -24,6 +29,7 @@ export type LaunchInput = {
   // Premium only
   highlights: string[];
   faqs: { q: string; a: string }[];
+  app: PlatformInfo;
 };
 
 // Trims the Premium extras and drops empty or oversized entries
@@ -53,8 +59,12 @@ const palette = [
   ["#06b6d4", "#3b82f6"],
 ];
 
+// Addresses already used by pages under /products
+const reservedSlugs = new Set(["mac"]);
+
 function slugify(name: string) {
-  return (
+  const slug = (
+
     name
       .toLowerCase()
       .normalize("NFKD")
@@ -62,6 +72,7 @@ function slugify(name: string) {
       .replace(/^-+|-+$/g, "")
       .slice(0, 40) || "product"
   );
+  return reservedSlugs.has(slug) ? `${slug}-app` : slug;
 }
 
 async function uniqueSlug(name: string) {
@@ -109,6 +120,8 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
     };
   if (tags.length === 0 || tags.length > 3)
     return { ok: false, error: "Pick one to three categories." };
+  const app = cleanPlatform(input.app);
+  if (!app.ok) return app;
 
   const premium = input.plan === "premium";
   const paid = premium || input.boost;
@@ -168,6 +181,8 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       logo_url: ownFile(input.logo, user.id) ? input.logo : null,
       screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
       ...(premium ? cleanExtras(input) : { highlights: [], faqs: [] }),
+      // Web is the default, so web launches still save before migration 007 runs
+      ...(app.value.platform !== "web" && platformColumns(app.value)),
       // A premium launch holds its spot while the maker pays; it stays hidden until paid
       plan: premium ? "premium" : "free",
       status: paid ? "pending_payment" : "pending_review",
@@ -370,6 +385,7 @@ export type LaunchEdit = {
   shots: string[];
   highlights: string[];
   faqs: { q: string; a: string }[];
+  app: PlatformInfo;
 };
 
 // A maker updates their own launch. The address (slug), plan and week stay the
@@ -387,7 +403,7 @@ export async function updateLaunch(
   const admin = supabaseAdmin();
   const { data: current } = await admin
     .from("products")
-    .select("id, slug, plan, status, website, logo_url")
+    .select("*")
     .eq("id", productId)
     .eq("maker_id", user.id)
     .maybeSingle();
@@ -421,6 +437,8 @@ export async function updateLaunch(
     };
   if (tags.length === 0 || tags.length > 3)
     return { ok: false, error: "Pick one to three categories." };
+  const app = cleanPlatform(input.app);
+  if (!app.ok) return app;
 
   // Keep the old logo, or take one this maker uploaded
   const logo =
@@ -452,6 +470,9 @@ export async function updateLaunch(
       logo_glyph: name.slice(0, 2).replace(/\s/g, "").toUpperCase() || "W",
       screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
       ...extras,
+      // Once migration 007 has run the columns exist; before that only web is kept
+      ...(("platform" in current || app.value.platform !== "web") &&
+        platformColumns(app.value)),
       ...(backToReview && { status: "pending_review" }),
     })
     .eq("id", current.id);

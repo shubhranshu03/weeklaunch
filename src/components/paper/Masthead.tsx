@@ -6,7 +6,6 @@ import { Suspense, useState, useSyncExternalStore } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 import { weekNumber } from "@/lib/weeks";
-import { EAR_AD_PRICE } from "@/lib/data";
 import { LogoMark } from "../Logo";
 import { EditionToggle } from "./EditionToggle";
 
@@ -48,32 +47,6 @@ function useIssue() {
     noSubscribe,
     () => weekNumber(new Date()),
     () => null,
-  );
-}
-
-// A small boxed ad in the top corner beside the nameplate, like a newspaper's
-// "ears". Wide screens only, so the title keeps the room on phones.
-function EarAd({ side }: { side: "left" | "right" }) {
-  return (
-    <Link
-      href="/pricing#ads"
-      aria-label={`Advertisement: book the ${side} ear ad spot`}
-      className={`group hidden border-2 border-ink p-0.5 xl:block ${
-        side === "left" ? "-rotate-1" : "rotate-1"
-      }`}
-    >
-      <span className="block border border-ink px-3 py-3 text-center">
-        <span className="block font-sans text-[9px] uppercase tracking-[0.24em] text-ink-soft">
-          Advertisement
-        </span>
-        <span className="mt-1 block font-display text-lg font-black leading-tight text-ink group-hover:text-press">
-          Your ad in this corner
-        </span>
-        <span className="mt-0.5 block font-serif text-xs italic text-ink-soft">
-          First thing readers see. ${EAR_AD_PRICE}/week.
-        </span>
-      </span>
-    </Link>
   );
 }
 
@@ -149,15 +122,14 @@ function MastheadView({
         </div>
       </div>
 
-      {/* Nameplate, with a paid "ear" ad on each side on the home page */}
+      {/* Nameplate */}
       <div
         className={`border-b-[3px] border-double border-ink ${
           compact
             ? "py-3 text-center sm:py-4"
-            : "grid items-center gap-6 py-5 text-center sm:py-7 xl:grid-cols-[200px_minmax(0,1fr)_200px]"
+            : "py-5 text-center sm:py-7"
         }`}
       >
-        {!compact && <EarAd side="left" />}
         <div>
           <Link
             href="/"
@@ -184,7 +156,6 @@ function MastheadView({
             </p>
           )}
         </div>
-        {!compact && <EarAd side="right" />}
       </div>
 
       {/* Section links */}

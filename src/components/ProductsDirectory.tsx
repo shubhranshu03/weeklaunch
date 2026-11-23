@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   BarChart3,
@@ -37,8 +38,11 @@ const icons: Record<string, { icon: LucideIcon; tint: string }> = {
 
 export function ProductsDirectory({
   products: allProducts,
+  view = "all",
 }: {
   products: Product[];
+  // "mac" lists Mac apps only, on /products/mac
+  view?: "all" | "mac";
 }) {
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
@@ -74,12 +78,34 @@ export function ProductsDirectory({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              All products
+              {view === "mac" ? "New Mac apps" : "All products"}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              {allProducts.length} products across {productCategories.length}{" "}
-              categories
+              {view === "mac"
+                ? `${allProducts.length} Mac ${allProducts.length === 1 ? "app" : "apps"} launched by indie makers, ranked by votes`
+                : `${allProducts.length} products across ${productCategories.length} categories`}
             </p>
+            <nav aria-label="Platform" className="mt-3 flex gap-2">
+              {(
+                [
+                  ["all", "All products", "/products"],
+                  ["mac", "Mac apps", "/products/mac"],
+                ] as const
+              ).map(([id, label, href]) => (
+                <Link
+                  key={id}
+                  href={href}
+                  aria-current={view === id ? "page" : undefined}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                    view === id
+                      ? "badge-pop bg-slate-900 text-white"
+                      : "border-[1.5px] border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
           </div>
           <label className="relative block sm:w-64">
             <span className="sr-only">Search products</span>

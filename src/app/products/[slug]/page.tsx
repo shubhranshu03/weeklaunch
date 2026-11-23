@@ -18,8 +18,10 @@ import { Comments } from "@/components/Comments";
 import { JsonLd } from "@/components/JsonLd";
 import { BadgePreview, CopyCode } from "@/components/LaunchBadge";
 import { badgeCode } from "@/lib/badge";
+import { getFromLabel, platformLabel, priceLabel } from "@/lib/platforms";
 import { SITE_URL } from "@/lib/site";
 import {
+  MacBadge,
   PremiumBadge,
   ProductLogo,
   ProductRow,
@@ -194,7 +196,19 @@ async function ProductDetail({
               }),
               applicationCategory: "BusinessApplication",
               applicationSubCategory: product.tags[0],
-              operatingSystem: "Web",
+              operatingSystem:
+                product.app.platform === "mac"
+                  ? "macOS"
+                  : product.app.platform === "ios"
+                    ? "iOS"
+                    : product.app.platform === "android"
+                      ? "Android"
+                      : product.app.platform === "windows"
+                        ? "Windows"
+                        : "Web",
+              ...(product.app.priceModel === "free" && {
+                offers: { "@type": "Offer", price: 0, priceCurrency: "USD" },
+              }),
               keywords: product.tags.join(", "),
               datePublished: launched.toISOString(),
               creator: { "@type": "Person", name: product.maker.name },
@@ -265,6 +279,7 @@ async function ProductDetail({
                 />
               )}
               {product.premium && <PremiumBadge size="md" />}
+              {product.app.platform === "mac" && <MacBadge />}
             </h1>
             <p className="mt-1 text-slate-500">{product.tagline}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -419,6 +434,21 @@ async function ProductDetail({
           {[
             ["What it is", product.tagline],
             ["Category", product.tags.join(", ")],
+            ["Platform", platformLabel(product.app.platform)],
+            ...(product.app.platform === "mac"
+              ? [
+                  ["Price", product.app.priceModel ? priceLabel(product.app.priceModel) : "Not given"],
+                  ["Get it from", product.app.getFrom.map(getFromLabel).join(", ") || "Not given"],
+                  [
+                    "Apple Silicon",
+                    product.app.appleSilicon === null
+                      ? "Not stated"
+                      : product.app.appleSilicon
+                        ? "Runs natively"
+                        : "Not native yet",
+                  ],
+                ]
+              : []),
             ["Made by", product.maker.name],
             ["Website", host],
             ["Launched on WeekLaunch", `Week ${product.week}, ${launchedOn}`],

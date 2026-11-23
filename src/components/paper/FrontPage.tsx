@@ -14,7 +14,7 @@ import { PREMIUM_PRICE, type Product } from "@/lib/data";
 import type { WeekSpace } from "@/lib/products";
 import { voteRanks } from "@/lib/ranks";
 import { weekKey, weekStart, type Week } from "@/lib/weeks";
-import { ProductLogo, UpvoteButton } from "../ProductRow";
+import { MacBadge, ProductLogo, UpvoteButton } from "../ProductRow";
 
 // Time left until voting closes (Sunday night, 24:00 UTC)
 function VotingClock({ week }: { week: number }) {
@@ -125,6 +125,7 @@ function Byline({ product }: { product: Product }) {
           aria-label="Verified maker"
         />
       )}
+      {product.app.platform === "mac" && <span>· Mac app</span>}
       {tags && <span>· {tags}</span>}
       <span className="flex items-center gap-1">
         · <MessageSquare className="size-3" /> {product.comments}
@@ -310,6 +311,7 @@ function FullChart({
                 <h3 className="truncate font-serif text-lg font-semibold leading-tight text-ink group-hover:text-press">
                   {p.name}
                   {p.premium && <Premium />}
+                  {p.app.platform === "mac" && <MacBadge paper />}
                 </h3>
                 <p className="truncate font-serif text-sm italic text-ink-soft">
                   {p.tagline}

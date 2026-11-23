@@ -7,6 +7,7 @@ import {
   type LaunchStatus,
   type Product,
 } from "./data";
+import type { GetFrom, Platform, PriceModel } from "./platforms";
 import { supabaseConfigured } from "./supabase/env";
 import { supabaseAdmin, supabasePublic } from "./supabase/server";
 import {
@@ -47,6 +48,11 @@ export type ProductRowDb = {
   rating_score: number | null;
   rating_count: number;
   created_at: string;
+  // Missing until migration 007 has run
+  platform?: Platform | null;
+  price_model?: PriceModel | null;
+  get_from?: GetFrom[] | null;
+  apple_silicon?: boolean | null;
   maker?: {
     name: string;
     handle: string;
@@ -98,6 +104,12 @@ export function toProduct(r: ProductRowDb): Product {
           verified: r.maker.verified,
         }
       : { name: r.maker_name || "A maker" },
+    app: {
+      platform: r.platform ?? "web",
+      priceModel: r.price_model ?? null,
+      getFrom: r.get_from ?? [],
+      appleSilicon: r.apple_silicon ?? null,
+    },
   };
 }
 
@@ -163,6 +175,13 @@ export async function getAllProducts(): Promise<Product[]> {
     .order("upvotes_count", { ascending: false })
     .limit(1000);
   return ((data ?? []) as ProductRowDb[]).map(toProduct);
+}
+
+export async function getMacApps(): Promise<Product[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products");
+  return (await getAllProducts()).filter((p) => p.app.platform === "mac");
 }
 
 export async function getProduct(slug: string): Promise<Product | null> {

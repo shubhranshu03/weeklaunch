@@ -14,6 +14,7 @@ import {
 import { updateLaunch, type LaunchEdit } from "@/lib/actions/launches";
 import { productCategories } from "@/lib/data";
 import { uploadImage } from "@/lib/upload";
+import { PlatformFields } from "./PlatformFields";
 import { PremiumExtras } from "./SubmitForm";
 
 const input =
@@ -139,6 +140,7 @@ export function EditLaunchForm({
             />
           </Field>
         </div>
+        <PlatformFields value={form.app} onChange={(v) => set("app", v)} />
         {approved && websiteChanged && (
           <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
             Changing the website sends your launch back for a quick review.
