@@ -355,7 +355,7 @@ function CenterAd({ product }: { product?: Product }) {
       {product ? (
         <Link
           href={`/products/${product.slug}`}
-          className="group mt-1 flex items-center gap-4 border border-ink bg-white px-4 py-5 sm:gap-6 sm:px-7"
+          className="ad-glow group mt-1.5 flex items-center gap-4 rounded-sm bg-white px-4 py-5 sm:gap-6 sm:px-7"
         >
           <ProductLogo logo={product.logo} name={product.name} />
           <div className="min-w-0 flex-1">
@@ -373,7 +373,7 @@ function CenterAd({ product }: { product?: Product }) {
       ) : (
         <Link
           href="/pricing#ads"
-          className="group mt-1 flex flex-col items-center gap-3 border border-dashed border-ink/60 px-4 py-6 text-center sm:flex-row sm:justify-between sm:px-7 sm:text-left"
+          className="ad-glow ad-glow-soft group mt-1.5 flex flex-col items-center gap-3 rounded-sm px-4 py-6 text-center sm:flex-row sm:justify-between sm:px-7 sm:text-left"
         >
           <div>
             <p className="font-display text-2xl font-black leading-tight text-ink group-hover:text-press sm:text-3xl">
