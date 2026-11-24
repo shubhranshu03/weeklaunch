@@ -16,6 +16,7 @@ import { voteRanks } from "@/lib/ranks";
 import { weekKey, weekStart, type Week } from "@/lib/weeks";
 import { MacBadge, ProductLogo, UpvoteButton } from "../ProductRow";
 import { TvAd } from "./TvAd";
+import { directoryPackages } from "@/lib/directories";
 
 // Time left until voting closes (Sunday night, 24:00 UTC)
 function VotingClock({ week }: { week: number }) {
@@ -479,24 +480,80 @@ function Classifieds() {
   );
 }
 
-function NextEdition() {
+// Fills the bottom of the column beside the lead story on wide screens
+function ReadersGuide({
+  current,
+  week,
+  first,
+}: {
+  current: boolean;
+  week: number;
+  first: boolean;
+}) {
   return (
-    <section className="bg-ink p-5 text-paper">
-      <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-paper/60">
-        Makers wanted
+    <section
+      className={`hidden flex-1 flex-col border-y-[3px] border-double border-ink py-4 xl:flex ${
+        first ? "" : "mt-6"
+      }`}
+    >
+      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-press">
+        Reader&apos;s guide
       </p>
-      <p className="mt-2 font-display text-2xl font-black leading-tight">
-        Be in next Monday&apos;s edition
+      <p className="mt-1.5 font-display text-xl font-black leading-tight text-ink">
+        How the vote works
       </p>
-      <p className="mt-1 font-serif text-sm italic text-paper/75">
-        Your first product is free. Each launch gets its own page and a week on
-        the chart.
+      <ol className="mt-3 space-y-2.5 font-serif text-sm leading-snug text-ink-soft">
+        {[
+          "Upvote the launches you like. One vote per launch.",
+          "Votes only count during the launch week.",
+          "The most votes takes the lead story. The top three make next week's winners list.",
+        ].map((t, i) => (
+          <li key={t} className="flex gap-2.5">
+            <span className="font-display text-lg font-black leading-none text-press">
+              {i + 1}
+            </span>
+            <span>{t}</span>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-auto pt-4 font-sans text-xs text-ink-soft">
+        {current ? (
+          <VotingClock week={week} />
+        ) : (
+          "This edition's voting is closed."
+        )}
       </p>
       <Link
         href="/submit"
+        className="mt-2 inline-flex items-center gap-1 self-start font-sans text-xs font-bold uppercase tracking-wider text-press hover:underline"
+      >
+        Launch yours next week <ArrowRight className="size-3.5" />
+      </Link>
+    </section>
+  );
+}
+
+// Sidebar promo for the done-for-you directory submission service
+function NextEdition() {
+  const top = directoryPackages[directoryPackages.length - 1];
+  const from = Math.min(...directoryPackages.map((p) => p.price));
+  return (
+    <section className="bg-ink p-5 text-paper">
+      <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-paper/60">
+        Done for you
+      </p>
+      <p className="mt-2 font-display text-2xl font-black leading-tight">
+        We launch your product on {top.count} directories
+      </p>
+      <p className="mt-1 font-serif text-sm italic text-paper/75">
+        Product Hunt, G2, Capterra, BetaList and more, strongest sites first.
+        You get a report with every live link. From ${from}.
+      </p>
+      <Link
+        href="/directory-submission"
         className="mt-4 inline-flex items-center gap-1 rounded-sm border-[1.5px] border-paper bg-press px-4 py-2 font-sans text-sm font-bold text-white transition hover:bg-[#c92d24]"
       >
-        Submit your product <ArrowRight className="size-4" />
+        See the packages <ArrowRight className="size-4" />
       </Link>
     </section>
   );
@@ -582,6 +639,7 @@ export function FrontPage({
   const products = board[weekKey(selected)] ?? [];
   const boosted = products.find((p) => p.boosted);
   const [lead, ...rest] = products;
+  // Two launches beside the lead story; the reader's guide fills the rest
   const runnersUp = rest.slice(0, 2);
   // Past weeks are closed anyway, so only this week and later get a stamp
   const weekSpace =
@@ -660,17 +718,31 @@ export function FrontPage({
               current={isCurrent}
               soldOut={soldOut}
             />
-            {runnersUp.length > 0 && (
-              <div className="divide-y divide-rule border-t-2 border-ink pt-5 xl:border-l xl:border-t-0 xl:border-ink/40 xl:pl-8 xl:pt-0">
-                {runnersUp.map((p) => (
-                  <SideStory
-                    key={p.slug}
-                    product={p}
-                    rank={ranks.get(p.slug) ?? null}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Stretches to the lead story's height; the reader's guide fills what's left */}
+            <div
+              className={`flex flex-col xl:border-l xl:border-ink/40 xl:pl-8 ${
+                runnersUp.length > 0
+                  ? "border-t-2 border-ink pt-5 xl:border-t-0 xl:pt-0"
+                  : "hidden xl:flex"
+              }`}
+            >
+              {runnersUp.length > 0 && (
+                <div className="divide-y divide-rule">
+                  {runnersUp.map((p) => (
+                    <SideStory
+                      key={p.slug}
+                      product={p}
+                      rank={ranks.get(p.slug) ?? null}
+                    />
+                  ))}
+                </div>
+              )}
+              <ReadersGuide
+                current={isCurrent}
+                week={selected.number}
+                first={runnersUp.length === 0}
+              />
+            </div>
             <div className="xl:col-span-2">
               <CenterAd product={boosted} />
             </div>
