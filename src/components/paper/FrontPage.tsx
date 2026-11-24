@@ -15,6 +15,7 @@ import type { WeekSpace } from "@/lib/products";
 import { voteRanks } from "@/lib/ranks";
 import { weekKey, weekStart, type Week } from "@/lib/weeks";
 import { MacBadge, ProductLogo, UpvoteButton } from "../ProductRow";
+import { TvAd } from "./TvAd";
 
 // Time left until voting closes (Sunday night, 24:00 UTC)
 function VotingClock({ week }: { week: number }) {
@@ -335,7 +336,10 @@ function FullChart({
 // A boosted launch takes it; otherwise it offers the spot.
 function CenterAd({ product }: { product?: Product }) {
   return (
-    <aside aria-label="Advertisement" className="border-y-[3px] border-double border-ink py-1">
+    <aside
+      aria-label="Advertisement"
+      className="border-y-[3px] border-double border-ink py-1"
+    >
       <p className="text-center font-sans text-[10px] uppercase tracking-[0.24em] text-ink-soft">
         Advertisement
       </p>
@@ -382,28 +386,9 @@ function CenterAd({ product }: { product?: Product }) {
 // The two right sidebar ad boxes (sold monthly on /pricing)
 function SidebarAds() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {[1, 2].map((spot) => (
-        <aside key={spot} aria-label="Advertisement" className="border-2 border-ink p-1">
-          <Link
-            href="/pricing#ads"
-            className="group block border border-ink px-4 py-5 text-center transition hover:bg-white"
-          >
-            <p className="font-sans text-[10px] uppercase tracking-[0.24em] text-ink-soft">
-              Advertisement
-            </p>
-            <p className="mt-2 font-display text-xl font-black leading-tight text-ink group-hover:text-press">
-              Advertise in The WeekLaunch
-            </p>
-            <p className="mt-1 font-serif text-sm italic text-ink-soft">
-              Your logo, one line and a link on every page. Spot {spot} of 2 ·
-              $49/month.
-            </p>
-            <span className="mt-3 inline-flex items-center gap-1 font-sans text-xs font-bold uppercase tracking-wider text-press">
-              Book this spot <ArrowRight className="size-3.5" />
-            </span>
-          </Link>
-        </aside>
+        <TvAd key={spot} channel={spot} total={2} />
       ))}
     </div>
   );
@@ -504,7 +489,8 @@ function NextEdition() {
         Be in next Monday&apos;s edition
       </p>
       <p className="mt-1 font-serif text-sm italic text-paper/75">
-        Your first product is free. Each launch gets its own page and a week on the chart.
+        Your first product is free. Each launch gets its own page and a week on
+        the chart.
       </p>
       <Link
         href="/submit"
@@ -598,7 +584,8 @@ export function FrontPage({
   const [lead, ...rest] = products;
   const runnersUp = rest.slice(0, 2);
   // Past weeks are closed anyway, so only this week and later get a stamp
-  const weekSpace = isCurrent || isFuture ? space[weekKey(selected)] : undefined;
+  const weekSpace =
+    isCurrent || isFuture ? space[weekKey(selected)] : undefined;
   const soldOut = weekSpace?.left === 0;
   const chart = rest.slice(2);
   const ranks = voteRanks(products);
@@ -696,10 +683,10 @@ export function FrontPage({
 
           <div className="lg:border-l lg:border-ink/40 lg:pl-8">
             <div className="flex flex-col gap-10 lg:sticky lg:top-6">
-            <SidebarAds />
-            <LastWeek {...lastWeek} />
-            <NextEdition />
-            <Classifieds />
+              <SidebarAds />
+              <LastWeek {...lastWeek} />
+              <NextEdition />
+              <Classifieds />
             </div>
           </div>
         </div>
