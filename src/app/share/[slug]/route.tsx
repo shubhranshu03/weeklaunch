@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getUpcomingLaunch } from "@/lib/products";
+import { SITE_URL } from "@/lib/site";
 import { weekStart } from "@/lib/weeks";
 
 // Drawn at twice the usual 1200 × 630, so it stays sharp on high-density screens
@@ -146,7 +147,8 @@ export async function GET(
           {launch.logo.url ? (
             // eslint-disable-next-line @next/next/no-img-element -- rendered into the share image
             <img
-              src={launch.logo.url}
+              // Sample logos are stored as paths on this site
+              src={new URL(launch.logo.url, SITE_URL).toString()}
               width={px(176)}
               height={px(176)}
               style={{

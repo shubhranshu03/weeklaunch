@@ -5,7 +5,8 @@ import { toolHref, tools } from "@/lib/tools";
 
 // Plain-language guide to the site for AI assistants (https://llmstxt.org)
 export async function GET() {
-  const allProducts = await getAllProducts();
+  // Sample (demo) launches aren't real products
+  const allProducts = (await getAllProducts()).filter((p) => !p.sample);
   const byCategory = productCategories
     .map((c) => {
       const items = allProducts.filter((p) => p.tags[0] === c.name);

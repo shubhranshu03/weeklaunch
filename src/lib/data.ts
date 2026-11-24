@@ -25,6 +25,8 @@ export type Product = {
   app: PlatformInfo;
   // Free launches: the WeekLaunch badge was found on the maker's site
   badgeVerified?: boolean;
+  // A made-up demo launch, shown with a "Sample" tag
+  sample?: boolean;
   maker: { name: string; handle?: string; avatar?: string; verified?: boolean };
 };
 

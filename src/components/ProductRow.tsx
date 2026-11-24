@@ -93,6 +93,22 @@ export function PremiumBadge({ size = "sm" }: { size?: "sm" | "md" }) {
   );
 }
 
+// Marks a made-up demo launch wherever it's listed
+export function SampleTag({ paper = false }: { paper?: boolean }) {
+  return (
+    <span
+      title="A sample launch, made up to show how WeekLaunch looks"
+      className={
+        paper
+          ? "ml-2 inline-flex items-center rounded-sm border border-dashed border-ink-soft px-1 py-px align-middle font-sans text-[9px] font-bold uppercase tracking-wider text-ink-soft"
+          : "inline-flex shrink-0 items-center rounded-md border border-dashed border-slate-400 px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-slate-500"
+      }
+    >
+      Sample
+    </span>
+  );
+}
+
 // Marks a Mac app wherever a launch is listed
 export function MacBadge({ paper = false }: { paper?: boolean }) {
   return (
@@ -171,19 +187,23 @@ export function UpvoteButton({
             : "Upvote"
           : `${Math.max(0, shown)} upvotes, voting closed`
       }
-      className={variant === "paper" ? `ink-pop flex h-10 min-w-[4.5rem] shrink-0 items-center justify-center gap-1.5 rounded-sm px-3 font-sans text-sm font-bold tabular-nums disabled:cursor-default ${
-        voted
-          ? "bg-press text-white"
-          : open
-            ? "bg-paper text-ink hover:bg-white"
-            : "bg-paper-dark text-ink-soft"
-      }` : `btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
-        voted
-          ? "bg-brand-500 text-white"
-          : open
-            ? "bg-white text-slate-900 hover:bg-brand-50"
-            : "bg-slate-50 text-slate-500"
-      }`}
+      className={
+        variant === "paper"
+          ? `ink-pop flex h-10 min-w-[4.5rem] shrink-0 items-center justify-center gap-1.5 rounded-sm px-3 font-sans text-sm font-bold tabular-nums disabled:cursor-default ${
+              voted
+                ? "bg-press text-white"
+                : open
+                  ? "bg-paper text-ink hover:bg-white"
+                  : "bg-paper-dark text-ink-soft"
+            }`
+          : `btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
+              voted
+                ? "bg-brand-500 text-white"
+                : open
+                  ? "bg-white text-slate-900 hover:bg-brand-50"
+                  : "bg-slate-50 text-slate-500"
+            }`
+      }
     >
       <Triangle
         key={String(voted)}
@@ -241,6 +261,7 @@ export function ProductRow({
               )}
               {product.premium && <PremiumBadge />}
               {product.app.platform === "mac" && <MacBadge />}
+              {product.sample && <SampleTag />}
             </div>
             <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-slate-500 sm:line-clamp-1">
               {product.tagline}

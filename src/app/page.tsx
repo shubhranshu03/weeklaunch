@@ -10,6 +10,7 @@ import {
   getWeekSpace,
   getLastWeekBest,
 } from "@/lib/products";
+import { getSidebarAds } from "@/lib/sidebarAds";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -53,10 +54,11 @@ export default function Home() {
 
 async function Edition() {
   const weeks = await getBoardWeeks();
-  const [board, lastWeek, space] = await Promise.all([
+  const [board, lastWeek, space, ads] = await Promise.all([
     getBoard(weeks),
     getLastWeekBest(),
     getWeekSpace(weeks),
+    getSidebarAds(),
   ]);
   return (
     <FrontPage
@@ -64,6 +66,7 @@ async function Edition() {
       board={board}
       lastWeek={lastWeek}
       space={space}
+      ads={ads}
     />
   );
 }

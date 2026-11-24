@@ -14,8 +14,9 @@ import { PREMIUM_PRICE, type Product } from "@/lib/data";
 import type { WeekSpace } from "@/lib/products";
 import { voteRanks } from "@/lib/ranks";
 import { weekKey, weekStart, type Week } from "@/lib/weeks";
-import { MacBadge, ProductLogo, UpvoteButton } from "../ProductRow";
+import { MacBadge, ProductLogo, SampleTag, UpvoteButton } from "../ProductRow";
 import { TvAd } from "./TvAd";
+import type { SidebarAd } from "@/lib/sidebarAds";
 import { directoryPackages } from "@/lib/directories";
 
 // Time left until voting closes (Sunday night, 24:00 UTC)
@@ -128,6 +129,12 @@ function Byline({ product }: { product: Product }) {
         />
       )}
       {product.app.platform === "mac" && <span>· Mac app</span>}
+      {product.sample && (
+        <span title="A sample launch, made up to show how WeekLaunch looks">
+          ·{" "}
+          <span className="font-semibold uppercase tracking-wider">Sample</span>
+        </span>
+      )}
       {tags && <span>· {tags}</span>}
       <span className="flex items-center gap-1">
         · <MessageSquare className="size-3" /> {product.comments}
@@ -314,6 +321,7 @@ function FullChart({
                   {p.name}
                   {p.premium && <Premium />}
                   {p.app.platform === "mac" && <MacBadge paper />}
+                  {p.sample && <SampleTag paper />}
                 </h3>
                 <p className="truncate font-serif text-sm italic text-ink-soft">
                   {p.tagline}
@@ -385,12 +393,29 @@ function CenterAd({ product }: { product?: Product }) {
 }
 
 // The two right sidebar ad boxes (sold monthly on /pricing)
-function SidebarAds() {
+// Both TV ads in the sidebar. On phones the main layout places them one by
+// one through the page instead (see MobileTv), unless `everywhere` is set.
+function SidebarAds({
+  ads,
+  everywhere = false,
+}: {
+  ads: Record<number, SidebarAd>;
+  everywhere?: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`${everywhere ? "flex" : "hidden lg:flex"} flex-col gap-5`}>
       {[1, 2].map((spot) => (
-        <TvAd key={spot} channel={spot} total={2} />
+        <TvAd key={spot} channel={spot} total={2} ad={ads[spot]} />
       ))}
+    </div>
+  );
+}
+
+// One TV ad in the page flow, for phones and tablets only
+function MobileTv({ channel, ad }: { channel: number; ad?: SidebarAd }) {
+  return (
+    <div className="mx-auto w-full max-w-[320px] lg:hidden">
+      <TvAd channel={channel} total={2} ad={ad} />
     </div>
   );
 }
@@ -623,6 +648,7 @@ export function FrontPage({
   board,
   lastWeek,
   space = {},
+  ads = {},
 }: {
   weeks: Week[];
   // Approved launches for each week, keyed "year-week": Premium first, then by votes
@@ -630,6 +656,8 @@ export function FrontPage({
   lastWeek: { week?: Week; products: Product[] };
   // Spots still open per week, keyed "year-week"
   space?: Record<string, WeekSpace>;
+  // Advertisers on the two TV spots, by spot number
+  ads?: Record<number, SidebarAd>;
 }) {
   const currentIndex = weeks.findIndex((w) => w.current);
   const [index, setIndex] = useState(currentIndex);
@@ -704,7 +732,7 @@ export function FrontPage({
             soldOut={soldOut}
           />
           <div className="flex flex-col gap-8">
-            <SidebarAds />
+            <SidebarAds ads={ads} everywhere />
             <LastWeek {...lastWeek} />
             <NextEdition />
           </div>
@@ -718,6 +746,8 @@ export function FrontPage({
               current={isCurrent}
               soldOut={soldOut}
             />
+            {/* Phones: the first TV ad right after the lead story */}
+            <MobileTv channel={1} ad={ads[1]} />
             {/* Stretches to the lead story's height; the reader's guide fills what's left */}
             <div
               className={`flex flex-col xl:border-l xl:border-ink/40 xl:pl-8 ${
@@ -755,8 +785,10 @@ export function FrontPage({
 
           <div className="lg:border-l lg:border-ink/40 lg:pl-8">
             <div className="flex flex-col gap-10 lg:sticky lg:top-6">
-              <SidebarAds />
+              <SidebarAds ads={ads} />
               <LastWeek {...lastWeek} />
+              {/* Phones: the second TV ad after last week's winners */}
+              <MobileTv channel={2} ad={ads[2]} />
               <NextEdition />
               <Classifieds />
             </div>

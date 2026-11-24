@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1270 760">
+<rect width="1270" height="760" fill="#f3f4f6"/>
+<rect x="0" y="0" width="1270" height="48" fill="#e5e7eb"/>
+<circle cx="28" cy="24" r="7" fill="#f87171"/><circle cx="50" cy="24" r="7" fill="#fbbf24"/><circle cx="72" cy="24" r="7" fill="#34d399"/>
+<rect x="420" y="14" width="430" height="20" rx="10" fill="#fff"/>
+<rect x="0" y="48" width="290" height="712" fill="#fff" stroke="#e5e7eb"/>
+<rect x="40" y="84" width="40" height="40" rx="10" fill="#1f9d6b"/>
+<text x="94" y="112" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">Ledgerleaf</text>
+<rect x="60" y="200" width="150" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="244" width="130" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="288" width="110" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="332" width="150" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="376" width="130" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="420" width="110" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="464" width="150" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/><rect x="60" y="508" width="130" height="12" rx="6" fill="#9ca3af" fill-opacity=".7"/>
+<text x="360" y="120" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">This week</text>
+<text x="360" y="152" font-family="Helvetica, Arial, sans-serif" font-size="17" fill="#6b7280">Bookkeeping that sorts itself out</text>
+<rect x="360" y="440" width="44" height="120" rx="6" fill="#1f9d6b" fill-opacity="0.35"/><rect x="430" y="380" width="44" height="180" rx="6" fill="#1f9d6b" fill-opacity="0.43"/><rect x="500" y="410" width="44" height="150" rx="6" fill="#1f9d6b" fill-opacity="0.51"/><rect x="570" y="320" width="44" height="240" rx="6" fill="#1f9d6b" fill-opacity="0.59"/><rect x="640" y="360" width="44" height="200" rx="6" fill="#1f9d6b" fill-opacity="0.35"/><rect x="710" y="270" width="44" height="290" rx="6" fill="#1f9d6b" fill-opacity="0.43"/><rect x="780" y="300" width="44" height="260" rx="6" fill="#1f9d6b" fill-opacity="0.51"/><rect x="850" y="230" width="44" height="330" rx="6" fill="#1f9d6b" fill-opacity="0.59"/><rect x="920" y="260" width="44" height="300" rx="6" fill="#1f9d6b" fill-opacity="0.35"/><rect x="990" y="180" width="44" height="380" rx="6" fill="#1f9d6b" fill-opacity="0.43"/><rect x="1060" y="220" width="44" height="340" rx="6" fill="#1f9d6b" fill-opacity="0.51"/><rect x="1130" y="140" width="44" height="420" rx="6" fill="#1f9d6b" fill-opacity="0.59"/>
+<rect x="1040" y="92" width="150" height="44" rx="10" fill="#1f9d6b"/>
+<rect x="1068" y="110" width="94" height="10" rx="5" fill="#fff" fill-opacity=".9"/>
+</svg>

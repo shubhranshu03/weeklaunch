@@ -1,0 +1,635 @@
+{
+ "products": [
+  {
+   "slug": "tidylane",
+   "name": "Tidylane",
+   "tagline": "Calm inbox triage for busy founders",
+   "description": "Tidylane reads your inbox each morning and sorts it into reply now, read later and archive, so you start the day with ten emails instead of a hundred. It learns from what you open and never sends anything on its own.",
+   "website": "https://example.com/tidylane",
+   "tags": [
+    "Productivity",
+    "AI"
+   ],
+   "logo_glyph": "TI",
+   "logo_from": "#2f6fdf",
+   "logo_to": "#2f6fdf",
+   "logo_url": "/samples/logos/tidylane.svg",
+   "screenshots": [
+    "/samples/shots/tidylane-1.svg",
+    "/samples/shots/tidylane-2.svg"
+   ],
+   "highlights": [
+    "Sorts your inbox before you wake up",
+    "Never sends email on its own",
+    "Works with Gmail and Outlook"
+   ],
+   "faqs": [
+    {
+     "q": "Does Tidylane read my email?",
+     "a": "It reads subject lines and senders to sort messages. Nothing is stored after sorting."
+    }
+   ],
+   "plan": "premium",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 214,
+   "is_sample": true
+  },
+  {
+   "slug": "quillmate",
+   "name": "Quillmate",
+   "tagline": "Write release notes straight from your commits",
+   "description": "Connect a repo and Quillmate turns merged pull requests into readable release notes, grouped into new, improved and fixed. Edit the draft, then publish it to your changelog or copy it as Markdown.",
+   "website": "https://example.com/quillmate",
+   "tags": [
+    "DevTool",
+    "AI"
+   ],
+   "logo_glyph": "QU",
+   "logo_from": "#7a4fd6",
+   "logo_to": "#7a4fd6",
+   "logo_url": "/samples/logos/quillmate.svg",
+   "screenshots": [
+    "/samples/shots/quillmate-1.svg",
+    "/samples/shots/quillmate-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 187,
+   "is_sample": true
+  },
+  {
+   "slug": "ledgerleaf",
+   "name": "Ledgerleaf",
+   "tagline": "Bookkeeping that sorts itself out",
+   "description": "Ledgerleaf connects to your business bank account and sorts every transaction into the right category. At month end you get a profit and loss report you can hand to your accountant.",
+   "website": "https://example.com/ledgerleaf",
+   "tags": [
+    "Finance"
+   ],
+   "logo_glyph": "LE",
+   "logo_from": "#1f9d6b",
+   "logo_to": "#1f9d6b",
+   "logo_url": "/samples/logos/ledgerleaf.svg",
+   "screenshots": [
+    "/samples/shots/ledgerleaf-1.svg",
+    "/samples/shots/ledgerleaf-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 163,
+   "is_sample": true
+  },
+  {
+   "slug": "pixelfern",
+   "name": "Pixelfern",
+   "tagline": "Turn rough sketches into clean UI mockups",
+   "description": "Snap a photo of a whiteboard sketch and Pixelfern turns it into a tidy mockup with real buttons, inputs and spacing. Export to PNG or keep editing in the browser.",
+   "website": "https://example.com/pixelfern",
+   "tags": [
+    "Design",
+    "AI"
+   ],
+   "logo_glyph": "PI",
+   "logo_from": "#e0569b",
+   "logo_to": "#e0569b",
+   "logo_url": "/samples/logos/pixelfern.svg",
+   "screenshots": [
+    "/samples/shots/pixelfern-1.svg",
+    "/samples/shots/pixelfern-2.svg"
+   ],
+   "highlights": [
+    "Works from a phone photo",
+    "Real spacing and components",
+    "Export to PNG or keep editing"
+   ],
+   "faqs": [
+    {
+     "q": "What can I export?",
+     "a": "PNG images today, with Figma export coming soon."
+    }
+   ],
+   "plan": "premium",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 151,
+   "is_sample": true
+  },
+  {
+   "slug": "signalbox",
+   "name": "Signalbox",
+   "tagline": "Uptime alerts that only ping you when it matters",
+   "description": "Signalbox checks your site and API every minute from five regions. It only alerts you when a problem lasts, so a single slow request doesn't wake you up at 3 am.",
+   "website": "https://example.com/signalbox",
+   "tags": [
+    "DevTool",
+    "Analytics"
+   ],
+   "logo_glyph": "SI",
+   "logo_from": "#e8772e",
+   "logo_to": "#e8772e",
+   "logo_url": "/samples/logos/signalbox.svg",
+   "screenshots": [
+    "/samples/shots/signalbox-1.svg",
+    "/samples/shots/signalbox-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 138,
+   "is_sample": true
+  },
+  {
+   "slug": "brightloop",
+   "name": "Brightloop",
+   "tagline": "Weekly product analytics in plain English",
+   "description": "Brightloop connects to your analytics and sends a short weekly email that says what changed and why, in plain sentences. No dashboards to dig through.",
+   "website": "https://example.com/brightloop",
+   "tags": [
+    "Analytics"
+   ],
+   "logo_glyph": "BR",
+   "logo_from": "#f2b705",
+   "logo_to": "#f2b705",
+   "logo_url": "/samples/logos/brightloop.svg",
+   "screenshots": [
+    "/samples/shots/brightloop-1.svg",
+    "/samples/shots/brightloop-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": true,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 126,
+   "is_sample": true
+  },
+  {
+   "slug": "mapleform",
+   "name": "Mapleform",
+   "tagline": "Forms that feel like a friendly chat",
+   "description": "Mapleform asks one question at a time, like a friendly chat, which keeps people answering. Responses land in a spreadsheet, Slack or your CRM.",
+   "website": "https://example.com/mapleform",
+   "tags": [
+    "Marketing",
+    "Productivity"
+   ],
+   "logo_glyph": "MA",
+   "logo_from": "#c8442f",
+   "logo_to": "#c8442f",
+   "logo_url": "/samples/logos/mapleform.svg",
+   "screenshots": [
+    "/samples/shots/mapleform-1.svg",
+    "/samples/shots/mapleform-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 117,
+   "is_sample": true
+  },
+  {
+   "slug": "nookdesk",
+   "name": "Nookdesk",
+   "tagline": "A focus timer that lives in your Mac menu bar",
+   "description": "Nookdesk sits in your Mac menu bar and runs focus sessions with gentle breaks. It can mute notifications while you work and shows a simple weekly streak.",
+   "website": "https://example.com/nookdesk",
+   "tags": [
+    "Productivity"
+   ],
+   "logo_glyph": "NO",
+   "logo_from": "#3b8f8a",
+   "logo_to": "#3b8f8a",
+   "logo_url": "/samples/logos/nookdesk.svg",
+   "screenshots": [
+    "/samples/shots/nookdesk-1.svg",
+    "/samples/shots/nookdesk-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 109,
+   "is_sample": true,
+   "platform": "mac",
+   "price_model": "freemium",
+   "get_from": [
+    "app_store",
+    "download"
+   ],
+   "apple_silicon": true
+  },
+  {
+   "slug": "cobaltcast",
+   "name": "Cobaltcast",
+   "tagline": "Plan a month of social posts in ten minutes",
+   "description": "Write once and Cobaltcast drafts posts for each network, spreads them over the month and publishes on time. See everything on one calendar.",
+   "website": "https://example.com/cobaltcast",
+   "tags": [
+    "Social Media"
+   ],
+   "logo_glyph": "CO",
+   "logo_from": "#2446a8",
+   "logo_to": "#2446a8",
+   "logo_url": "/samples/logos/cobaltcast.svg",
+   "screenshots": [
+    "/samples/shots/cobaltcast-1.svg",
+    "/samples/shots/cobaltcast-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 98,
+   "is_sample": true
+  },
+  {
+   "slug": "driftnote",
+   "name": "Driftnote",
+   "tagline": "Voice memos that turn into tidy notes",
+   "description": "Record a voice memo on your Mac and Driftnote turns it into clean notes with a title, key points and to-dos. Everything stays on your device.",
+   "website": "https://example.com/driftnote",
+   "tags": [
+    "AI",
+    "Productivity"
+   ],
+   "logo_glyph": "DR",
+   "logo_from": "#8a5cf6",
+   "logo_to": "#8a5cf6",
+   "logo_url": "/samples/logos/driftnote.svg",
+   "screenshots": [
+    "/samples/shots/driftnote-1.svg",
+    "/samples/shots/driftnote-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 91,
+   "is_sample": true,
+   "platform": "mac",
+   "price_model": "free",
+   "get_from": [
+    "download",
+    "homebrew"
+   ],
+   "apple_silicon": true
+  },
+  {
+   "slug": "ferrypay",
+   "name": "Ferrypay",
+   "tagline": "Invoices with payment links built in",
+   "description": "Send an invoice with a pay button built in. Ferrypay reminds late clients for you and marks invoices paid the moment money arrives.",
+   "website": "https://example.com/ferrypay",
+   "tags": [
+    "Finance"
+   ],
+   "logo_glyph": "FE",
+   "logo_from": "#0e7c86",
+   "logo_to": "#0e7c86",
+   "logo_url": "/samples/logos/ferrypay.svg",
+   "screenshots": [
+    "/samples/shots/ferrypay-1.svg",
+    "/samples/shots/ferrypay-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 84,
+   "is_sample": true
+  },
+  {
+   "slug": "lumenkit",
+   "name": "Lumenkit",
+   "tagline": "Accessible color palettes from one brand color",
+   "description": "Pick one brand color and Lumenkit builds a full palette that passes contrast checks, with light and dark versions ready to paste into your CSS.",
+   "website": "https://example.com/lumenkit",
+   "tags": [
+    "Design"
+   ],
+   "logo_glyph": "LU",
+   "logo_from": "#d9a400",
+   "logo_to": "#d9a400",
+   "logo_url": "/samples/logos/lumenkit.svg",
+   "screenshots": [
+    "/samples/shots/lumenkit-1.svg",
+    "/samples/shots/lumenkit-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 77,
+   "is_sample": true
+  },
+  {
+   "slug": "queuebird",
+   "name": "Queuebird",
+   "tagline": "A waitlist page with referrals built in",
+   "description": "Launch a waitlist page in minutes. Queuebird gives every sign-up a referral link, so people move up the list by inviting friends.",
+   "website": "https://example.com/queuebird",
+   "tags": [
+    "Marketing"
+   ],
+   "logo_glyph": "QU",
+   "logo_from": "#4f7cf7",
+   "logo_to": "#4f7cf7",
+   "logo_url": "/samples/logos/queuebird.svg",
+   "screenshots": [
+    "/samples/shots/queuebird-1.svg",
+    "/samples/shots/queuebird-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 69,
+   "is_sample": true
+  },
+  {
+   "slug": "stackpine",
+   "name": "Stackpine",
+   "tagline": "See your API costs per customer",
+   "description": "Stackpine tags every API call with the customer who made it, so you can see which accounts cost you the most and price your plans with confidence.",
+   "website": "https://example.com/stackpine",
+   "tags": [
+    "DevTool",
+    "Analytics"
+   ],
+   "logo_glyph": "ST",
+   "logo_from": "#2e7d4f",
+   "logo_to": "#2e7d4f",
+   "logo_url": "/samples/logos/stackpine.svg",
+   "screenshots": [
+    "/samples/shots/stackpine-1.svg",
+    "/samples/shots/stackpine-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 61,
+   "is_sample": true
+  },
+  {
+   "slug": "hearthly",
+   "name": "Hearthly",
+   "tagline": "Shared calendars for small teams",
+   "description": "Hearthly gives small teams one shared calendar for time off, launches and on-call, with a simple view of who's around this week.",
+   "website": "https://example.com/hearthly",
+   "tags": [
+    "Productivity"
+   ],
+   "logo_glyph": "HE",
+   "logo_from": "#d2552b",
+   "logo_to": "#d2552b",
+   "logo_url": "/samples/logos/hearthly.svg",
+   "screenshots": [
+    "/samples/shots/hearthly-1.svg",
+    "/samples/shots/hearthly-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 54,
+   "is_sample": true
+  },
+  {
+   "slug": "orbitgram",
+   "name": "Orbitgram",
+   "tagline": "Track what people say about your product",
+   "description": "Orbitgram watches social sites and forums for mentions of your product and sends a daily digest, so you can reply while the conversation is fresh.",
+   "website": "https://example.com/orbitgram",
+   "tags": [
+    "Social Media",
+    "Analytics"
+   ],
+   "logo_glyph": "OR",
+   "logo_from": "#5b3fc4",
+   "logo_to": "#5b3fc4",
+   "logo_url": "/samples/logos/orbitgram.svg",
+   "screenshots": [
+    "/samples/shots/orbitgram-1.svg",
+    "/samples/shots/orbitgram-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 47,
+   "is_sample": true
+  },
+  {
+   "slug": "snapframe",
+   "name": "Snapframe",
+   "tagline": "Clean screenshots of your app in one click",
+   "description": "Snapframe captures any window on your Mac and places it on a clean background with a soft shadow, ready for your landing page or a tweet.",
+   "website": "https://example.com/snapframe",
+   "tags": [
+    "Design"
+   ],
+   "logo_glyph": "SN",
+   "logo_from": "#111827",
+   "logo_to": "#111827",
+   "logo_url": "/samples/logos/snapframe.svg",
+   "screenshots": [
+    "/samples/shots/snapframe-1.svg",
+    "/samples/shots/snapframe-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 39,
+   "is_sample": true,
+   "platform": "mac",
+   "price_model": "paid",
+   "get_from": [
+    "app_store"
+   ],
+   "apple_silicon": true
+  },
+  {
+   "slug": "coinjar",
+   "name": "Coinjar",
+   "tagline": "Envelope budgeting for couples",
+   "description": "Coinjar splits your shared money into envelopes like rent, food and fun, and shows both of you what's left in each one.",
+   "website": "https://example.com/coinjar",
+   "tags": [
+    "Finance"
+   ],
+   "logo_glyph": "CO",
+   "logo_from": "#b7791f",
+   "logo_to": "#b7791f",
+   "logo_url": "/samples/logos/coinjar.svg",
+   "screenshots": [
+    "/samples/shots/coinjar-1.svg",
+    "/samples/shots/coinjar-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 31,
+   "is_sample": true
+  },
+  {
+   "slug": "promptshelf",
+   "name": "Promptshelf",
+   "tagline": "Save and share your best AI prompts",
+   "description": "Keep your best AI prompts in one place, add variables, and share collections with your team or the whole internet.",
+   "website": "https://example.com/promptshelf",
+   "tags": [
+    "AI"
+   ],
+   "logo_glyph": "PR",
+   "logo_from": "#9b2c6f",
+   "logo_to": "#9b2c6f",
+   "logo_url": "/samples/logos/promptshelf.svg",
+   "screenshots": [
+    "/samples/shots/promptshelf-1.svg",
+    "/samples/shots/promptshelf-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 22,
+   "is_sample": true
+  },
+  {
+   "slug": "echoleaf",
+   "name": "Echoleaf",
+   "tagline": "Turn blog posts into short podcast episodes",
+   "description": "Paste a blog post link and Echoleaf turns it into a short, natural-sounding podcast episode with its own feed.",
+   "website": "https://example.com/echoleaf",
+   "tags": [
+    "AI",
+    "Marketing"
+   ],
+   "logo_glyph": "EC",
+   "logo_from": "#16807a",
+   "logo_to": "#16807a",
+   "logo_url": "/samples/logos/echoleaf.svg",
+   "screenshots": [
+    "/samples/shots/echoleaf-1.svg",
+    "/samples/shots/echoleaf-2.svg"
+   ],
+   "highlights": [],
+   "faqs": [],
+   "plan": "free",
+   "boosted": false,
+   "status": "approved",
+   "maker_id": null,
+   "maker_name": "WeekLaunch samples",
+   "verified": false,
+   "upvotes_count": 12,
+   "is_sample": true
+  }
+ ],
+ "ads": [
+  {
+   "spot": 1,
+   "brand": "Harborly",
+   "tagline": "The simple CRM for indie founders",
+   "details": "Free for your first 500 contacts.",
+   "link": "https://example.com/harborly",
+   "logo_url": "/samples/logos/ad-harborly.svg",
+   "color": "#f2c14e",
+   "active": true,
+   "is_sample": true
+  },
+  {
+   "spot": 2,
+   "brand": "Parcelpost",
+   "tagline": "Newsletters that land in the inbox",
+   "details": "Start free, upgrade at 1,000 readers.",
+   "link": "https://example.com/parcelpost",
+   "logo_url": "/samples/logos/ad-parcelpost.svg",
+   "color": "#7fd1ae",
+   "active": true,
+   "is_sample": true
+  }
+ ]
+}

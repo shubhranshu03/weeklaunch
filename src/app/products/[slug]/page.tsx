@@ -22,6 +22,7 @@ import { getFromLabel, platformLabel, priceLabel } from "@/lib/platforms";
 import { SITE_URL } from "@/lib/site";
 import {
   MacBadge,
+  SampleTag,
   PremiumBadge,
   ProductLogo,
   ProductRow,
@@ -83,6 +84,8 @@ export async function generateMetadata({
     title: shortTitle(product.name, product.tagline),
     description,
     alternates: { canonical: url },
+    // Sample (demo) launches aren't real products
+    ...(product.sample && { robots: { index: false, follow: true } }),
     openGraph: {
       type: "article",
       url,
@@ -265,6 +268,21 @@ async function ProductDetail({
           ],
         }}
       />
+      {product.sample && (
+        <p className="mt-4 rounded-2xl border border-dashed border-slate-400 bg-white px-4 py-3 text-sm text-slate-600">
+          <strong className="font-semibold text-slate-900">
+            Sample launch.
+          </strong>{" "}
+          This product is made up to show how a launch page looks on WeekLaunch.{" "}
+          <Link
+            href="/submit"
+            className="font-semibold text-brand-700 hover:underline"
+          >
+            Launch your real product
+          </Link>
+          .
+        </p>
+      )}
       {/* Header */}
       <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
@@ -280,6 +298,7 @@ async function ProductDetail({
               )}
               {product.premium && <PremiumBadge size="md" />}
               {product.app.platform === "mac" && <MacBadge />}
+              {product.sample && <SampleTag />}
             </h1>
             <p className="mt-1 text-slate-500">{product.tagline}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -441,8 +460,17 @@ async function ProductDetail({
             ["Platform", platformLabel(product.app.platform)],
             ...(product.app.platform === "mac"
               ? [
-                  ["Price", product.app.priceModel ? priceLabel(product.app.priceModel) : "Not given"],
-                  ["Get it from", product.app.getFrom.map(getFromLabel).join(", ") || "Not given"],
+                  [
+                    "Price",
+                    product.app.priceModel
+                      ? priceLabel(product.app.priceModel)
+                      : "Not given",
+                  ],
+                  [
+                    "Get it from",
+                    product.app.getFrom.map(getFromLabel).join(", ") ||
+                      "Not given",
+                  ],
                   [
                     "Apple Silicon",
                     product.app.appleSilicon === null

@@ -55,6 +55,8 @@ export type ProductRowDb = {
   apple_silicon?: boolean | null;
   // Missing until migration 008 has run
   badge_verified_at?: string | null;
+  // Missing until migration 010 has run
+  is_sample?: boolean | null;
   maker?: {
     name: string;
     handle: string;
@@ -113,6 +115,7 @@ export function toProduct(r: ProductRowDb): Product {
       appleSilicon: r.apple_silicon ?? null,
     },
     badgeVerified: !!r.badge_verified_at,
+    sample: !!r.is_sample,
   };
 }
 

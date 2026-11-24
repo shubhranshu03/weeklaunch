@@ -4,10 +4,12 @@ import { CONTENT_UPDATED, SITE_URL } from "@/lib/site";
 import { tools } from "@/lib/tools";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [allProducts, makers] = await Promise.all([
+  const [products, makers] = await Promise.all([
     getAllProducts(),
     getMakerHandles(),
   ]);
+  // Sample (demo) launches aren't real products, so search engines skip them
+  const allProducts = products.filter((p) => !p.sample);
   const pages: {
     path: string;
     priority: number;
