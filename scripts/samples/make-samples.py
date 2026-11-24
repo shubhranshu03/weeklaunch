@@ -189,6 +189,11 @@ for name, tagline, tags, votes, color, shape, extra in products:
         "verified": False,
         "upvotes_count": votes,
         "is_sample": True,
+        # Same columns on every row, so a batch insert doesn't null the defaults
+        "platform": "web",
+        "price_model": None,
+        "get_from": [],
+        "apple_silicon": None,
     }
     if "mac" in extra:
         price, get_from, silicon = extra["mac"]

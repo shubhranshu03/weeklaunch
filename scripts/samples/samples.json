@@ -36,7 +36,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 214,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "quillmate",
@@ -65,7 +69,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 187,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "ledgerleaf",
@@ -93,7 +101,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 163,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "pixelfern",
@@ -131,7 +143,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 151,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "signalbox",
@@ -160,7 +176,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 138,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "brightloop",
@@ -188,7 +208,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 126,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "mapleform",
@@ -217,7 +241,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 117,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "nookdesk",
@@ -280,7 +308,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 98,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "driftnote",
@@ -344,7 +376,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 84,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "lumenkit",
@@ -372,7 +408,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 77,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "queuebird",
@@ -400,7 +440,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 69,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "stackpine",
@@ -429,7 +473,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 61,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "hearthly",
@@ -457,7 +505,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 54,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "orbitgram",
@@ -486,7 +538,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 47,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "snapframe",
@@ -548,7 +604,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 31,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "promptshelf",
@@ -576,7 +636,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 22,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   },
   {
    "slug": "echoleaf",
@@ -605,7 +669,11 @@
    "maker_name": "WeekLaunch samples",
    "verified": false,
    "upvotes_count": 12,
-   "is_sample": true
+   "is_sample": true,
+   "platform": "web",
+   "price_model": null,
+   "get_from": [],
+   "apple_silicon": null
   }
  ],
  "ads": [

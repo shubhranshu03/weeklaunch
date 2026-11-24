@@ -358,7 +358,9 @@ export async function weekLoad(weeks: Week[], exceptId?: string) {
       .select("id, launch_year, launch_week, plan, boosted, status, created_at")
       .in("launch_year", years)
       .in("launch_week", numbers)
-      .neq("status", "rejected"),
+      .neq("status", "rejected")
+      // Sample launches never take a real maker's spot
+      .eq("is_sample", false),
     // A Boost checkout in progress holds the week's sponsor spot too
     admin
       .from("payments")
