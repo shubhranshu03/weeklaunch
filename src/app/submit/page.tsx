@@ -8,24 +8,24 @@ import { SiteShell } from "@/components/SiteShell";
 import { SubmitForm } from "@/components/SubmitForm";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { PREMIUM_WEEKS_AHEAD } from "@/lib/data";
-import { weeksAround } from "@/lib/weeks";
+import { PREMIUM_DAYS_AHEAD } from "@/lib/data";
+import { daysAround } from "@/lib/days";
 import { paymentsConfigured } from "@/lib/dodo";
 import { freeLaunchUsed } from "@/lib/limits";
-import { nextFreeWeek, premiumLeft, weekLoad } from "@/lib/products";
-import { weekKey } from "@/lib/weeks";
+import { nextFreeDay, premiumLeft, dayLoad } from "@/lib/products";
+import { dayKey } from "@/lib/days";
 
 export const metadata: Metadata = {
   title: "Submit your product — launch free or go Premium",
   description:
-    "Launch your product on WeekLaunch in about 3 minutes. Add your details, pick a launch week and go live on Monday. Your first product is free.",
+    "Launch your product on WeekLaunch in about 3 minutes. Paste your link, check the details and launch today, or join the free queue. Your first product is free.",
   alternates: { canonical: "/submit" },
 };
 
 const highlights = [
-  { icon: CalendarDays, text: "Live every Monday" },
+  { icon: CalendarDays, text: "Launch any day" },
   { icon: Clock, text: "Takes about 3 minutes" },
-  { icon: ShieldCheck, text: "Reviewed within 24 hours" },
+  { icon: ShieldCheck, text: "Premium goes live right away" },
   { icon: Gift, text: "First product free" },
 ];
 
@@ -39,7 +39,7 @@ export default function SubmitPage() {
           url: `${SITE_URL}/submit`,
           name: "Submit your product to WeekLaunch",
           description:
-            "Launch your first product on a weekly board for free, or go Premium to pick your week and get pinned at the top.",
+            "Launch your first product for free from the queue, or go Premium to launch today and be featured for a week.",
           isPartOf: { "@id": `${SITE_URL}/#website` },
         }}
       />
@@ -54,8 +54,8 @@ export default function SubmitPage() {
             Launch your product
           </h1>
           <p className="mt-1 max-w-lg text-white/80">
-            Get in front of makers and early adopters. Fill in the details, pick
-            your week and go live on Monday.
+            Get in front of makers and early adopters. Paste your link, check
+            the details, and launch today or join the free queue.
           </p>
           <ul className="mt-5 flex flex-wrap gap-2">
             {highlights.map((h) => (
@@ -102,22 +102,22 @@ async function Form() {
         </Link>
       </div>
     );
-  // Premium can pick any of the next 12 weeks
-  const upcoming = weeksAround(new Date(), 0, PREMIUM_WEEKS_AHEAD).slice(1);
-  const freeWeek = (await nextFreeWeek()) ?? upcoming[upcoming.length - 1];
+  // Premium launches today or picks any of the next 30 days
+  const upcoming = daysAround(new Date(), 0, PREMIUM_DAYS_AHEAD);
+  const freeWeek = (await nextFreeDay()) ?? upcoming[upcoming.length - 1];
   const weeksShown = upcoming.some((w) => w.number === freeWeek.number)
     ? upcoming
     : [...upcoming, freeWeek];
-  const load = await weekLoad(weeksShown);
+  const load = await dayLoad(weeksShown);
   const premiumSpots = Object.fromEntries(
-    upcoming.map((w) => [w.number, premiumLeft(load[weekKey(w)])]),
+    upcoming.map((w) => [w.number, premiumLeft(load[dayKey(w)])]),
   );
   return (
     <SubmitForm
       upcoming={upcoming}
       premiumSpots={premiumSpots}
       boostTaken={Object.fromEntries(
-        weeksShown.map((w) => [w.number, load[weekKey(w)].boosted]),
+        weeksShown.map((w) => [w.number, load[dayKey(w)].boosted]),
       )}
       freeWeek={freeWeek}
       paymentsReady={paymentsConfigured}

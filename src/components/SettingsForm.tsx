@@ -288,7 +288,7 @@ export function SettingsForm({
         />
         <Toggle
           label="The Monday Launch newsletter"
-          hint="Last week's top products, every Monday."
+          hint="The week's top launches, every Monday."
           on={form.notify.newsletter}
           onChange={(v) => set("notify", { ...form.notify, newsletter: v })}
         />

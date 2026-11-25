@@ -2,7 +2,7 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUser } from "../auth";
-import { PREMIUM_WEEKS_AHEAD, WEEK_CAPACITY, productCategories } from "../data";
+import { PREMIUM_DAYS_AHEAD, DAY_CAPACITY, productCategories } from "../data";
 import { createCheckout, paymentsConfigured } from "../dodo";
 import { launchBlock } from "../limits";
 import {
@@ -10,10 +10,10 @@ import {
   platformColumns,
   type PlatformInfo,
 } from "../platforms";
-import { nextFreeWeek, premiumLeft, weekLoad } from "../products";
+import { nextFreeDay, premiumLeft, dayLoad } from "../products";
 import { mediaPrefix } from "../supabase/env";
 import { supabaseAdmin } from "../supabase/server";
-import { weekKey, weekNumber, weeksAround } from "../weeks";
+import { dayLabel, dayKey, dayNumber, daysAround } from "../days";
 
 export type LaunchInput = {
   name: string;
@@ -24,7 +24,7 @@ export type LaunchInput = {
   logo: string | null;
   shots: string[];
   plan: "free" | "premium";
-  week: { year: number; number: number };
+  day: { year: number; number: number };
   boost: boolean;
   // Premium only
   highlights: string[];
@@ -46,7 +46,7 @@ function cleanExtras(input: LaunchInput) {
 }
 
 type Result =
-  | { ok: true; slug: string; id: string; week: number; checkoutUrl?: string }
+  | { ok: true; slug: string; id: string; day: number; checkoutUrl?: string }
   | { ok: false; error: string };
 
 const palette = [
@@ -133,32 +133,32 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
   const blocked = await launchBlock(user.id, limits);
   if (blocked) return { ok: false, error: blocked };
 
-  // Premium picks any upcoming week with room; free launches join the queue.
-  // Every week holds 25 launches at most, 5 of them Premium.
-  const upcoming = weeksAround(new Date(), 0, PREMIUM_WEEKS_AHEAD).slice(1);
+  // Premium launches today or picks a day up to 30 ahead; free launches join
+  // the queue. Every day holds a few launches, some of them Premium.
+  const open = daysAround(new Date(), 0, PREMIUM_DAYS_AHEAD);
   const week = premium
-    ? upcoming.find(
-        (w) => w.year === input.week.year && w.number === input.week.number,
+    ? open.find(
+        (d) => d.year === input.day.year && d.number === input.day.number,
       )
-    : await nextFreeWeek();
+    : await nextFreeDay();
   if (!week)
     return {
       ok: false,
       error: premium
-        ? "Pick one of the upcoming weeks."
-        : "Every upcoming week is full right now. Please try again soon.",
+        ? "Pick today or one of the next 30 days."
+        : "Every day in the queue is full right now. Please try again soon.",
     };
-  const load = (await weekLoad([week]))[weekKey(week)];
+  const load = (await dayLoad([week]))[dayKey(week)];
   if (premium && premiumLeft(load) === 0)
     return {
       ok: false,
-      error: `Week ${week.number} is full. Pick another week.`,
+      error: `${dayLabel(week.number)} is full. Pick another day.`,
     };
-  // One Boost (sponsor card) per week
+  // One Boost (sponsor card) per day
   if (input.boost && load.boosted)
     return {
       ok: false,
-      error: `The Boost for Week ${week.number} is already taken. Untick it or pick another week.`,
+      error: `The Boost for ${dayLabel(week.number)} is already taken. Untick it or pick another day.`,
     };
 
   const [from, to] = palette[Math.floor(Math.random() * palette.length)];
@@ -185,7 +185,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       plan: premium ? "premium" : "free",
       status: paid ? "pending_payment" : "pending_review",
       launch_year: week.year,
-      launch_week: week.number,
+      launch_day: week.number,
     })
     .select("id")
     .single();
@@ -207,7 +207,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
   }
 
   revalidateTag("products", "max");
-  if (!paid) return { ok: true, slug, id: product.id, week: week.number };
+  if (!paid) return { ok: true, slug, id: product.id, day: week.number };
 
   try {
     const checkoutUrl = await createCheckout({
@@ -217,7 +217,7 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       premium,
       boost: input.boost,
     });
-    return { ok: true, slug, id: product.id, week: week.number, checkoutUrl };
+    return { ok: true, slug, id: product.id, day: week.number, checkoutUrl };
   } catch {
     return {
       ok: false,
@@ -240,7 +240,7 @@ export async function payForLaunch(
   const { data: product } = await supabaseAdmin()
     .from("products")
     .select(
-      "id, name, plan, boosted, status, launch_year, launch_week, created_at",
+      "id, name, plan, boosted, status, launch_year, launch_day, created_at",
     )
     .eq("id", productId)
     .eq("maker_id", user.id)
@@ -266,10 +266,10 @@ export async function payForLaunch(
 
   const week = {
     year: product.launch_year,
-    number: product.launch_week,
+    number: product.launch_day,
     label: "",
   };
-  if (week.number <= weekNumber(new Date()))
+  if (week.number <= dayNumber(new Date()))
     return {
       ok: false,
       error: `Week ${week.number} has already started, so it can't be paid for now.`,
@@ -277,7 +277,7 @@ export async function payForLaunch(
 
   // Check the week again: an unpaid spot is only held for an hour, so it may
   // have been taken since. This launch itself is left out of the count.
-  const load = (await weekLoad([week], product.id))[weekKey(week)];
+  const load = (await dayLoad([week], product.id))[dayKey(week)];
   if (premium && premiumLeft(load) === 0)
     return {
       ok: false,
@@ -335,7 +335,7 @@ export async function submitWithoutBoost(
   const admin = supabaseAdmin();
   const { data: product } = await admin
     .from("products")
-    .select("id, launch_year, launch_week")
+    .select("id, launch_year, launch_day")
     .eq("id", productId)
     .eq("maker_id", user.id)
     .eq("plan", "free")
@@ -353,14 +353,14 @@ export async function submitWithoutBoost(
   // Its week may have filled up or started since
   let week = {
     year: product.launch_year,
-    number: product.launch_week,
+    number: product.launch_day,
     label: "",
   };
   const open =
-    week.number > weekNumber(new Date()) &&
-    (await weekLoad([week], product.id))[weekKey(week)].total < WEEK_CAPACITY;
+    week.number > dayNumber(new Date()) &&
+    (await dayLoad([week], product.id))[dayKey(week)].total < DAY_CAPACITY;
   if (!open) {
-    const next = await nextFreeWeek();
+    const next = await nextFreeDay();
     if (!next)
       return { ok: false, error: "Every upcoming week is full right now." };
     week = next;
@@ -371,7 +371,7 @@ export async function submitWithoutBoost(
     .update({
       status: "pending_review",
       launch_year: week.year,
-      launch_week: week.number,
+      launch_day: week.number,
     })
     .eq("id", product.id)
     .eq("status", "pending_payment");
@@ -461,7 +461,7 @@ export async function updateLaunch(
       ? cleanExtras({
           ...input,
           plan: "premium",
-          week: { year: 0, number: 0 },
+          day: { year: 0, number: 0 },
           boost: false,
         })
       : {};

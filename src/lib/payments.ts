@@ -62,8 +62,9 @@ export async function applyDodoPayment(p: Payment) {
         .update({
           ...(order.premium && { plan: "premium", verified: true }),
           ...(order.boost && { boosted: true }),
+          // Paid launches go live without waiting for review
           ...(product.status === "pending_payment" && {
-            status: "pending_review",
+            status: order.premium ? "approved" : "pending_review",
           }),
         })
         .eq("id", order.product_id);

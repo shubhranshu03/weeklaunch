@@ -83,13 +83,13 @@ export const checklist: ChecklistSection[] = [
       },
       {
         id: "b15",
-        text: "Pick your launch week",
-        tip: "Avoid big holidays; Monday launches get a full week.",
+        text: "Pick your launch day",
+        tip: "Avoid big holidays; a Tuesday to Thursday morning works well.",
       },
       {
         id: "b16",
         text: "Submit your product to WeekLaunch",
-        tip: "Free, or Premium to pick your week and be pinned on top.",
+        tip: "Free from the queue, or Premium to launch today and be featured.",
       },
       {
         id: "b17",
@@ -106,7 +106,7 @@ export const checklist: ChecklistSection[] = [
   {
     id: "day",
     title: "Launch day",
-    when: "Monday",
+    when: "Launch day",
     items: [
       {
         id: "d1",

@@ -14,7 +14,7 @@ import {
 import type { Product } from "@/lib/data";
 import { toggleUpvote } from "@/lib/actions/community";
 import { setVoted, useAuth } from "@/lib/useAuth";
-import { weekNumber } from "@/lib/weeks";
+import { dayNumber } from "@/lib/days";
 
 const podium = [
   {
@@ -128,23 +128,23 @@ export function MacBadge({ paper = false }: { paper?: boolean }) {
 export function UpvoteButton({
   productId,
   count,
-  week,
+  day: week,
   variant = "default",
 }: {
   productId: string;
   count: number;
-  // The launch's week; votes count only while it's running
-  week: number;
+  // The launch day; voting opens then and stays open
+  day: number;
   // "paper" is the ink-on-newsprint style used on the home page
   variant?: "default" | "paper";
 }) {
   // Worked out in the browser; while the page loads the button stays usable
   const nowWeek = useSyncExternalStore(
     noSubscribe,
-    () => weekNumber(new Date()),
+    () => dayNumber(new Date()),
     () => null,
   );
-  const open = nowWeek === null || week === nowWeek;
+  const open = nowWeek === null || week <= nowWeek;
   const { ready, user, votes } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -177,7 +177,7 @@ export function UpvoteButton({
       title={
         open
           ? undefined
-          : "Voting is closed: it's open during the launch week only"
+          : "Voting opens on launch day"
       }
       aria-pressed={voted}
       aria-label={
@@ -185,7 +185,7 @@ export function UpvoteButton({
           ? voted
             ? "Remove upvote"
             : "Upvote"
-          : `${Math.max(0, shown)} upvotes, voting closed`
+          : `${Math.max(0, shown)} upvotes, voting opens on launch day`
       }
       className={
         variant === "paper"
@@ -307,7 +307,7 @@ export function ProductRow({
         <UpvoteButton
           productId={product.id}
           count={product.upvotes}
-          week={product.week}
+          day={product.day}
         />
       </div>
     </li>

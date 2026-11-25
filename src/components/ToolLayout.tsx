@@ -188,7 +188,7 @@ export function ToolLayout({
             <div className="pointer-events-none absolute -right-8 -top-8 size-28 rounded-full bg-white/15" />
             <Rocket className="relative size-6 text-amber-300" />
             <p className="relative mt-3 font-semibold leading-snug">
-              Ready to launch? Get your product in front of makers every Monday.
+              Ready to launch? Get your product in front of makers today.
             </p>
             <Link
               href="/submit"

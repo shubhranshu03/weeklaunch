@@ -90,7 +90,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
                   Ready to launch?
                 </h2>
                 <p className="mt-1 text-sm text-white/80">
-                  Join next Monday&apos;s board. Your first product is free.
+                  Launch today, or join the free queue. Your first product is free.
                 </p>
               </div>
               <Link
@@ -109,8 +109,8 @@ export function Footer({ cta = true }: { cta?: boolean }) {
           <div>
             <Logo />
             <p className="mt-3 max-w-xs text-sm text-slate-500">
-              The weekly launchpad for indie makers and startups. A fresh board
-              every Monday.
+              The daily launchpad for indie makers and startups. New launches
+              every day.
             </p>
             <form className="mt-5 flex max-w-xs gap-2">
               <input

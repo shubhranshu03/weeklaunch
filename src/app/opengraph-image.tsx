@@ -63,7 +63,7 @@ export default function OpengraphImage() {
       </div>
       <div style={{ display: "flex", gap: 16, fontSize: 28 }}>
         {[
-          "New board every Monday",
+          "New launches every day",
           "Free launches",
           "Permanent product page",
         ].map((t) => (

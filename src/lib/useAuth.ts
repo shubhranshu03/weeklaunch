@@ -14,11 +14,19 @@ export type SessionUser = {
 type State = {
   ready: boolean;
   user: SessionUser | null;
-  // Products this visitor has upvoted
+  // Products this visitor has upvoted, follows and saved
   votes: Set<string>;
+  follows: Set<string>;
+  saves: Set<string>;
 };
 
-let state: State = { ready: !supabaseConfigured, user: null, votes: new Set() };
+const empty = () => ({
+  votes: new Set<string>(),
+  follows: new Set<string>(),
+  saves: new Set<string>(),
+});
+
+let state: State = { ready: !supabaseConfigured, user: null, ...empty() };
 const listeners = new Set<() => void>();
 let started = false;
 
@@ -28,15 +36,24 @@ function set(next: Partial<State>) {
 }
 
 async function load(userId: string | undefined) {
-  if (!userId) return set({ ready: true, user: null, votes: new Set() });
+  if (!userId) return set({ ready: true, user: null, ...empty() });
   const supabase = supabaseBrowser();
-  const [{ data: profile }, { data: votes }] = await Promise.all([
+  const ids = (rows: { product_id: unknown }[] | null) =>
+    new Set((rows ?? []).map((r) => r.product_id as string));
+  const [
+    { data: profile },
+    { data: votes },
+    { data: follows },
+    { data: saves },
+  ] = await Promise.all([
     supabase
       .from("profiles")
       .select("name, handle, avatar_url")
       .eq("id", userId)
       .maybeSingle(),
     supabase.from("upvotes").select("product_id").eq("user_id", userId),
+    supabase.from("follows").select("product_id").eq("user_id", userId),
+    supabase.from("saves").select("product_id").eq("user_id", userId),
   ]);
   set({
     ready: true,
@@ -46,7 +63,9 @@ async function load(userId: string | undefined) {
       handle: profile?.handle ?? "",
       avatar: profile?.avatar_url ?? null,
     },
-    votes: new Set((votes ?? []).map((v) => v.product_id as string)),
+    votes: ids(votes),
+    follows: ids(follows),
+    saves: ids(saves),
   });
 }
 
@@ -71,7 +90,7 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-const serverState: State = { ready: false, user: null, votes: new Set() };
+const serverState: State = { ready: false, user: null, ...empty() };
 
 // The signed-in visitor in Client Components (null while loading or signed out)
 export function useAuth() {
@@ -87,6 +106,20 @@ export function setVoted(productId: string, voted: boolean) {
   if (voted) votes.add(productId);
   else votes.delete(productId);
   set({ votes });
+}
+
+export function setFollowed(productId: string, on: boolean) {
+  const follows = new Set(state.follows);
+  if (on) follows.add(productId);
+  else follows.delete(productId);
+  set({ follows });
+}
+
+export function setSaved(productId: string, on: boolean) {
+  const saves = new Set(state.saves);
+  if (on) saves.add(productId);
+  else saves.delete(productId);
+  set({ saves });
 }
 
 export function setSessionUser(patch: Partial<SessionUser>) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarPlus, Check, CircleAlert, Copy } from "lucide-react";
+import { CalendarPlus, Check, Copy } from "lucide-react";
 
 // Tasks placed relative to launch day (offset in days)
 const plan: { offset: number; title: string; tasks: string[] }[] = [
@@ -164,7 +164,6 @@ export function LaunchDatePlanner() {
   }, []);
 
   const launch = value ? parseDay(value) : null;
-  const notMonday = launch !== null && launch.getDay() !== 1;
 
   const copyText = async () => {
     if (!launch) return;
@@ -236,13 +235,6 @@ export function LaunchDatePlanner() {
             </button>
           </div>
         </div>
-        {notMonday && (
-          <p className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <CircleAlert className="size-4 shrink-0" />
-            Tip: WeekLaunch launches go live on Mondays and stay on the board
-            all week. Pick a Monday to get the full week.
-          </p>
-        )}
       </div>
 
       {launch && (

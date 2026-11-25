@@ -19,7 +19,10 @@ export type Product = {
   // Premium only: "Why choose us" points and the maker's own FAQ
   highlights: string[];
   faqs: { q: string; a: string }[];
-  week: number;
+  // Launch day (Day 1 = Nov 2, 2026)
+  day: number;
+  // People following the launch for updates
+  followers?: number;
   year: number;
   // Web app, Mac app and so on, with the Mac details
   app: PlatformInfo;
@@ -36,14 +39,14 @@ export type LaunchStatus =
 // Pricing, in US dollars
 export const PREMIUM_PRICE = 29;
 export const BOOST_PRICE = 19;
-// Launches allowed in one week, free and Premium together
-export const WEEK_CAPACITY = 25;
+// Launches allowed in one day, free and Premium together
+export const DAY_CAPACITY = 10;
 // Of those, how many can be Premium
-export const PREMIUM_CAPACITY = 5;
-// How many weeks ahead free launches are queued
-export const FREE_QUEUE_WEEKS = 3;
-// How far ahead a Premium launch can pick its week
-export const PREMIUM_WEEKS_AHEAD = 12;
+export const PREMIUM_CAPACITY = 3;
+// Free launches wait in line: the first day with room, at least this many days out
+export const FREE_QUEUE_DAYS = 7;
+// Premium launches go live today, or on any day up to this many days ahead
+export const PREMIUM_DAYS_AHEAD = 30;
 
 export const productCategories = [
   { name: "AI", blurb: "Assistants, agents and smart tools" },

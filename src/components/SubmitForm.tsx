@@ -28,16 +28,14 @@ import { autofillFromSite, type AutofillFields } from "@/lib/actions/autofill";
 import { createLaunch } from "@/lib/actions/launches";
 import {
   BOOST_PRICE,
-  FREE_QUEUE_WEEKS,
   PREMIUM_CAPACITY,
   PREMIUM_PRICE,
-  WEEK_CAPACITY,
   productCategories,
 } from "@/lib/data";
 import { platformLabel, webApp, type PlatformInfo } from "@/lib/platforms";
 import { uploadImage } from "@/lib/upload";
 import { useAuth } from "@/lib/useAuth";
-import { weekLabel, type Week } from "@/lib/weeks";
+import { dayLabel, type Day } from "@/lib/days";
 import { BadgeStep } from "./BadgeStep";
 import { PlatformFields, platformIncomplete } from "./PlatformFields";
 import { ShareKit } from "./ShareKit";
@@ -53,7 +51,7 @@ type Form = {
   logo: string | null;
   shots: string[];
   plan: "free" | "premium";
-  week: number;
+  day: number;
   boost: boolean;
   // Premium only: shown on the product page and to search engines
   highlights: string[];
@@ -72,7 +70,7 @@ const empty: Form = {
   logo: null,
   shots: [],
   plan: "premium",
-  week: 0,
+  day: 0,
   boost: false,
   highlights: ["", "", ""],
   faqs: [{ q: "", a: "" }],
@@ -90,12 +88,12 @@ const plans = [
     icon: Rocket,
     features: [
       ["One free product per account", true],
-      ["Listed on a weekly launch board", true],
+      ["Waits in the free queue (about a week)", true],
       ["Your own product page", true],
-      ["Upvotes and comments", true],
+      ["Upvotes, comments and reviews", true],
       ["Backlink after you add our badge", true],
-      ["Choose your launch week (up to 12 weeks ahead)", false],
-      ["Pinned at the top all week", false],
+      ["Launch today or pick your day", false],
+      ["Featured at the top for 7 days", false],
       ["PREMIUM tag and Visit button", false],
       ["Blue verified tick on your profile", false],
       ["Mention in the Monday newsletter", false],
@@ -105,15 +103,15 @@ const plans = [
     id: "premium",
     title: "Premium launch",
     price: PREMIUM_PRICE,
-    blurb: "Get seen first, on your schedule",
+    blurb: "Live today, featured for a week",
     icon: Crown,
     features: [
-      ["Listed on a weekly launch board", true],
+      ["Goes live right away, no review wait", true],
       ["Your own product page", true],
-      ["Upvotes and comments", true],
+      ["Upvotes, comments and reviews", true],
       ["Dofollow backlink, no badge needed", true],
-      ["Choose your launch week (up to 12 weeks ahead)", true],
-      ["Pinned at the top all week", true],
+      ["Launch today or pick your day", true],
+      ["Featured at the top for 7 days", true],
       ["PREMIUM tag and Visit button", true],
       ["Blue verified tick on your profile", true],
       ["Mention in the Monday newsletter", true],
@@ -125,12 +123,12 @@ const reasons = [
   {
     icon: Pin,
     title: "Seen first",
-    text: "Pinned above free launches for your whole week.",
+    text: "Featured above free launches for 7 days.",
   },
   {
     icon: CalendarCheck,
     title: "Your timing",
-    text: "Launch the week you're ready, with no queue.",
+    text: "Go live today, or the day you're ready. No queue.",
   },
   {
     icon: Link2,
@@ -196,14 +194,14 @@ export function SubmitForm({
   freeUsed: freeUsedBefore,
   siteUrl,
 }: {
-  // The weeks a Premium launch can pick (the next 12)
-  upcoming: Week[];
-  // Premium spots still open, by week number
+  // The days a Premium launch can pick (today and the next 30)
+  upcoming: Day[];
+  // Premium spots still open, by day number
   premiumSpots: Record<number, number>;
-  // Weeks whose one Boost is already sold, by week number
+  // Days whose one Boost is already sold, by day number
   boostTaken: Record<number, boolean>;
-  // Where a free launch goes: 3 weeks out, or later if those weeks are full
-  freeWeek: Week;
+  // Where a free launch goes: a week out, or later if those days are full
+  freeWeek: Day;
   paymentsReady: boolean;
   // Each account gets one free product
   freeUsed: boolean;
@@ -211,7 +209,7 @@ export function SubmitForm({
   siteUrl: string;
 }) {
   const freeWeek = freeWeekInfo.number;
-  // Every week a launch can land in, including a free week further out
+  // Every day a launch can land on, including a free day further out
   const allWeeks = upcoming.some((w) => w.number === freeWeek)
     ? upcoming
     : [...upcoming, freeWeekInfo];
@@ -219,8 +217,8 @@ export function SubmitForm({
     upcoming.find((w) => premiumSpots[w.number] > 0)?.number ?? freeWeek;
   const fresh = (): Form =>
     paymentsReady
-      ? { ...empty, week: firstOpen }
-      : { ...empty, plan: "free", week: freeWeek };
+      ? { ...empty, day: firstOpen }
+      : { ...empty, plan: "free", day: freeWeek };
 
   const { user } = useAuth();
   const [freeUsed, setFreeUsed] = useState(freeUsedBefore);
@@ -231,13 +229,13 @@ export function SubmitForm({
     formRef.current = form;
   }, [form]);
   const [showErrors, setShowErrors] = useState(false);
-  // Premium sees 6 weeks first, then can open the rest
+  // Premium sees two weeks of days first, then can open the rest
   const [allWeeksOpen, setAllWeeksOpen] = useState(false);
   // The saved launch, once submitted, for the share kit
   const [done, setDone] = useState<{
     id: string;
     slug: string;
-    week: number;
+    day: number;
   } | null>(null);
   const [uploading, setUploading] = useState(0);
   const [error, setError] = useState("");
@@ -247,8 +245,8 @@ export function SubmitForm({
     ok: boolean;
     text: string;
   } | null>(null);
-  // Each week has one Boost; it's switched off for weeks where it's sold
-  const boostSold = !!boostTaken[form.week];
+  // Each day has one Boost; it's switched off for days where it's sold
+  const boostSold = !!boostTaken[form.day];
   const boost = form.boost && !boostSold;
 
   const upload = async (file: File, kind: string) => {
@@ -264,7 +262,7 @@ export function SubmitForm({
   const submit = () => {
     setError("");
     startSubmit(async () => {
-      const yearOf = allWeeks.find((w) => w.number === form.week)!.year;
+      const yearOf = allWeeks.find((w) => w.number === form.day)!.year;
       const res = await createLaunch({
         name: form.name,
         website: form.website,
@@ -274,7 +272,7 @@ export function SubmitForm({
         logo: form.logo,
         shots: form.shots,
         plan: form.plan,
-        week: { year: yearOf, number: form.week },
+        day: { year: yearOf, number: form.day },
         boost,
         highlights: form.highlights,
         faqs: form.faqs,
@@ -287,7 +285,7 @@ export function SubmitForm({
       if (res.checkoutUrl) window.location.assign(res.checkoutUrl);
       else {
         if (form.plan === "free") setFreeUsed(true);
-        setDone({ id: res.id, slug: res.slug, week: res.week });
+        setDone({ id: res.id, slug: res.slug, day: res.day });
       }
     });
   };
@@ -414,26 +412,15 @@ export function SubmitForm({
   const removeShot = (i: number) =>
     setForm((f) => ({ ...f, shots: f.shots.filter((_, j) => j !== i) }));
 
-  const week = allWeeks.find((w) => w.number === form.week)!;
-  // Week cards: Premium gets all 12 (6 until opened, plus the chosen one);
-  // free launches see the next few, with their queue week
-  const pickerWeeks =
-    form.plan === "premium"
-      ? upcoming.filter(
-          (w, i) => allWeeksOpen || i < 6 || w.number === form.week,
-        )
-      : [
-          ...upcoming.slice(0, FREE_QUEUE_WEEKS),
-          ...(upcoming
-            .slice(0, FREE_QUEUE_WEEKS)
-            .some((w) => w.number === freeWeek)
-            ? []
-            : [freeWeekInfo]),
-        ];
+  const week = allWeeks.find((w) => w.number === form.day)!;
+  // Day chips for Premium: two weeks first (plus the chosen day), then all 30
+  const pickerWeeks = upcoming.filter(
+    (w, i) => allWeeksOpen || i < 14 || w.number === form.day,
+  );
   // The board preview's week tabs: three weeks around the chosen one
   const at = Math.max(
     0,
-    allWeeks.findIndex((w) => w.number === form.week),
+    allWeeks.findIndex((w) => w.number === form.day),
   );
   const previewWeeks = allWeeks.slice(
     Math.max(0, at - 1),
@@ -453,7 +440,7 @@ export function SubmitForm({
             One last step: add our badge
           </h2>
           <p className="mx-auto mt-2 max-w-lg text-slate-500">
-            {form.name} is saved for Week {done.week} ({weekLabel(done.week)}).
+            {form.name} is saved for {dayLabel(done.day)}.
             Free launches show the WeekLaunch badge on their site. Once
             it&apos;s found, we review your launch and your link becomes a
             dofollow backlink.
@@ -490,10 +477,10 @@ export function SubmitForm({
           {form.name} is in the queue!
         </h2>
         <p className="mt-2 max-w-md text-slate-500">
-          We&apos;ll review it within 24 hours. It goes live on Monday of Week{" "}
-          {done.week} ({weekLabel(done.week)}).{" "}
+          We&apos;ll review it within 24 hours. It goes live on{" "}
+          {dayLabel(done.day)}.{" "}
           {form.plan === "premium" &&
-            "Your Premium launch is pinned at the top."}
+            "Your Premium launch is featured at the top for 7 days."}
         </p>
         <div className="mt-6 flex gap-2">
           <Link
@@ -530,7 +517,7 @@ export function SubmitForm({
               name={form.name}
               tagline={form.tagline}
               website={form.website}
-              week={done.week}
+              day={done.day}
               free={form.plan === "free"}
               siteUrl={siteUrl}
             />
@@ -859,11 +846,11 @@ export function SubmitForm({
                           setForm((f) => ({
                             ...f,
                             plan: p.id,
-                            week:
+                            day:
                               p.id === "free"
                                 ? freeWeek
-                                : premiumSpots[f.week] > 0
-                                  ? f.week
+                                : premiumSpots[f.day] > 0
+                                  ? f.day
                                   : firstOpen,
                           }))
                         }
@@ -972,110 +959,72 @@ export function SubmitForm({
 
               <div>
                 <span className="text-sm font-semibold text-slate-900">
-                  Launch week
+                  Launch day
                 </span>
-                <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  {pickerWeeks.map((w) => {
-                    const premium = form.plan === "premium";
-                    const left = premiumSpots[w.number] ?? 0;
-                    const soldOut = premium && left === 0;
-                    const locked = !premium && w.number !== freeWeek;
-                    const on = form.week === w.number;
-                    return (
-                      <button
-                        key={w.number}
-                        type="button"
-                        disabled={soldOut || locked}
-                        aria-pressed={on}
-                        onClick={() => set("week", w.number)}
-                        className={`relative rounded-xl p-3 text-left transition disabled:cursor-not-allowed ${
-                          on
-                            ? "badge-pop bg-brand-500 text-white"
-                            : soldOut || locked
-                              ? "border-[1.5px] border-slate-200 bg-slate-50 text-slate-400"
-                              : "border-[1.5px] border-slate-200 hover:border-slate-300"
-                        }`}
-                      >
-                        <span className="flex items-center justify-between">
-                          <span className="text-sm font-semibold">
-                            Week {w.number}
-                          </span>
-                          {on && <Check className="size-4" strokeWidth={3} />}
-                        </span>
-                        <span
-                          className={`block text-xs ${on ? "text-white/75" : "text-slate-500"}`}
-                        >
-                          {w.label}
-                        </span>
-                        {premium ? (
-                          <>
-                            <span aria-hidden className="mt-2.5 flex gap-1">
-                              {Array.from({ length: PREMIUM_CAPACITY }).map(
-                                (_, i) => (
-                                  <span
-                                    key={i}
-                                    className={`h-1.5 flex-1 rounded-full ${
-                                      i < PREMIUM_CAPACITY - left
-                                        ? on
-                                          ? "bg-white/35"
-                                          : "bg-slate-200"
-                                        : on
-                                          ? "bg-amber-300"
-                                          : "bg-emerald-400"
-                                    }`}
-                                  />
-                                ),
-                              )}
+                {form.plan === "premium" ? (
+                  <>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {pickerWeeks.map((w, i) => {
+                        const left = premiumSpots[w.number] ?? 0;
+                        const soldOut = left === 0;
+                        const on = form.day === w.number;
+                        return (
+                          <button
+                            key={w.number}
+                            type="button"
+                            disabled={soldOut}
+                            aria-pressed={on}
+                            onClick={() => set("day", w.number)}
+                            className={`rounded-xl px-3 py-2.5 text-left transition disabled:cursor-not-allowed ${
+                              on
+                                ? "badge-pop bg-brand-500 text-white"
+                                : soldOut
+                                  ? "border-[1.5px] border-slate-200 bg-slate-50 text-slate-400"
+                                  : "border-[1.5px] border-slate-200 hover:border-slate-300"
+                            }`}
+                          >
+                            <span className="flex items-center justify-between gap-1 text-sm font-semibold">
+                              {i === 0 ? "Today" : i === 1 ? "Tomorrow" : w.label}
+                              {on && <Check className="size-4" strokeWidth={3} />}
                             </span>
                             <span
-                              className={`mt-1.5 block text-[11px] font-semibold ${
+                              className={`block text-[11px] font-semibold ${
                                 on
-                                  ? "text-white"
+                                  ? "text-white/80"
                                   : soldOut
                                     ? "text-rose-600"
-                                    : left <= 2
-                                      ? "text-amber-700"
-                                      : "text-emerald-700"
+                                    : "text-emerald-700"
                               }`}
                             >
                               {soldOut
                                 ? "Sold out"
-                                : `${left} of ${PREMIUM_CAPACITY} Premium spots left`}
+                                : i < 2
+                                  ? `${w.label} · ${left} left`
+                                  : `${left} of ${PREMIUM_CAPACITY} left`}
                             </span>
-                          </>
-                        ) : (
-                          <span
-                            className={`mt-2.5 block text-[11px] font-semibold ${
-                              on ? "text-white" : "text-slate-400"
-                            }`}
-                          >
-                            {locked ? "Premium only" : "Next free opening"}
-                          </span>
-                        )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {upcoming.length > 14 && !allWeeksOpen && (
+                      <button
+                        type="button"
+                        onClick={() => setAllWeeksOpen(true)}
+                        className="mt-2 text-sm font-semibold text-brand-700 hover:underline"
+                      >
+                        Show {upcoming.length - 14} more days (up to{" "}
+                        {upcoming[upcoming.length - 1].label})
                       </button>
-                    );
-                  })}
-                </div>
-                {form.plan === "premium" &&
-                  upcoming.length > 6 &&
-                  !allWeeksOpen && (
-                    <button
-                      type="button"
-                      onClick={() => setAllWeeksOpen(true)}
-                      className="mt-2 text-sm font-semibold text-brand-700 hover:underline"
-                    >
-                      Show {upcoming.length - 6} more weeks (up to Week{" "}
-                      {upcoming[upcoming.length - 1].number})
-                    </button>
-                  )}
-                {form.plan === "free" && (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Free launches get the next open week: yours is{" "}
-                    <strong className="text-slate-700">
-                      Week {freeWeekInfo.number} ({freeWeekInfo.label})
-                    </strong>
-                    . Each week has {WEEK_CAPACITY} spots. Go Premium to choose
-                    any week.
+                    )}
+                    <p className="mt-2 text-xs text-slate-500">
+                      Paid launches go live as soon as payment goes through.
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-2 rounded-xl border-[1.5px] border-slate-200 px-4 py-3 text-sm text-slate-600">
+                    Free launches wait in the queue. Yours goes live on{" "}
+                    <strong className="text-slate-900">{freeWeekInfo.label}</strong>{" "}
+                    after a quick review. Go Premium to launch today.
                   </p>
                 )}
               </div>
@@ -1108,8 +1057,8 @@ export function SubmitForm({
                   </span>
                   <span className="mt-0.5 block text-xs text-slate-500">
                     {boostSold
-                      ? `Sold out for Week ${week.number}: there's one per week. Pick another week to add it.`
-                      : `Extra boost: a sponsor card for your product right after the top 3, all through Week ${week.number}.`}
+                      ? `Sold out for ${week.label}: there's one per day. Pick another day to add it.`
+                      : `Extra boost: a sponsor card for your product near the top of the home page all day on ${week.label}.`}
                   </span>
                 </span>
               </label>
@@ -1140,7 +1089,7 @@ export function SubmitForm({
                     ? "Premium launch · $29"
                     : "Free launch",
                 ],
-                ["Launch week", `Week ${week.number} · ${week.label}`],
+                ["Launch day", week.label],
               ].map(([k, v]) => (
                 <div key={k} className="flex gap-4 px-4 py-3">
                   <dt className="w-28 shrink-0 text-slate-500">{k}</dt>
@@ -1164,7 +1113,7 @@ export function SubmitForm({
                 <li className="flex justify-between gap-3">
                   <span className="text-slate-600">
                     {form.plan === "premium" ? "Premium launch" : "Free launch"}{" "}
-                    · Week {week.number}
+                    · {week.label}
                   </span>
                   <span className="font-medium tabular-nums text-slate-900">
                     ${form.plan === "premium" ? PREMIUM_PRICE : 0}
@@ -1173,7 +1122,7 @@ export function SubmitForm({
                 {boost && (
                   <li className="flex justify-between gap-3">
                     <span className="text-slate-600">
-                      Center feed ad · Week {week.number}
+                      Center feed ad · {week.label}
                     </span>
                     <span className="font-medium tabular-nums text-slate-900">
                       ${BOOST_PRICE}
@@ -1251,7 +1200,7 @@ export function SubmitForm({
         </p>
         <BoardPreview form={{ ...form, boost }} upcoming={previewWeeks} />
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
-          Launching Week {week.number} · {week.label}. Need help?{" "}
+          Launching {week.label}. Need help?{" "}
           <Link
             href="/contact"
             className="font-medium text-brand-700 underline"
@@ -1266,7 +1215,7 @@ export function SubmitForm({
 }
 
 // Mini copy of the home board, showing where the product will appear
-function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
+function BoardPreview({ form, upcoming }: { form: Form; upcoming: Day[] }) {
   const premium = form.plan === "premium";
   const tags = form.categories.length ? form.categories : ["Category"];
 
@@ -1362,12 +1311,12 @@ function BoardPreview({ form, upcoming }: { form: Form; upcoming: Week[] }) {
           <span
             key={w.number}
             className={`rounded-md px-2 py-1 ${
-              w.number === form.week
+              w.number === form.day
                 ? "badge-pop bg-brand-500 text-white"
                 : "text-slate-400"
             }`}
           >
-            W{w.number}
+            {dayLabel(w.number, { weekday: false })}
           </span>
         ))}
       </div>

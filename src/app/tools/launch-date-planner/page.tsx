@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "What's the best day to launch?",
-    a: "Early in the week works well because people are browsing and planning. WeekLaunch launches go live on Monday and stay on the board for the whole week.",
+    a: "Early in the week works well because people are browsing and planning. On WeekLaunch you can launch any day: Premium goes live right away, and free launches pick up the next open day.",
   },
   {
     q: "How does Add to calendar work?",
@@ -41,7 +41,7 @@ export default function LaunchDatePlannerPage() {
       tool={tool}
       intro="Pick your launch day and get a dated, step-by-step plan from 4 weeks before to 2 weeks after. Copy it or add every step to your calendar."
       steps={[
-        "Pick your launch day — a Monday gives you a full week on WeekLaunch.",
+        "Pick your launch day: a Tuesday to Thursday works well for most products.",
         "Read the timeline: every step shows its date and what to do.",
         "Press Add to calendar to save each step as an all-day event.",
         "Or use Copy plan to paste the whole plan into your notes.",
@@ -95,7 +95,7 @@ export default function LaunchDatePlannerPage() {
               href="/submit"
               className="font-medium text-brand-700 underline"
             >
-              book your launch week
+              book your launch day
             </Link>
             .
           </p>

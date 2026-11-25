@@ -12,6 +12,7 @@ import { isAdmin, requireUser } from "@/lib/auth";
 import { getDirectoryPackage } from "@/lib/directories";
 import { toProduct, type ProductRowDb } from "@/lib/products";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { dayLabel } from "@/lib/days";
 
 export const metadata: Metadata = {
   title: "Review launches",
@@ -25,7 +26,7 @@ export default function AdminPage() {
         Review launches
       </h1>
       <p className="mt-0.5 text-sm text-slate-500">
-        Approved launches go live on Monday of their week.
+        Approved free launches go live on their queue day. Paid launches skip review.
       </p>
       <Suspense
         fallback={
@@ -120,7 +121,7 @@ async function Queue() {
               </p>
               <p className="text-sm text-slate-500">{p.tagline}</p>
               <p className="mt-1 text-xs text-slate-400">
-                Week {p.week}, {p.year} · {p.tags.join(", ")} · by{" "}
+                {dayLabel(p.day)}, {p.year} · {p.tags.join(", ")} · by{" "}
                 {p.maker.name}
                 {p.maker.handle && ` (@${p.maker.handle})`}
               </p>

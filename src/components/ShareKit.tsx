@@ -10,7 +10,8 @@ import {
   sharePlatforms,
   sharePost,
 } from "@/lib/share";
-import { weekStart } from "@/lib/weeks";
+import { dayStart } from "@/lib/days";
+import { dayLabel } from "@/lib/days";
 
 const input =
   "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
@@ -22,7 +23,7 @@ export function ShareKit({
   name,
   tagline,
   website,
-  week,
+  day: week,
   free,
   siteUrl,
   sharedLinks = [],
@@ -33,7 +34,7 @@ export function ShareKit({
   tagline: string;
   // The maker's own product site, linked in the post
   website: string;
-  week: number;
+  day: number;
   free: boolean;
   siteUrl: string;
   sharedLinks?: string[];
@@ -41,7 +42,7 @@ export function ShareKit({
   const router = useRouter();
   const link = `${siteUrl}/products/${slug}`;
   const card = `/share/${slug}`;
-  const date = weekStart(week).toLocaleDateString("en-US", {
+  const date = dayStart(week).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     timeZone: "UTC",
@@ -166,7 +167,7 @@ export function ShareKit({
             setResult({
               ok: true,
               text: res.moved
-                ? `You're in the fast lane: your launch moved up to Week ${res.week} and will be reviewed first.`
+                ? `You're in the fast lane: your launch moved up to ${dayLabel(res.day)} and will be reviewed first.`
                 : "Thanks for sharing! Your launch will be reviewed first.",
             });
             router.refresh();
@@ -180,7 +181,7 @@ export function ShareKit({
         <p className="mt-0.5 text-xs text-slate-600">
           Post on {SHARES_NEEDED} different platforms and paste the links here.
           {free
-            ? " Your launch moves up to the next open week and is reviewed first."
+            ? " Your launch moves up to the next open day and is reviewed first."
             : " Your launch is reviewed first."}
         </p>
         <ul className="mt-3 space-y-2">

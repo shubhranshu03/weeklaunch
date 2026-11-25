@@ -4,17 +4,17 @@ import { CalendarDays, Scale, Users } from "lucide-react";
 import { InfoPage } from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "About — a fair weekly launch board for makers",
+  title: "About — a fair daily launch platform for makers",
   description:
-    "WeekLaunch is a weekly launch board that gives indie makers and small teams a fair shot at getting seen, with a permanent product page for every launch.",
+    "WeekLaunch is a daily launch platform that gives indie makers and small teams a fair shot at getting seen, with a permanent product page for every launch.",
   alternates: { canonical: "/about" },
 };
 
 const values = [
   {
     icon: CalendarDays,
-    title: "A fresh start every week",
-    text: "The board resets every Monday, so new makers aren't buried under last month's winners.",
+    title: "A fresh start every day",
+    text: "Every day has its own launches and its own winners, so new makers aren't buried under last month's.",
   },
   {
     icon: Scale,
@@ -34,7 +34,7 @@ export default function AboutPage() {
       path="/about"
       type="AboutPage"
       title="About WeekLaunch"
-      intro="A weekly launch board that gives indie makers and small teams a fair shot at getting seen."
+      intro="A daily launch platform that gives indie makers and small teams a fair shot at getting seen."
     >
       <div className="not-prose grid gap-3 sm:grid-cols-3">
         {values.map((v) => (
@@ -59,9 +59,9 @@ export default function AboutPage() {
       <section>
         <h2>How it works</h2>
         <ul>
-          <li>Submit your product and pick a launch week.</li>
-          <li>Go live on Monday at 00:00 UTC.</li>
-          <li>Collect upvotes, comments and visitors all week.</li>
+          <li>Paste your link: we fill in the details for you.</li>
+          <li>Launch today with Premium, or join the free queue.</li>
+          <li>Collect upvotes, comments and reviews, and compete for Product of the Day, Week and Month.</li>
           <li>Keep your product page and badge forever.</li>
         </ul>
       </section>

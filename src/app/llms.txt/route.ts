@@ -25,11 +25,12 @@ export async function GET() {
 
 > ${SITE_DESCRIPTION}
 
-WeekLaunch publishes a new launch leaderboard every Monday at 00:00 UTC. Makers submit a product, pick a launch week and collect upvotes and comments for that week. Every launch keeps a permanent product page with a link to the product's website.
+WeekLaunch is a daily launch platform for indie makers. Products launch any day: free launches wait in a short queue, Premium launches go live right away. The community upvotes, comments and leaves star reviews, and the top launches win Product of the Day, Week and Month (see the Hall of Fame). Every launch keeps a permanent product page with a link to the product's website.
 
 ## Key pages
 
-- [This week's launches](${SITE_URL}/): the current weekly leaderboard
+- [Today's launches](${SITE_URL}/): today's launches and the top of the day, week and month
+- [Hall of Fame](${SITE_URL}/hall-of-fame): every Product of the Day, Week and Month
 - [All products](${SITE_URL}/products): every product, grouped by category
 - [New Mac apps](${SITE_URL}/products/mac): Mac apps launched on WeekLaunch, with price, where to get them and Apple Silicon support
 - [Submit a product](${SITE_URL}/submit): launch for free or with Premium
@@ -42,9 +43,9 @@ WeekLaunch publishes a new launch leaderboard every Monday at 00:00 UTC. Makers 
 
 ## Pricing
 
-- Free launch: $0, one product per account (further products need Premium). Listed on a weekly board, own product page, upvotes and comments; free launches join a queue.
-- Premium launch: $29 one-time. Pick any launch week, pinned at the top for the whole week, PREMIUM tag, a verified maker tick, dofollow backlink and a Monday newsletter mention.
-- Center feed ad: $19 per week. A sponsor card in the launch list after the top 3.
+- Free launch: $0, one product per account (further products need Premium). Launches from a short free queue (about a week), own product page, upvotes, comments and reviews.
+- Premium launch: $29 one-time. Goes live today or on a chosen day, featured at the top of the home page for 7 days, PREMIUM tag, a verified maker tick, dofollow backlink and a Monday newsletter mention.
+- Center feed ad: $19 per day. A sponsor card near the top of the home page feed.
 - Directory submission: $49 for 30+ directories, $99 for 50+, $149 for 100+. Done for you, strongest sites first, with a report of every live link.
 - Right sidebar ad: $49 per month. One of two promo boxes in the right column on every page.
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight, Megaphone, Triangle } from "lucide-react";
+import { dayLabel } from "@/lib/days";
 import { getLastWeekBest } from "@/lib/products";
 import { voteRanks } from "@/lib/ranks";
 import { ProductLogo } from "./ProductRow";
@@ -63,20 +64,20 @@ export function RightRail() {
   );
 }
 
-// Last week's top 3
+// Yesterday's top 3, linking to the Hall of Fame
 async function HallOfFame() {
-  const { week, products } = await getLastWeekBest();
+  const { day: week, products } = await getLastWeekBest();
   if (products.length === 0) return null;
   const ranks = voteRanks(products);
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4">
       <Link
-        href="/products"
+        href="/hall-of-fame"
         className="group flex items-center justify-between px-1"
       >
         <span className="text-sm font-semibold text-slate-900">
-          Hall of fame · W{week.number}
+          Yesterday&apos;s top · {dayLabel(week.number, { weekday: false })}
         </span>
         <ArrowRight className="size-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-brand-600" />
       </Link>

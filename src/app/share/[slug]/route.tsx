@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getUpcomingLaunch } from "@/lib/products";
 import { SITE_URL } from "@/lib/site";
-import { weekStart } from "@/lib/weeks";
+import { dayStart } from "@/lib/days";
 
 // Drawn at twice the usual 1200 × 630, so it stays sharp on high-density screens
 const S = 2;
@@ -33,7 +33,7 @@ export async function GET(
   const launch = await getUpcomingLaunch(slug);
   if (!launch) return new Response("Not found", { status: 404 });
 
-  const date = weekStart(launch.week).toLocaleDateString("en-US", {
+  const date = dayStart(launch.day).toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -44,8 +44,8 @@ export async function GET(
     ? launch.logo.glyph
     : launch.name[0];
   const badge = launch.live
-    ? `Live now · Week ${launch.week}`
-    : `Launching ${date} · Week ${launch.week}`;
+    ? "Live now on WeekLaunch"
+    : `Launching ${date}`;
 
   return new ImageResponse(
     <div

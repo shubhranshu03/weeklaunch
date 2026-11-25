@@ -1,9 +1,9 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import {
-  FREE_QUEUE_WEEKS,
+  FREE_QUEUE_DAYS,
   PREMIUM_CAPACITY,
-  WEEK_CAPACITY,
+  DAY_CAPACITY,
   type LaunchStatus,
   type Product,
 } from "./data";
@@ -11,12 +11,12 @@ import type { GetFrom, Platform, PriceModel } from "./platforms";
 import { supabaseConfigured } from "./supabase/env";
 import { supabaseAdmin, supabasePublic } from "./supabase/server";
 import {
-  currentWeek,
-  weekKey,
-  weekNumber,
-  weeksAround,
-  type Week,
-} from "./weeks";
+  currentDay,
+  dayKey,
+  dayNumber,
+  daysAround,
+  type Day,
+} from "./days";
 
 export type ProductRowDb = {
   id: string;
@@ -41,10 +41,12 @@ export type ProductRowDb = {
   boosted: boolean;
   status: LaunchStatus;
   launch_year: number;
-  launch_week: number;
+  launch_day: number;
   verified: boolean;
   upvotes_count: number;
   comments_count: number;
+  // Missing until migration 011 has run
+  followers_count?: number | null;
   rating_score: number | null;
   rating_count: number;
   created_at: string;
@@ -79,6 +81,7 @@ export function toProduct(r: ProductRowDb): Product {
     tags: r.tags,
     upvotes: r.upvotes_count,
     comments: r.comments_count,
+    followers: r.followers_count ?? 0,
     rating:
       r.rating_score != null
         ? { score: Number(r.rating_score), count: r.rating_count }
@@ -98,7 +101,7 @@ export function toProduct(r: ProductRowDb): Product {
     // Only shown while the launch is Premium
     highlights: r.plan === "premium" ? (r.highlights ?? []) : [],
     faqs: r.plan === "premium" ? (r.faqs ?? []) : [],
-    week: r.launch_week,
+    day: r.launch_day,
     year: r.launch_year,
     maker: r.maker
       ? {
@@ -125,26 +128,20 @@ const byRank = (a: Product, b: Product) =>
 
 // ─── Public, cached reads ───────────────────────────────────
 
-// The week tabs on the home page, worked out fresh every hour
-export async function getBoardWeeks(): Promise<Week[]> {
-  "use cache";
-  cacheLife("hours");
-  return weeksAround(new Date(), 4, 3);
-}
 
 // The current week; cached like the tabs so pages stay fast
-export async function getCurrentWeek() {
+export async function getCurrentDay() {
   "use cache";
   cacheLife("hours");
-  return currentWeek(new Date());
+  return currentDay(new Date());
 }
 
-export async function getBoard(weeks: Week[]) {
+export async function getBoard(weeks: Day[]) {
   "use cache";
   cacheLife("minutes");
   cacheTag("products");
   const board: Record<string, Product[]> = {};
-  for (const w of weeks) board[weekKey(w)] = [];
+  for (const w of weeks) board[dayKey(w)] = [];
   if (!supabaseConfigured) return board;
 
   const years = [...new Set(weeks.map((w) => w.year))];
@@ -154,13 +151,13 @@ export async function getBoard(weeks: Week[]) {
     .eq("status", "approved")
     .in("launch_year", years)
     .in(
-      "launch_week",
+      "launch_day",
       weeks.map((w) => w.number),
     )
     .limit(1000);
 
   for (const r of (data ?? []) as ProductRowDb[]) {
-    const key = `${r.launch_year}-${r.launch_week}`;
+    const key = `${r.launch_year}-${r.launch_day}`;
     board[key]?.push(toProduct(r));
   }
   for (const key in board) board[key].sort(byRank);
@@ -176,8 +173,8 @@ export async function getAllProducts(): Promise<Product[]> {
     .from("products")
     .select(select)
     .eq("status", "approved")
-    // Launches stay hidden until Monday of their week
-    .lte("launch_week", weekNumber(new Date()))
+    // Launches stay hidden until their launch day
+    .lte("launch_day", dayNumber(new Date()))
     .order("upvotes_count", { ascending: false })
     .limit(1000);
   return ((data ?? []) as ProductRowDb[]).map(toProduct);
@@ -200,7 +197,7 @@ export async function getProduct(slug: string): Promise<Product | null> {
     .select(select)
     .eq("slug", slug)
     .eq("status", "approved")
-    .lte("launch_week", weekNumber(new Date()))
+    .lte("launch_day", dayNumber(new Date()))
     .maybeSingle<ProductRowDb>();
   return data ? toProduct(data) : null;
 }
@@ -226,10 +223,10 @@ export async function getUpcomingLaunch(slug: string) {
     name: p.name,
     tagline: p.tagline,
     logo: p.logo,
-    week: p.week,
+    day: p.day,
     premium: p.premium,
     maker: p.maker,
-    live: data.status === "approved" && p.week <= weekNumber(new Date()),
+    live: data.status === "approved" && p.day <= dayNumber(new Date()),
   };
 }
 
@@ -267,8 +264,8 @@ export async function getMaker(handle: string) {
     .select(select)
     .eq("maker_id", maker.id)
     .eq("status", "approved")
-    .lte("launch_week", weekNumber(new Date()))
-    .order("launch_week", { ascending: false });
+    .lte("launch_day", dayNumber(new Date()))
+    .order("launch_day", { ascending: false });
   return {
     maker,
     launches: ((data ?? []) as ProductRowDb[]).map(toProduct),
@@ -288,22 +285,22 @@ export async function getMakerHandles(): Promise<string[]> {
   ];
 }
 
-// Last week's top 3, for the right column
+// Yesterday's top 3, for the side column
 export async function getLastWeekBest() {
   "use cache";
   cacheLife("minutes");
   cacheTag("products");
-  const recent = weeksAround(new Date(), 1, 0);
-  // In Week 1 there's no last week yet
-  if (recent.length < 2) return { week: recent[0], products: [] };
+  const recent = daysAround(new Date(), 1, 0);
+  // On Day 1 there's no yesterday yet
+  if (recent.length < 2) return { day: recent[0], products: [] };
   const last = recent[0];
   const board = await getBoard([last]);
   // Winners are decided by votes alone: being pinned doesn't make a winner
-  const products = board[weekKey(last)]
+  const products = board[dayKey(last)]
     .filter((p) => p.upvotes > 0)
     .sort((a, b) => b.upvotes - a.upvotes)
     .slice(0, 3);
-  return { week: last, products };
+  return { day: last, products };
 }
 
 export type CommentItem = {
@@ -335,17 +332,48 @@ export async function getComments(productId: string): Promise<CommentItem[]> {
   return (data ?? []) as unknown as CommentItem[];
 }
 
+export type ReviewItem = {
+  rating: number;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  author: {
+    name: string;
+    handle: string;
+    avatar_url: string | null;
+    verified?: boolean;
+  };
+};
+
+// Star reviews of one launch, newest first (missing until migration 011 runs)
+export async function getReviews(productId: string): Promise<ReviewItem[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(`reviews:${productId}`);
+  if (!supabaseConfigured) return [];
+  const { data } = await supabasePublic()
+    .from("reviews")
+    .select(
+      "rating, body, created_at, updated_at, user_id, author:profiles(name, handle, avatar_url, verified)",
+    )
+    .eq("product_id", productId)
+    .order("updated_at", { ascending: false })
+    .limit(200);
+  return (data ?? []) as unknown as ReviewItem[];
+}
+
 // ─── Server-only reads (not cached) ─────────────────────────
 
-export type WeekLoad = { premium: number; total: number; boosted: boolean };
+export type DayLoad = { premium: number; total: number; boosted: boolean };
 
 // Launches booked per week, free and Premium, and whether its one Boost is
 // taken. Rejected launches don't count, and an unpaid checkout only holds its
 // spot for an hour. `exceptId` leaves out one launch (the one being paid for).
-export async function weekLoad(weeks: Week[], exceptId?: string) {
-  const load: Record<string, WeekLoad> = {};
+export async function dayLoad(weeks: Day[], exceptId?: string) {
+  const load: Record<string, DayLoad> = {};
   for (const w of weeks)
-    load[weekKey(w)] = { premium: 0, total: 0, boosted: false };
+    load[dayKey(w)] = { premium: 0, total: 0, boosted: false };
   if (!supabaseConfigured || weeks.length === 0) return load;
 
   const hourAgo = new Date(Date.now() - 3_600_000).toISOString();
@@ -355,26 +383,26 @@ export async function weekLoad(weeks: Week[], exceptId?: string) {
   const [{ data: products }, { data: boosts }] = await Promise.all([
     admin
       .from("products")
-      .select("id, launch_year, launch_week, plan, boosted, status, created_at")
+      .select("id, launch_year, launch_day, plan, boosted, status, created_at")
       .in("launch_year", years)
-      .in("launch_week", numbers)
+      .in("launch_day", numbers)
       .neq("status", "rejected")
       // Sample launches never take a real maker's spot
       .eq("is_sample", false),
     // A Boost checkout in progress holds the week's sponsor spot too
     admin
       .from("payments")
-      .select("product_id, product:products!inner(launch_year, launch_week)")
+      .select("product_id, product:products!inner(launch_year, launch_day)")
       .eq("boost", true)
       .eq("status", "pending")
       .gte("created_at", hourAgo)
       .in("product.launch_year", years)
-      .in("product.launch_week", numbers),
+      .in("product.launch_day", numbers),
   ]);
 
   for (const r of products ?? []) {
     if (r.id === exceptId) continue;
-    const l = load[`${r.launch_year}-${r.launch_week}`];
+    const l = load[`${r.launch_year}-${r.launch_day}`];
     if (!l) continue;
     if (r.boosted) l.boosted = true;
     if (r.status === "pending_payment" && r.created_at < hourAgo) continue;
@@ -383,43 +411,27 @@ export async function weekLoad(weeks: Week[], exceptId?: string) {
   }
   for (const b of (boosts ?? []) as unknown as {
     product_id: string;
-    product: { launch_year: number; launch_week: number };
+    product: { launch_year: number; launch_day: number };
   }[]) {
     if (b.product_id === exceptId) continue;
-    const l = load[`${b.product.launch_year}-${b.product.launch_week}`];
+    const l = load[`${b.product.launch_year}-${b.product.launch_day}`];
     if (l) l.boosted = true;
   }
   return load;
 }
 
-// Premium spots still open in a week: limited by both caps
-export const premiumLeft = (l: WeekLoad) =>
-  Math.max(0, Math.min(PREMIUM_CAPACITY - l.premium, WEEK_CAPACITY - l.total));
+// Premium spots still open in a day: limited by both caps
+export const premiumLeft = (l: DayLoad) =>
+  Math.max(0, Math.min(PREMIUM_CAPACITY - l.premium, DAY_CAPACITY - l.total));
 
-// Spots still open in each week, for the "sold out" stamp on the home page.
-// Cached for a few minutes so the home page stays fast.
-export type WeekSpace = { left: number; premiumLeft: number };
-export async function getWeekSpace(weeks: Week[]) {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag("products");
-  const load = await weekLoad(weeks);
-  const space: Record<string, WeekSpace> = {};
-  for (const key in load)
-    space[key] = {
-      left: Math.max(0, WEEK_CAPACITY - load[key].total),
-      premiumLeft: premiumLeft(load[key]),
-    };
-  return space;
-}
 
 // Free launches queue 3 weeks out, or the first later week with room
-export async function nextFreeWeek(): Promise<Week | null> {
-  const weeks = weeksAround(new Date(), 0, FREE_QUEUE_WEEKS + 12).slice(
-    FREE_QUEUE_WEEKS,
+export async function nextFreeDay(): Promise<Day | null> {
+  const weeks = daysAround(new Date(), 0, FREE_QUEUE_DAYS + 12).slice(
+    FREE_QUEUE_DAYS,
   );
-  const load = await weekLoad(weeks);
-  return weeks.find((w) => load[weekKey(w)].total < WEEK_CAPACITY) ?? null;
+  const load = await dayLoad(weeks);
+  return weeks.find((w) => load[dayKey(w)].total < DAY_CAPACITY) ?? null;
 }
 
 // Every launch of one maker, any status

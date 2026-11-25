@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 
 import type { BadgeTheme } from "@/lib/badge";
+import { dayLabel } from "@/lib/days";
 
 const themes: Record<BadgeTheme, { box: string; sub: string }> = {
   light: { box: "bg-white text-slate-900", sub: "text-slate-500" },
@@ -18,11 +19,11 @@ const themes: Record<BadgeTheme, { box: string; sub: string }> = {
 export function BadgePreview({
   theme = "light",
   label = "Launched on",
-  week,
+  day: week,
 }: {
   theme?: BadgeTheme;
   label?: string;
-  week?: number;
+  day?: number;
 }) {
   const t = themes[theme];
   return (
@@ -48,7 +49,7 @@ export function BadgePreview({
       <span className="text-left leading-tight">
         <span className={`block text-[10px] font-semibold uppercase ${t.sub}`}>
           {label}
-          {week ? ` · Week ${week}` : ""}
+          {week ? ` · ${dayLabel(week, { weekday: false })}` : ""}
         </span>
         <span className="block text-sm font-bold">WeekLaunch</span>
       </span>

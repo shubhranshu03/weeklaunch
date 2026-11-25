@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { AskAI } from "@/components/AskAI";
 import { Comments } from "@/components/Comments";
+import { AwardBadge } from "@/components/home/LaunchRow";
+import { ProductActions } from "@/components/ProductActions";
+import { Reviews } from "@/components/Reviews";
+import { getAwardsFor } from "@/lib/feed";
 import { JsonLd } from "@/components/JsonLd";
 import { BadgePreview, CopyCode } from "@/components/LaunchBadge";
 import { badgeCode } from "@/lib/badge";
@@ -32,10 +36,11 @@ import { SiteShell } from "@/components/SiteShell";
 import {
   getAllProducts,
   getComments,
+  getReviews,
   getProduct,
   getUpcomingLaunch,
 } from "@/lib/products";
-import { weekLabel, weekStart } from "@/lib/weeks";
+import { dayLabel, dayStart } from "@/lib/days";
 
 export async function generateStaticParams() {
   const products = await getAllProducts();
@@ -93,7 +98,7 @@ export async function generateMetadata({
       description,
       siteName: "WeekLaunch",
       locale: "en_US",
-      publishedTime: weekStart(product.week).toISOString(),
+      publishedTime: dayStart(product.day).toISOString(),
     },
     keywords: [product.name, ...product.tags, `${product.name} alternatives`],
     twitter: { title: product.name, description },
@@ -140,9 +145,11 @@ async function ProductDetail({
     return <ComingSoon launch={upcoming} />;
   }
 
-  const [all, comments] = await Promise.all([
+  const [all, comments, reviews, awards] = await Promise.all([
     getAllProducts(),
     getComments(product.id),
+    getReviews(product.id),
+    getAwardsFor(product.slug),
   ]);
   const related = all
     .filter((p) => p.slug !== product.slug && p.tags[0] === product.tags[0])
@@ -156,11 +163,15 @@ async function ProductDetail({
       label: "Rating",
       value: product.rating ? product.rating.score.toFixed(1) : "New",
     },
-    { icon: CalendarDays, label: "Launched", value: `Week ${product.week}` },
+    {
+      icon: CalendarDays,
+      label: "Launched",
+      value: dayLabel(product.day, { weekday: false }),
+    },
   ];
 
   const pageUrl = `${SITE_URL}/products/${product.slug}`;
-  const launched = weekStart(product.week);
+  const launched = dayStart(product.day);
   const launchedOn = launched.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -300,6 +311,13 @@ async function ProductDetail({
               {product.app.platform === "mac" && <MacBadge />}
               {product.sample && <SampleTag />}
             </h1>
+            {awards.length > 0 && (
+              <p className="mt-2 flex flex-wrap gap-1.5">
+                {awards.map((a) => (
+                  <AwardBadge key={`${a.period}-${a.from}`} award={a} />
+                ))}
+              </p>
+            )}
             <p className="mt-1 text-slate-500">{product.tagline}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {product.tags.map((t) => (
@@ -328,9 +346,21 @@ async function ProductDetail({
             <UpvoteButton
               productId={product.id}
               count={product.upvotes}
-              week={product.week}
+              day={product.day}
             />
           </div>
+        </div>
+
+        <div className="mt-5">
+          <ProductActions
+            productId={product.id}
+            followers={product.followers ?? 0}
+            rating={product.rating}
+            makerHandle={product.maker.handle}
+            ratings={Object.fromEntries(
+              reviews.map((r) => [r.user_id, r.rating]),
+            )}
+          />
         </div>
 
         <dl className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -399,8 +429,8 @@ async function ProductDetail({
                 </p>
               ))}
             <p>
-              It launched on WeekLaunch in Week {product.week} (
-              {weekLabel(product.week)}, {product.year}) and is listed under{" "}
+              It launched on WeekLaunch on {dayLabel(product.day)},{" "}
+              {product.year} and is listed under{" "}
               {product.tags.join(", ")}.
             </p>
           </div>
@@ -483,7 +513,7 @@ async function ProductDetail({
               : []),
             ["Made by", product.maker.name],
             ["Website", host],
-            ["Launched on WeekLaunch", `Week ${product.week}, ${launchedOn}`],
+            ["Launched on WeekLaunch", `Week ${product.day}, ${launchedOn}`],
             [
               "Community",
               `${product.upvotes} upvotes · ${product.comments} comments`,
@@ -579,12 +609,14 @@ async function ProductDetail({
               Maker? Add this to your website to show off your launch.
             </p>
           </div>
-          <BadgePreview week={product.week} />
+          <BadgePreview day={product.day} />
         </div>
         <div className="mt-4">
           <CopyCode code={badgeCode(product.slug, "light")} />
         </div>
       </section>
+
+      <Reviews reviews={reviews} rating={product.rating} />
 
       <div className="mt-4">
         <Comments
@@ -629,13 +661,13 @@ function MakerLink({
   );
 }
 
-// Shown at a launch's link before its week starts, so shared links never 404
+// Shown at a launch's link before its launch day, so shared links never 404
 function ComingSoon({
   launch,
 }: {
   launch: NonNullable<Awaited<ReturnType<typeof getUpcomingLaunch>>>;
 }) {
-  const date = weekStart(launch.week).toLocaleDateString("en-US", {
+  const date = dayStart(launch.day).toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -653,7 +685,7 @@ function ComingSoon({
         <p className="mx-auto mt-2 max-w-md text-white/80">{launch.tagline}</p>
         <span className="badge-pop mt-6 inline-flex items-center gap-1.5 rounded-md bg-amber-300 px-3 py-1 text-sm font-bold text-slate-900">
           <CalendarDays className="size-4" />
-          Launching {date} · Week {launch.week}
+          Launching {date}
         </span>
       </div>
       <div className="p-6 text-center">
@@ -666,7 +698,7 @@ function ComingSoon({
             href="/"
             className="btn-pop flex h-11 items-center rounded-xl bg-brand-500 px-5 text-sm font-bold text-white hover:bg-brand-600"
           >
-            See this week&apos;s launches
+            See today&apos;s launches
           </Link>
           {launch.maker.handle && (
             <Link

@@ -15,13 +15,14 @@ const launchPlans = [
     name: "Free launch",
     price: "$0",
     period: "forever",
-    blurb: "List your first product on a weekly board.",
+    blurb: "Join the free queue and launch in about a week.",
     icon: Rocket,
     features: [
       "One free product per account",
-      "Listed on a weekly launch board",
+      "Goes live from the free queue after a quick review",
       "Your own product page",
-      "Upvotes and comments",
+      "Upvotes, comments and reviews",
+      "Compete for Product of the Day, Week and Month",
       "Backlink when you add our badge",
     ],
     cta: "Launch for free",
@@ -31,13 +32,13 @@ const launchPlans = [
     name: "Premium launch",
     price: "$29",
     period: "one-time",
-    blurb: "Get seen first and skip the queue.",
+    blurb: "Go live today and be featured for a week.",
     icon: Crown,
     features: [
-      "Skip the queue — pick any launch week",
+      "Live right away: launch today or pick your day",
+      "Featured at the top of the home page for 7 days",
       "PREMIUM tag and a Visit button",
       "Blue verified tick on your profile and launches",
-      "Pinned at the top for your whole week",
       "Permanent dofollow backlink",
       "Shared in the Monday newsletter",
       "Priority support",
@@ -52,16 +53,16 @@ const adPlans = [
     id: "center",
     name: "Center feed ad",
     price: "$19",
-    period: "per week",
-    blurb: "A sponsor card inside the launch list, right after the top 3.",
+    period: "per day",
+    blurb: "A sponsor card on the home page, near the top of the feed.",
     icon: Rows3,
     features: [
-      "Seen by every visitor to the board",
+      "Seen by every visitor that day",
       "Your logo, headline and link",
       "Shows on desktop and phone",
-      "Click stats at the end of the week",
+      "Click stats the next day",
     ],
-    cta: "Book a week",
+    cta: "Book a day",
   },
   {
     id: "sidebar",
@@ -83,23 +84,23 @@ const adPlans = [
 export const faqs = [
   {
     q: "Is the free launch really free?",
-    a: "Yes, for one product per account. Every product after that needs Premium ($29). You get a spot on a weekly board, your own product page, upvotes and comments — no card needed. Free launches join a queue, so your week may be a few weeks out.",
+    a: "Yes, for one product per account. Every product after that needs Premium ($29). You get a launch day, your own product page, upvotes, comments and reviews, with no card needed. Free launches join a queue, so your day is usually about a week out.",
   },
   {
     q: "What's the difference between Free and Premium?",
-    a: "Premium skips the queue so you pick your exact week, pins you at the top of the board all week, adds the PREMIUM tag and Visit button, gives you a blue verified tick on your profile and every launch, and gives you a permanent dofollow backlink plus a mention in our Monday newsletter.",
+    a: "Premium skips the queue and the review wait: you go live today or on the day you pick. You're featured at the top of the home page for 7 days, get the PREMIUM tag and Visit button, a blue verified tick on your profile and every launch, a permanent dofollow backlink and a mention in our Monday newsletter.",
   },
   {
     q: "When does my Premium launch go live?",
-    a: "You choose the week. Your product goes live on Monday at 00:00 UTC and stays pinned at the top until Sunday night. Pinning never changes your rank, which comes only from votes.",
+    a: "As soon as your payment goes through, if you picked today. Or pick any day in the next 30, and it goes live at 00:00 UTC that day. Being featured never changes your rank, which comes only from votes.",
   },
   {
-    q: "How many products launch each week?",
-    a: "At most 25, so every launch gets noticed. Up to 5 of them are Premium and pinned at the top. When a week is full, free launches move to the next week with space.",
+    q: "How many products launch each day?",
+    a: "At most 10, so every launch gets noticed. Up to 3 of them are Premium. When a day is full, free launches move to the next day with space.",
   },
   {
     q: "Can my free launch go live sooner?",
-    a: "Yes. After you submit, share your launch card on 3 different platforms (like X, LinkedIn and Reddit) and paste the post links in My launches. Your launch moves up to the next week with space and is reviewed first.",
+    a: "Yes. After you submit, share your launch card on 3 different platforms (like X, LinkedIn and Reddit) and paste the post links in My launches. Your launch moves up to the next day with space and is reviewed first.",
   },
   {
     q: "Is the backlink dofollow?",
@@ -107,7 +108,7 @@ export const faqs = [
   },
   {
     q: "Can I upgrade from Free to Premium later?",
-    a: "Yes, any time before your launch week starts. You only pay the $29 Premium price and keep everything you've already set up.",
+    a: "Yes, any time before your launch day. You only pay the $29 Premium price and keep everything you've already set up.",
   },
   {
     q: "Can I launch the same product again?",
@@ -119,7 +120,7 @@ export const faqs = [
   },
   {
     q: "How many ad spots are there?",
-    a: "One center feed spot per week and two right sidebar spots per month, so only a couple of ads ever share the page.",
+    a: "One center feed spot per day and two right sidebar spots per month, so only a couple of ads ever share the page.",
   },
   {
     q: "What do I need to send for an ad?",

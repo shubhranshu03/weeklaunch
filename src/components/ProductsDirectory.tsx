@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   BarChart3,
   Code,
@@ -45,7 +46,9 @@ export function ProductsDirectory({
   view?: "all" | "mac";
 }) {
   const [category, setCategory] = useState("All");
-  const [query, setQuery] = useState("");
+  // The home page search sends people here as /products?q=...
+  const params = useSearchParams();
+  const [query, setQuery] = useState(() => (params.get("q") ?? "").slice(0, 80));
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();

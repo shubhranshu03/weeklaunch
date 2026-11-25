@@ -1,10 +1,10 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
 import type { Payment } from "dodopayments/resources/payments";
-import { FREE_QUEUE_WEEKS, WEEK_CAPACITY } from "./data";
-import { weekLoad } from "./products";
+import { FREE_QUEUE_DAYS, DAY_CAPACITY } from "./data";
+import { dayLoad } from "./products";
 import { supabaseAdmin } from "./supabase/server";
-import { weekKey, weekNumber, weeksAround } from "./weeks";
+import { dayKey, dayNumber, daysAround } from "./days";
 
 // Any database error is thrown, so the webhook fails and Dodo sends it again.
 // Every step is safe to repeat.
@@ -109,7 +109,7 @@ async function removeFromLaunch(
     await admin
       .from("products")
       .select(
-        "slug, maker_id, plan, status, launch_year, launch_week, created_at, shared_at",
+        "slug, maker_id, plan, status, launch_year, launch_day, created_at, shared_at",
       )
       .eq("id", productId)
       .maybeSingle(),
@@ -151,18 +151,18 @@ async function removeFromLaunch(
     if (free?.length) change.status = "rejected";
     else if (
       !product.shared_at &&
-      product.launch_week > weekNumber(new Date())
+      product.launch_day > dayNumber(new Date())
     ) {
       // Picking the week was part of Premium: back to where the free queue puts it
-      const due = weekNumber(new Date(product.created_at)) + FREE_QUEUE_WEEKS;
-      if (product.launch_week < due) {
-        const weeks = weeksAround(new Date(), 0, FREE_QUEUE_WEEKS + 12).filter(
+      const due = dayNumber(new Date(product.created_at)) + FREE_QUEUE_DAYS;
+      if (product.launch_day < due) {
+        const weeks = daysAround(new Date(), 0, FREE_QUEUE_DAYS + 12).filter(
           (w) => w.number >= due,
         );
-        const load = await weekLoad(weeks, productId);
-        const open = weeks.find((w) => load[weekKey(w)].total < WEEK_CAPACITY);
+        const load = await dayLoad(weeks, productId);
+        const open = weeks.find((w) => load[dayKey(w)].total < DAY_CAPACITY);
         if (open) {
-          change.launch_week = open.number;
+          change.launch_day = open.number;
           change.launch_year = open.year;
         }
       }

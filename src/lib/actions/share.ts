@@ -2,14 +2,14 @@
 
 import { revalidateTag } from "next/cache";
 import { getCurrentUser } from "../auth";
-import { WEEK_CAPACITY } from "../data";
-import { weekLoad } from "../products";
+import { DAY_CAPACITY } from "../data";
+import { dayLoad } from "../products";
 import { platformOf, SHARES_NEEDED } from "../share";
 import { supabaseAdmin } from "../supabase/server";
-import { weekKey, weekNumber, weekStart } from "../weeks";
+import { dayKey, dayNumber, dayStart } from "../days";
 
 type Result =
-  { ok: true; week: number; moved: boolean } | { ok: false; error: string };
+  { ok: true; day: number; moved: boolean } | { ok: false; error: string };
 
 // A maker shows they shared their launch on 3 platforms. The launch is then
 // reviewed first, and a free launch moves up to the next week with room.
@@ -23,15 +23,15 @@ export async function claimShareBoost(
   const admin = supabaseAdmin();
   const { data: product } = await admin
     .from("products")
-    .select("id, slug, plan, status, launch_week, shared_at")
+    .select("id, slug, plan, status, launch_day, shared_at")
     .eq("id", productId)
     .eq("maker_id", user.id)
     .maybeSingle();
   if (!product || !["pending_review", "approved"].includes(product.status))
     return { ok: false, error: "This launch can't be boosted." };
 
-  const now = weekNumber(new Date());
-  if (product.launch_week <= now)
+  const now = dayNumber(new Date());
+  if (product.launch_day <= now)
     return { ok: false, error: "This launch is already live." };
 
   // One post per platform, each a real post link
@@ -57,15 +57,15 @@ export async function claimShareBoost(
 
   // Free launches move to the earliest week from next week that still has room.
   // Premium makers chose their week, so they only get the faster review.
-  let week = product.launch_week;
+  let week = product.launch_day;
   if (product.plan === "free") {
     const candidates = [];
-    for (let n = now + 1; n < product.launch_week; n++) {
-      const start = weekStart(n);
+    for (let n = now + 1; n < product.launch_day; n++) {
+      const start = dayStart(n);
       candidates.push({ number: n, year: start.getUTCFullYear(), label: "" });
     }
-    const load = await weekLoad(candidates, product.id);
-    const open = candidates.find((w) => load[weekKey(w)].total < WEEK_CAPACITY);
+    const load = await dayLoad(candidates, product.id);
+    const open = candidates.find((w) => load[dayKey(w)].total < DAY_CAPACITY);
     if (open) week = open.number;
   }
 
@@ -74,8 +74,8 @@ export async function claimShareBoost(
     .update({
       share_links: clean,
       shared_at: product.shared_at ?? new Date().toISOString(),
-      launch_week: week,
-      launch_year: weekStart(week).getUTCFullYear(),
+      launch_day: week,
+      launch_year: dayStart(week).getUTCFullYear(),
     })
     .eq("id", product.id);
   if (error)
@@ -83,5 +83,5 @@ export async function claimShareBoost(
 
   revalidateTag("products", "max");
   revalidateTag(`product:${product.slug}`, "max");
-  return { ok: true, week, moved: week !== product.launch_week };
+  return { ok: true, day: week, moved: week !== product.launch_day };
 }

@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cloudflare (local files; .dev.vars holds secrets)
+.dev.vars*
+.open-next
+.wrangler
+# Supabase data exported for D1 (real user data)
+d1/export

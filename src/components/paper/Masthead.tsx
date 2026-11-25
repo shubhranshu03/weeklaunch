@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState, useSyncExternalStore } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
-import { weekNumber } from "@/lib/weeks";
+import { dayNumber } from "@/lib/days";
 import { LogoMark } from "../Logo";
 import { EditionToggle } from "./EditionToggle";
 
 const sections = [
-  { label: "This week", href: "/" },
+  { label: "Today", href: "/" },
   { label: "All products", href: "/products" },
+  { label: "Hall of Fame", href: "/hall-of-fame" },
   { label: "Pricing", href: "/pricing" },
   { label: "Directory submission", href: "/directory-submission" },
   { label: "Free tools", href: "/tools" },
@@ -45,7 +46,7 @@ function useToday() {
 function useIssue() {
   return useSyncExternalStore(
     noSubscribe,
-    () => weekNumber(new Date()),
+    () => dayNumber(new Date()),
     () => null,
   );
 }
@@ -151,8 +152,8 @@ function MastheadView({
           </Link>
           {!compact && (
             <p className="mt-3 font-serif text-sm italic text-ink-soft sm:text-base">
-              New products from indie makers, with a vote every week. A new edition
-              every Monday.
+              New products from indie makers, launching every day and ranked by
+              the community.
             </p>
           )}
         </div>

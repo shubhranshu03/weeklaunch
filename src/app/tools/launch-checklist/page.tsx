@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: "What is the best day to launch a product?",
-    a: "Early in the week is usually best because people are planning and browsing. On WeekLaunch every launch goes live on Monday and stays on the board all week.",
+    a: "Early in the week is usually best because people are planning and browsing. On WeekLaunch you can launch any day and compete for Product of the Day, Week and Month.",
   },
   {
     q: "Do I need a demo video to launch?",

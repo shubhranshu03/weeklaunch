@@ -32,7 +32,8 @@ import { getDirectoryPackage } from "@/lib/directories";
 import { SITE_URL } from "@/lib/site";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { PREMIUM_PRICE, type LaunchStatus, type Product } from "@/lib/data";
-import { getCurrentWeek, getMakerLaunches } from "@/lib/products";
+import { getCurrentDay, getMakerLaunches } from "@/lib/products";
+import { dayLabel } from "@/lib/days";
 
 export const metadata: Metadata = {
   title: "My launches",
@@ -116,7 +117,7 @@ async function Launches({
     { data: dirOrders },
   ] = await Promise.all([
     getMakerLaunches(user.id),
-    getCurrentWeek(),
+    getCurrentDay(),
     searchParams,
     supabaseAdmin()
       .from("directory_orders")
@@ -134,7 +135,7 @@ async function Launches({
 
   const phase = (p: Product, status: LaunchStatus) => {
     if (status !== "approved") return status;
-    const cmp = p.year - now.year || p.week - now.number;
+    const cmp = p.year - now.year || p.day - now.number;
     return cmp === 0 ? "live" : cmp > 0 ? "scheduled" : "past";
   };
 
@@ -293,7 +294,7 @@ async function Launches({
                       <st.icon className="size-3" />
                       {st.label}
                     </span>
-                    Week {p.week}
+                    {dayLabel(p.day)}
                     <span className="flex items-center gap-1">
                       <Triangle className="size-2.5 fill-current" />
                       {p.upvotes}
@@ -371,7 +372,7 @@ async function Launches({
                         name={p.name}
                         tagline={p.tagline}
                         website={p.website}
-                        week={p.week}
+                        day={p.day}
                         free={!p.premium}
                         siteUrl={SITE_URL}
                         sharedLinks={shareLinks}
@@ -431,7 +432,7 @@ async function Launches({
               Upgrade {upgrade.product.name} to Premium
             </span>
             <span className="block text-sm text-white/75">
-              Get pinned at the top of Week {upgrade.product.week} for $
+              Go live today and get featured for 7 days for $
               {PREMIUM_PRICE}.
             </span>
           </span>

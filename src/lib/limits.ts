@@ -1,14 +1,14 @@
 import "server-only";
 import { PREMIUM_PRICE } from "./data";
 import { supabaseAdmin } from "./supabase/server";
-import { weekNumber } from "./weeks";
+import { dayNumber } from "./days";
 
 export const FREE_USED = `You've used your one free product. Choose Premium ($${PREMIUM_PRICE}) to launch another.`;
 
 async function activeLaunches(userId: string, exceptId?: string) {
   const { data, error } = await supabaseAdmin()
     .from("products")
-    .select("id, plan, status, launch_week, created_at")
+    .select("id, plan, status, launch_day, created_at")
     .eq("maker_id", userId)
     .neq("status", "rejected");
   // Throw rather than guess: an empty answer would let everyone through
@@ -19,11 +19,11 @@ async function activeLaunches(userId: string, exceptId?: string) {
 // Each account gets one free product. A rejected one doesn't use it up, and nor
 // does an unpaid one whose week has started, as it can't be paid for any more.
 export async function freeLaunchUsed(userId: string, exceptId?: string) {
-  const now = weekNumber(new Date());
+  const now = dayNumber(new Date());
   return (await activeLaunches(userId, exceptId)).some(
     (p) =>
       p.plan === "free" &&
-      (p.status !== "pending_payment" || p.launch_week > now),
+      (p.status !== "pending_payment" || p.launch_day > now),
   );
 }
 
