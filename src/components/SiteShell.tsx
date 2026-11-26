@@ -1,12 +1,10 @@
+import { Suspense } from "react";
 import { Footer } from "./Footer";
-import { Masthead } from "./paper/Masthead";
-import { RightRail } from "./RightRail";
+import { BrowseShell, BrowseShellFallback } from "./home/BrowseShell";
 
-const sticky =
-  "no-scrollbar sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto pb-1 pr-1 pt-2";
-
-// Shared newspaper frame: masthead, page content, right column, footer.
-// The section links live in the masthead, so there's no left menu.
+// The frame every page shares with the home page: sponsor tiles (or strips on
+// smaller screens), the top bar, the Browse column on the left and the widgets
+// on the right, with the page's own content in the middle, then the footer.
 export function SiteShell({
   children,
   after,
@@ -15,35 +13,17 @@ export function SiteShell({
   children: React.ReactNode;
   // Full-width content shown between the columns and the footer
   after?: React.ReactNode;
-  // false = one centered column with no right column
+  // Kept for older call sites; every page now has the same columns
   sidebars?: boolean;
 }) {
+  void sidebars;
   return (
-    <>
-      <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6">
-        <Masthead compact />
-      </div>
-      {sidebars ? (
-        <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-10 px-4 pb-16 pt-8 sm:px-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <main className="min-w-0">
-            {children}
-            <div className="mt-8 xl:hidden">
-              <RightRail />
-            </div>
-          </main>
-          <aside className="hidden xl:block xl:border-l xl:border-ink/40 xl:pl-8">
-            <div className={sticky}>
-              <RightRail />
-            </div>
-          </aside>
-        </div>
-      ) : (
-        <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-8 sm:px-6">
-          <main>{children}</main>
-        </div>
-      )}
+    <div className="flex flex-1 flex-col">
+      <Suspense fallback={<BrowseShellFallback />}>
+        <BrowseShell>{children}</BrowseShell>
+      </Suspense>
       {after}
       <Footer />
-    </>
+    </div>
   );
 }

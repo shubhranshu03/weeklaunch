@@ -9,7 +9,7 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "New Mac apps from indie makers",
   description:
-    "Discover new Mac apps launched by indie makers every week on WeekLaunch: free and paid, from the Mac App Store, direct download and Homebrew, with Apple Silicon support noted.",
+    "Discover new Mac apps launched by indie makers every day on IndieShip: free and paid, from the Mac App Store, direct download and Homebrew, with Apple Silicon support noted.",
   alternates: { canonical: "/products/mac" },
 };
 
@@ -35,7 +35,7 @@ async function MacApps() {
         data={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          name: "New Mac apps on WeekLaunch",
+          name: "New Mac apps on IndieShip",
           url: `${SITE_URL}/products/mac`,
           mainEntity: {
             "@type": "ItemList",

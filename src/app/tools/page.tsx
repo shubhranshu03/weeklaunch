@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: "Are these tools really free?",
-    a: "Yes. Every tool is 100% free with no sign-up, no trial and no limits. You don't need a WeekLaunch account to use them.",
+    a: "Yes. Every tool is 100% free with no sign-up, no trial and no limits. You don't need a IndieShip account to use them.",
   },
   {
     q: "Do you save what I type into the tools?",
@@ -28,7 +28,7 @@ const faqs = [
     a: "Start with the launch checklist to plan everything, write your one-liner with the tagline generator, then check your page title and share image with the meta tag generator.",
   },
   {
-    q: "Can I use these tools for products I don't launch on WeekLaunch?",
+    q: "Can I use these tools for products I don't launch on IndieShip?",
     a: "Of course. They work for any product, website or side project, wherever you plan to launch.",
   },
   {

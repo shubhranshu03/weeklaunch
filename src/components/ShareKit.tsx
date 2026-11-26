@@ -14,7 +14,7 @@ import { dayStart } from "@/lib/days";
 import { dayLabel } from "@/lib/days";
 
 const input =
-  "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
+  "h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 // Share card, ready-made posts and the "share on 3 platforms" boost
 export function ShareKit({
@@ -90,12 +90,12 @@ export function ShareKit({
         {/* eslint-disable-next-line @next/next/no-img-element -- generated share image */}
         <img
           src={card}
-          alt={`${name} launching on WeekLaunch`}
+          alt={`${name} launching on IndieShip`}
           className="mt-2 aspect-[1200/630] w-full rounded-2xl border border-slate-200 bg-slate-100 object-cover"
         />
         <a
           href={card}
-          download={`${slug}-weeklaunch.png`}
+          download={`${slug}-indieship.png`}
           className="btn-pop mt-2 inline-flex h-9 items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-semibold text-slate-900"
         >
           <Download className="size-3.5" />
@@ -117,7 +117,7 @@ export function ShareKit({
           />
         </label>
         <p className="mt-1 truncate text-xs text-slate-400">
-          + your WeekLaunch page: {link}
+          + your IndieShip page: {link}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
@@ -154,7 +154,7 @@ export function ShareKit({
 
       {/* 3. The boost */}
       <form
-        className="rounded-2xl border-[1.5px] border-amber-300 bg-amber-50/60 p-4"
+        className="rounded-2xl border border-amber-300 bg-amber-50/60 p-4"
         onSubmit={(e) => {
           e.preventDefault();
           setResult(null);

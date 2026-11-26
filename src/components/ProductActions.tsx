@@ -195,7 +195,7 @@ function RateForm({
           maxLength={1000}
           rows={3}
           placeholder="What do you like? What could be better?"
-          className="mt-1.5 w-full resize-none rounded-xl border-[1.5px] border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-900"
+          className="mt-1.5 w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
         />
       </label>
       {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}

@@ -14,11 +14,13 @@ import {
 import { updateLaunch, type LaunchEdit } from "@/lib/actions/launches";
 import { productCategories } from "@/lib/data";
 import { uploadImage } from "@/lib/upload";
+import { emptyDeal } from "@/lib/deals";
+import { DealFields } from "./DealFields";
 import { PlatformFields } from "./PlatformFields";
 import { PremiumExtras } from "./SubmitForm";
 
 const input =
-  "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
+  "h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 const MAX_SHOTS = 5;
 
@@ -64,6 +66,7 @@ export function EditLaunchForm({
     ...initial,
     highlights: initial.highlights.length ? initial.highlights : ["", "", ""],
     faqs: initial.faqs.length ? initial.faqs : [{ q: "", a: "" }],
+    deal: initial.deal ?? emptyDeal,
   });
   const [uploading, setUploading] = useState(0);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
@@ -179,7 +182,7 @@ export function EditLaunchForm({
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                     on
                       ? "badge-pop bg-brand-500 text-white"
-                      : "border-[1.5px] border-slate-200 text-slate-600 hover:border-slate-300"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-300"
                   }`}
                 >
                   {c.name}
@@ -323,6 +326,13 @@ export function EditLaunchForm({
             </label>
           )}
         </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
+        <DealFields
+          value={form.deal ?? emptyDeal}
+          onChange={(d) => set("deal", d)}
+        />
       </section>
 
       {premium ? (

@@ -25,7 +25,7 @@ function Chip({
       className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
         on
           ? "badge-pop bg-brand-500 text-white"
-          : "border-[1.5px] border-slate-200 text-slate-600 hover:border-slate-300"
+          : "border border-slate-200 text-slate-600 hover:border-slate-300"
       }`}
     >
       {children}

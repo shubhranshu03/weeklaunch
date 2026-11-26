@@ -1,6 +1,7 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
 import type { Payment } from "dodopayments/resources/payments";
+import { growthServices } from "./growth";
 import { applyFullRefund } from "./refunds";
 import { supabaseAdmin } from "./supabase/server";
 
@@ -14,6 +15,7 @@ export async function applyDodoPayment(p: Payment) {
     return null;
   }
   if (p.metadata?.directory_order_id) return applyDirectoryPayment(p);
+  if (p.metadata?.growth_services) return applyGrowthPayment(p);
   const orderId = p.metadata?.order_id;
   if (!orderId) return null;
   const admin = supabaseAdmin();
@@ -111,5 +113,41 @@ async function applyDirectoryPayment(p: Payment) {
     })
     .eq("id", id)
     .eq("status", "pending_payment");
+  return null;
+}
+
+// A paid promotion order (ads, blog post, directories, founder post) goes to
+// the admin inbox. The webhook and the return page can both get here, so the
+// payment id in the message keeps it to one.
+async function applyGrowthPayment(p: Payment) {
+  if (p.status !== "succeeded") return null;
+  const admin = supabaseAdmin();
+  const { data: seen } = await admin
+    .from("contact_messages")
+    .select("id")
+    .like("message", `%${p.payment_id}%`)
+    .limit(1);
+  if (seen?.length) return null;
+
+  const m = p.metadata;
+  const picked = growthServices.filter((s) =>
+    String(m.growth_services).split(",").includes(s.id),
+  );
+  const message = [
+    `PAID promotion order for ${m.growth_product} (${m.growth_website})`,
+    "",
+    ...picked.map((s) => `- ${s.name}: $${s.price} ${s.unit}`),
+    "",
+    `Paid: ${(p.total_amount / 100).toFixed(2)} ${p.currency}`,
+    `Dodo payment: ${p.payment_id}`,
+    m.growth_notes ? `\nNotes: ${m.growth_notes}` : "",
+  ].join("\n");
+  await admin.from("contact_messages").insert({
+    name: p.customer?.name || p.customer?.email || "Customer",
+    email: p.customer?.email ?? "",
+    topic: "Advertising",
+    message: message.slice(0, 4000),
+    user_id: m.growth_user || null,
+  });
   return null;
 }

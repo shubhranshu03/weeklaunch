@@ -7,7 +7,7 @@ import { supabaseAdmin } from "../supabase/server";
 
 type Result = { ok: true } | { ok: false; error: string };
 
-// A maker asks us to look for the WeekLaunch badge on their website
+// A maker asks us to look for the IndieShip badge on their website
 export async function verifyBadge(productId: string): Promise<Result> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Please sign in again." };

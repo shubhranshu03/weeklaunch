@@ -11,7 +11,7 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Hall of Fame: Products of the Day, Week and Month",
   description:
-    "Every Product of the Day, Week and Month on WeekLaunch: the indie launches the community voted to the top.",
+    "Every Product of the Day, Week and Month on IndieShip: the indie launches the community voted to the top.",
   alternates: { canonical: "/hall-of-fame" },
 };
 
@@ -62,7 +62,7 @@ async function Winners() {
         data={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          name: "WeekLaunch Hall of Fame",
+          name: "IndieShip Hall of Fame",
           url: `${SITE_URL}/hall-of-fame`,
           mainEntity: {
             "@type": "ItemList",
@@ -85,7 +85,11 @@ async function Winners() {
           {sections
             .filter((s) => s.entries.length > 0)
             .map((s) => (
-              <section key={s.title}>
+              <section
+                key={s.title}
+                id={s.title.split(" ").pop()?.toLowerCase()}
+                className="scroll-mt-20"
+              >
                 <h2 className="text-lg font-semibold tracking-tight text-slate-900">
                   {s.title}
                 </h2>

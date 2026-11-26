@@ -82,12 +82,12 @@ export function platformOf(raw: string): SharePlatform | null {
 }
 
 // The post makers start from; they can edit it before posting. It links to
-// their own product, and their WeekLaunch page is added after it.
+// their own product, and their IndieShip page is added after it.
 export function sharePost(
   name: string,
   tagline: string,
   date: string,
   website: string,
 ) {
-  return `🚀 I'm launching ${name} on WeekLaunch!\n\n${tagline}\n\n🔗 Try it: ${website}\n\nIt goes live on ${date}. I'd love your upvote and feedback 👇`;
+  return `🚀 I'm launching ${name} on IndieShip!\n\n${tagline}\n\n🔗 Try it: ${website}\n\nIt goes live on ${date}. I'd love your upvote and feedback 👇`;
 }

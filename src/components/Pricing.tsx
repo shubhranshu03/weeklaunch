@@ -53,16 +53,16 @@ const adPlans = [
     id: "center",
     name: "Center feed ad",
     price: "$19",
-    period: "per day",
+    period: "per week",
     blurb: "A sponsor card on the home page, near the top of the feed.",
     icon: Rows3,
     features: [
-      "Seen by every visitor that day",
+      "Seen by every visitor for 7 days",
       "Your logo, headline and link",
       "Shows on desktop and phone",
-      "Click stats the next day",
+      "Click stats every day",
     ],
-    cta: "Book a day",
+    cta: "Book a week",
   },
   {
     id: "sidebar",
@@ -120,7 +120,7 @@ export const faqs = [
   },
   {
     q: "How many ad spots are there?",
-    a: "One center feed spot per day and two right sidebar spots per month, so only a couple of ads ever share the page.",
+    a: "One center feed spot per week and two right sidebar spots per month, so only a couple of ads ever share the page.",
   },
   {
     q: "What do I need to send for an ad?",
@@ -147,7 +147,7 @@ function Placement({ spot }: { spot: string }) {
   return (
     <div
       aria-hidden
-      className="grid h-24 w-full grid-cols-[1fr_2.2fr_1.2fr] gap-1.5 rounded-xl border-[1.5px] border-slate-900 bg-slate-50 p-2"
+      className="grid h-24 w-full grid-cols-[1fr_2.2fr_1.2fr] gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-2"
     >
       <div className={block} />
       <div className="flex flex-col gap-1">

@@ -8,7 +8,7 @@ import { badgeCode, type BadgeTheme } from "@/lib/badge";
 export const metadata: Metadata = {
   title: "Launch badges",
   description:
-    "Free badges to show your WeekLaunch launch on your website. Pick a style and copy the code.",
+    "Free badges to show your IndieShip launch on your website. Pick a style and copy the code.",
   alternates: { canonical: "/badges" },
 };
 
@@ -26,9 +26,9 @@ export default function BadgesPage() {
           "@context": "https://schema.org",
           "@type": "WebPage",
           url: `${SITE_URL}/badges`,
-          name: "WeekLaunch launch badges",
+          name: "IndieShip launch badges",
           description:
-            "Embeddable Launched on WeekLaunch badges for your website.",
+            "Embeddable Launched on IndieShip badges for your website.",
           isPartOf: { "@id": `${SITE_URL}/#website` },
         }}
       />
@@ -37,7 +37,7 @@ export default function BadgesPage() {
           Launch badges
         </h1>
         <p className="mx-auto mt-2 max-w-lg text-slate-500">
-          Show visitors you launched on WeekLaunch. Free launches get a dofollow
+          Show visitors you launched on IndieShip. Free launches get a dofollow
           backlink once the badge is on your site.
         </p>
         <ol className="mx-auto mt-6 grid max-w-2xl gap-3 text-left text-sm sm:grid-cols-3">
@@ -80,7 +80,7 @@ export default function BadgesPage() {
               <CopyCode code={badgeCode("your-product", s.theme)} />
               <p className="mt-2 text-xs text-slate-400">
                 Replace <code className="font-mono">your-product</code> with
-                your product&apos;s name from its WeekLaunch link.
+                your product&apos;s name from its IndieShip link.
               </p>
             </div>
           </section>

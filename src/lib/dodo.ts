@@ -100,3 +100,48 @@ export async function createDirectoryCheckout({
   if (!session.checkout_url) throw new Error("Checkout page missing");
   return session.checkout_url;
 }
+
+// Dodo product ids for the promotion services on /submit → Advertise.
+// A service is sold by card once its product id is set.
+export function growthProductIds(): Record<string, string | undefined> {
+  return {
+    sidebar: process.env.DODO_GROWTH_SIDEBAR_PRODUCT_ID,
+    center: process.env.DODO_GROWTH_CENTER_PRODUCT_ID,
+    blog: process.env.DODO_GROWTH_BLOG_PRODUCT_ID,
+    directories: process.env.DODO_GROWTH_DIRECTORIES_PRODUCT_ID,
+    social: process.env.DODO_GROWTH_SOCIAL_PRODUCT_ID,
+  };
+}
+
+// Starts a Dodo checkout for promotion services. What was bought travels in
+// the metadata, and the paid order lands in the admin inbox (see payments.ts).
+export async function createGrowthCheckout({
+  productIds,
+  services,
+  productName,
+  website,
+  notes,
+  user,
+}: {
+  productIds: string[];
+  services: string[];
+  productName: string;
+  website: string;
+  notes: string;
+  user: { id: string; email: string; name: string };
+}) {
+  const session = await dodo().checkoutSessions.create({
+    product_cart: productIds.map((product_id) => ({ product_id, quantity: 1 })),
+    customer: { email: user.email, name: user.name },
+    return_url: `${SITE_URL}/api/payments/return`,
+    metadata: {
+      growth_services: services.join(","),
+      growth_user: user.id,
+      growth_product: productName.slice(0, 60),
+      growth_website: website.slice(0, 200),
+      growth_notes: notes.slice(0, 400),
+    },
+  });
+  if (!session.checkout_url) throw new Error("Checkout page missing");
+  return session.checkout_url;
+}

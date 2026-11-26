@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "What's the best day to launch?",
-    a: "Early in the week works well because people are browsing and planning. On WeekLaunch you can launch any day: Premium goes live right away, and free launches pick up the next open day.",
+    a: "Early in the week works well because people are browsing and planning. On IndieShip you can launch any day: Premium goes live right away, and free launches pick up the next open day.",
   },
   {
     q: "How does Add to calendar work?",

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "WeekLaunch — Launch your product. Get discovered every week.";
+  "IndieShip — Launch your product. Get found every day.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -34,17 +34,10 @@ export default function OpengraphImage() {
           }}
         >
           <svg width="52" height="52" viewBox="0 0 32 32">
-            <path
-              d="M7 12l4 11 5-9 5 9 4.5-14"
-              fill="none"
-              stroke="#7c5cff"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M16.5 6.5v12h8.2zM14.5 9.5v9H9zM6.5 21h19l-2.8 4.5H9.3z" fill="#7c5cff"/>
           </svg>
         </div>
-        <div style={{ fontSize: 44, fontWeight: 700 }}>weeklaunch</div>
+        <div style={{ fontSize: 44, fontWeight: 700 }}>indieship</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05 }}>
@@ -58,7 +51,7 @@ export default function OpengraphImage() {
             color: "#fcd34d",
           }}
         >
-          Get discovered every week.
+          Get found every day.
         </div>
       </div>
       <div style={{ display: "flex", gap: 16, fontSize: 28 }}>

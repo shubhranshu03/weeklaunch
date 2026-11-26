@@ -21,22 +21,22 @@ export async function GET() {
     .filter(Boolean)
     .join("\n\n");
 
-  const body = `# WeekLaunch
+  const body = `# IndieShip
 
 > ${SITE_DESCRIPTION}
 
-WeekLaunch is a daily launch platform for indie makers. Products launch any day: free launches wait in a short queue, Premium launches go live right away. The community upvotes, comments and leaves star reviews, and the top launches win Product of the Day, Week and Month (see the Hall of Fame). Every launch keeps a permanent product page with a link to the product's website.
+IndieShip is a daily launch platform for indie makers. Products launch any day: free launches wait in a short queue, Premium launches go live right away. The community upvotes, comments and leaves star reviews, and the top launches win Product of the Day, Week and Month (see the Hall of Fame). Every launch keeps a permanent product page with a link to the product's website.
 
 ## Key pages
 
 - [Today's launches](${SITE_URL}/): today's launches and the top of the day, week and month
 - [Hall of Fame](${SITE_URL}/hall-of-fame): every Product of the Day, Week and Month
 - [All products](${SITE_URL}/products): every product, grouped by category
-- [New Mac apps](${SITE_URL}/products/mac): Mac apps launched on WeekLaunch, with price, where to get them and Apple Silicon support
+- [New Mac apps](${SITE_URL}/products/mac): Mac apps launched on IndieShip, with price, where to get them and Apple Silicon support
 - [Submit a product](${SITE_URL}/submit): launch for free or with Premium
 - [Pricing](${SITE_URL}/pricing): plans for launches and ads
 - [Directory submission](${SITE_URL}/directory-submission): we submit your product to 30, 50 or 100+ directories for you
-- [Launch badges](${SITE_URL}/badges): embeddable "Launched on WeekLaunch" badges
+- [Launch badges](${SITE_URL}/badges): embeddable "Launched on IndieShip" badges
 - [Free tools](${SITE_URL}/tools): free tools for founders
 - [About](${SITE_URL}/about)
 - [Contact](${SITE_URL}/contact)
@@ -45,7 +45,7 @@ WeekLaunch is a daily launch platform for indie makers. Products launch any day:
 
 - Free launch: $0, one product per account (further products need Premium). Launches from a short free queue (about a week), own product page, upvotes, comments and reviews.
 - Premium launch: $29 one-time. Goes live today or on a chosen day, featured at the top of the home page for 7 days, PREMIUM tag, a verified maker tick, dofollow backlink and a Monday newsletter mention.
-- Center feed ad: $19 per day. A sponsor card near the top of the home page feed.
+- Center feed ad: $19 per week. A sponsor card near the top of the home page feed.
 - Directory submission: $49 for 30+ directories, $99 for 50+, $149 for 100+. Done for you, strongest sites first, with a report of every live link.
 - Right sidebar ad: $49 per month. One of two promo boxes in the right column on every page.
 

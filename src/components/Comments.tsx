@@ -140,7 +140,7 @@ export function Comments({
             placeholder={`Say something nice to ${maker}…`}
             aria-label="Write a comment"
             maxLength={1000}
-            className="h-11 min-w-0 flex-1 rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
           />
           <button
             type="submit"
@@ -154,7 +154,7 @@ export function Comments({
       ) : (
         <Link
           href={`/signin?next=${encodeURIComponent(pathname)}`}
-          className="mt-4 flex h-11 items-center justify-center rounded-xl border-[1.5px] border-dashed border-slate-300 text-sm font-medium text-slate-600 hover:border-slate-900 hover:text-slate-900"
+          className="mt-4 flex h-11 items-center justify-center rounded-xl border border-dashed border-slate-300 text-sm font-medium text-slate-600 hover:border-slate-900 hover:text-slate-900"
         >
           Sign in to join the conversation
         </Link>

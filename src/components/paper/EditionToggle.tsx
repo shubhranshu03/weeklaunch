@@ -18,7 +18,7 @@ function subscribe(onChange: () => void) {
 const read = (): Edition =>
   document.documentElement.dataset.theme === "night" ? "night" : "day";
 
-// Switches between the day edition (cream paper) and the night edition (dark paper)
+// Switches between light and dark mode (saved as the "day" / "night" edition)
 export function EditionToggle() {
   const edition = useSyncExternalStore(subscribe, read, () => null);
   const next: Edition = edition === "night" ? "day" : "night";
@@ -36,20 +36,19 @@ export function EditionToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={`Switch to the ${next} edition`}
-      title={`Switch to the ${next} edition`}
-      className={`flex h-8 items-center gap-1.5 rounded-sm px-2 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-ink hover:bg-paper-dark ${
+      aria-label={
+        next === "night" ? "Switch to dark mode" : "Switch to light mode"
+      }
+      title={next === "night" ? "Dark mode" : "Light mode"}
+      className={`flex size-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 ${
         edition === null ? "opacity-0" : ""
       }`}
     >
       {edition === "night" ? (
-        <Sun className="size-3.5" />
+        <Sun className="size-4" />
       ) : (
-        <Moon className="size-3.5" />
+        <Moon className="size-4" />
       )}
-      <span className="hidden lg:inline">
-        {edition === "night" ? "Day edition" : "Night edition"}
-      </span>
     </button>
   );
 }

@@ -91,6 +91,8 @@ export type HomeFeed = {
   // Final awards by product slug
   awards: Record<string, Award[]>;
   stats: { launches: number; makers: number; votes: number };
+  // Real launches per day over the last 30 days, oldest first, and their upvotes
+  pulse: { byDay: number[]; launches: number; votes: number };
 };
 
 export async function getHomeFeed(): Promise<HomeFeed> {
@@ -148,8 +150,25 @@ export async function getHomeFeed(): Promise<HomeFeed> {
     recent,
     trending,
     featured: all.filter((p) => isFeatured(p, today)),
-    boosted: day(today).find((p) => p.boosted) ?? null,
+    // A Boost shows for 7 days from its launch day
+    boosted:
+      all
+        .filter((p) => p.boosted && p.day <= today && today - p.day < 7)
+        .sort((a, b) => b.day - a.day)[0] ?? null,
     awards: Object.fromEntries(computeAwards(all, today)),
+    pulse: (() => {
+      const real = all.filter(
+        (p) => !p.sample && p.day <= today && today - p.day < 30,
+      );
+      return {
+        byDay: Array.from(
+          { length: 30 },
+          (_, i) => real.filter((p) => p.day === today - 29 + i).length,
+        ),
+        launches: real.length,
+        votes: real.reduce((n, p) => n + p.upvotes, 0),
+      };
+    })(),
     // Real numbers only: sample launches (made-up demo data) are left out
     stats: (() => {
       const real = all.filter((p) => !p.sample);

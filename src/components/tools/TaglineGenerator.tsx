@@ -44,7 +44,7 @@ const tones: { id: Tone; label: string }[] = [
 const LIMIT = 60;
 
 const input =
-  "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
+  "h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -142,7 +142,7 @@ export function TaglineGenerator() {
                   className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
                     tone === t.id
                       ? "badge-pop bg-brand-500 text-white"
-                      : "border-[1.5px] border-slate-200 text-slate-600 hover:border-slate-300"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-300"
                   }`}
                 >
                   {t.label}

@@ -19,6 +19,14 @@ export async function GET(request: NextRequest) {
   try {
     const payment = await dodo().payments.retrieve(paymentId);
 
+    // Promotion services (ads, blog post, directories, founder post)
+    if (payment.metadata?.growth_services) {
+      if (payment.metadata.growth_user === user.id)
+        await applyDodoPayment(payment);
+      back.searchParams.set("promotion", payment.status ?? "processing");
+      return NextResponse.redirect(back);
+    }
+
     // A directory submission package
     const dirOrderId = payment.metadata?.directory_order_id;
     if (dirOrderId) {

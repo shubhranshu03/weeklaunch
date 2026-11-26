@@ -95,6 +95,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
         highlights: data.highlights ?? [],
         faqs: data.faqs ?? [],
         app: toProduct(data).app,
+        deal: toProduct(data).deal,
       }}
     />
   );

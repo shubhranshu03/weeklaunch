@@ -30,7 +30,7 @@ const plan: { offset: number; title: string; tasks: string[] }[] = [
       "Add page title, description and share image",
       "Install analytics",
       "Test sign-up and payment on phone and desktop",
-      "Submit to WeekLaunch and book your week",
+      "Submit to IndieShip and book your week",
     ],
   },
   {
@@ -132,7 +132,7 @@ function toIcs(launch: Date) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//WeekLaunch//Launch Date Planner//EN",
+    "PRODID:-//IndieShip//Launch Date Planner//EN",
   ];
   plan.forEach((step, i) => {
     const day = addDays(launch, step.offset);
@@ -207,7 +207,7 @@ export function LaunchDatePlanner() {
               type="date"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="mt-1.5 block h-11 rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-brand-100"
+              className="mt-1.5 block h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
             />
           </label>
           <div className="flex flex-wrap gap-2">
@@ -246,7 +246,7 @@ export function LaunchDatePlanner() {
               <li key={step.offset} className="relative flex gap-4">
                 <span
                   aria-hidden
-                  className={`relative z-[1] mt-4 flex size-10 shrink-0 items-center justify-center rounded-full border-[1.5px] border-slate-900 text-xs font-bold ${
+                  className={`relative z-[1] mt-4 flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-xs font-bold ${
                     isLaunch
                       ? "bg-amber-300 text-slate-900"
                       : step.offset < 0

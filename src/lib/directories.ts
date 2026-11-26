@@ -157,7 +157,7 @@ export const directoryFaqs = [
   },
   {
     q: "What do I need to give you?",
-    a: "Your product name, website, a one-line tagline and a short description. We write each listing from that, and you can add your logo and screenshots on your WeekLaunch launch.",
+    a: "Your product name, website, a one-line tagline and a short description. We write each listing from that, and you can add your logo and screenshots on your IndieShip launch.",
   },
   {
     q: "Will my domain rating really go up?",

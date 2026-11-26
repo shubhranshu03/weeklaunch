@@ -32,7 +32,7 @@ function friendly(message: string) {
 }
 
 export const field =
-  "h-11 w-full rounded-xl border-[1.5px] border-slate-900 bg-white px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-brand-100";
+  "h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-brand-100";
 
 export function PasswordInput({
   id,
@@ -283,7 +283,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
             />
             {signup && (
               <p className="mt-1.5 text-xs text-slate-500">
-                Make a new password for WeekLaunch. Don&apos;t use your Gmail
+                Make a new password for IndieShip. Don&apos;t use your Gmail
                 password.
               </p>
             )}
@@ -302,7 +302,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         {notice && <FormNotice>{notice}</FormNotice>}
 
         <p className="mt-5 text-center text-sm text-slate-600">
-          {signup ? "Already have an account?" : "New to WeekLaunch?"}{" "}
+          {signup ? "Already have an account?" : "New to IndieShip?"}{" "}
           <Link
             href={swap}
             className="font-semibold text-brand-700 hover:underline"

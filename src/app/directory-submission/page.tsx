@@ -318,7 +318,7 @@ export default function DirectorySubmissionPage() {
           <span className="px-3 py-3 sm:px-5" />
           <span className="px-3 py-3 sm:px-5">On your own</span>
           <span className="px-3 py-3 text-brand-700 sm:px-5">
-            With WeekLaunch
+            With IndieShip
           </span>
         </div>
         {comparison.map(([row, diy, us]) => (

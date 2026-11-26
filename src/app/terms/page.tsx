@@ -4,7 +4,7 @@ import { InfoPage } from "@/components/InfoPage";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "The terms for using WeekLaunch, launching products and buying ads.",
+    "The terms for using IndieShip, launching products and buying ads.",
   alternates: { canonical: "/terms" },
 };
 
@@ -16,9 +16,9 @@ export default function TermsPage() {
         Draft for review — replace with terms checked by a lawyer before launch.
       </p>
       <section>
-        <h2>1. Using WeekLaunch</h2>
+        <h2>1. Using IndieShip</h2>
         <p>
-          By using WeekLaunch you agree to these terms. You must be at least 16
+          By using IndieShip you agree to these terms. You must be at least 16
           years old and give accurate information when you create an account or
           submit a product.
         </p>
@@ -33,7 +33,7 @@ export default function TermsPage() {
           </li>
           <li>
             You give us permission to show your product name, logo, images and
-            description on WeekLaunch and in our newsletter.
+            description on IndieShip and in our newsletter.
           </li>
           <li>
             We may decline or remove any launch, comment or ad that breaks these

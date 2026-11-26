@@ -29,8 +29,8 @@ export async function generateMetadata({
   const description =
     maker.bio ||
     (made.length
-      ? `${name} is the maker of ${made.join(", ")}. See their launches, upvotes and links on WeekLaunch.`
-      : `${name}'s maker profile on WeekLaunch.`);
+      ? `${name} is the maker of ${made.join(", ")}. See their launches, upvotes and links on IndieShip.`
+      : `${name}'s maker profile on IndieShip.`);
   const url = `/makers/${maker.handle}`;
   return {
     title: `${name} (@${maker.handle}) — maker profile`,

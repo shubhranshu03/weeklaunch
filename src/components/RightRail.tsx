@@ -27,7 +27,7 @@ export function RightRail() {
       <div className="flex h-10 items-center justify-end">
         <Link
           href="#"
-          aria-label="WeekLaunch on X"
+          aria-label="IndieShip on X"
           className="btn-pop flex size-10 items-center justify-center rounded-xl bg-white text-slate-900"
         >
           <XIcon className="size-4" />

@@ -1,4 +1,8 @@
 import type { MetadataRoute } from "next";
+import { posts } from "@/lib/blog";
+import { categoryHref } from "@/lib/categories";
+import { platformHref, platformPages } from "@/lib/platformPages";
+import { productCategories } from "@/lib/data";
 import { getAllProducts, getMakerHandles } from "@/lib/products";
 import { CONTENT_UPDATED, SITE_URL } from "@/lib/site";
 import { tools } from "@/lib/tools";
@@ -18,6 +22,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "", priority: 1, changeFrequency: "daily" },
     { path: "/products", priority: 0.9, changeFrequency: "daily" },
     { path: "/hall-of-fame", priority: 0.8, changeFrequency: "daily" },
+    { path: "/categories", priority: 0.8, changeFrequency: "weekly" },
+    { path: "/platforms", priority: 0.7, changeFrequency: "weekly" },
+    ...platformPages.map((p) => ({
+      path: platformHref(p),
+      priority: 0.7,
+      changeFrequency: "daily" as const,
+    })),
+    { path: "/deals", priority: 0.8, changeFrequency: "daily" },
+    { path: "/alternatives", priority: 0.7, changeFrequency: "weekly" },
+    ...allProducts.map((p) => ({
+      path: `/alternatives/${p.slug}`,
+      priority: 0.6,
+      changeFrequency: "weekly" as const,
+    })),
+    { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
+    ...posts.map((p) => ({
+      path: `/blog/${p.slug}`,
+      priority: 0.6,
+      changeFrequency: "monthly" as const,
+    })),
+    ...productCategories.map((c) => ({
+      path: categoryHref(c.name),
+      priority: 0.8,
+      changeFrequency: "daily" as const,
+    })),
     { path: "/products/mac", priority: 0.8, changeFrequency: "daily" },
     { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
     {

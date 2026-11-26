@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: "What is the best day to launch a product?",
-    a: "Early in the week is usually best because people are planning and browsing. On WeekLaunch you can launch any day and compete for Product of the Day, Week and Month.",
+    a: "Early in the week is usually best because people are planning and browsing. On IndieShip you can launch any day and compete for Product of the Day, Week and Month.",
   },
   {
     q: "Do I need a demo video to launch?",
@@ -31,7 +31,7 @@ const faqs = [
   },
   {
     q: "Where should I launch my product?",
-    a: "Launch on a few directories spread over several weeks rather than everywhere on one day. WeekLaunch gives every launch a full week on the board and a permanent product page.",
+    a: "Launch on a few directories spread over several weeks rather than everywhere on one day. IndieShip gives every launch a full week on the board and a permanent product page.",
   },
 ];
 
@@ -93,7 +93,7 @@ export default function LaunchChecklistPage() {
               href="/submit"
               className="font-medium text-brand-700 underline"
             >
-              submit your product to WeekLaunch
+              submit your product to IndieShip
             </Link>
             .
           </p>

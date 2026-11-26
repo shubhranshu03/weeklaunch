@@ -8,7 +8,7 @@ import { SiteShell } from "@/components/SiteShell";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with the WeekLaunch team about launching your product, advertising or partnerships.",
+    "Get in touch with the IndieShip team about launching your product, advertising or partnerships.",
   alternates: { canonical: "/contact" },
 };
 
@@ -26,9 +26,9 @@ export default function ContactPage() {
           "@context": "https://schema.org",
           "@type": "ContactPage",
           url: `${SITE_URL}/contact`,
-          name: "Contact WeekLaunch",
+          name: "Contact IndieShip",
           description:
-            "Questions about launching, Premium or advertising on WeekLaunch.",
+            "Questions about launching, Premium or advertising on IndieShip.",
           isPartOf: { "@id": `${SITE_URL}/#website` },
         }}
       />

@@ -75,10 +75,10 @@ export const tools: Tool[] = [
     slug: "launch-badge",
     name: "Launch Badge Generator",
     summary:
-      "Pick a style and copy a 'Launched on WeekLaunch' badge for your website.",
+      "Pick a style and copy a 'Launched on IndieShip' badge for your website.",
     seoTitle: "Launch Badge Generator",
     seoDescription:
-      "Free 'Launched on WeekLaunch' badges for your website in light, dark and violet styles.",
+      "Free 'Launched on IndieShip' badges for your website in light, dark and violet styles.",
     icon: "badge",
   },
 ];

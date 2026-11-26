@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "How long should a tagline be?",
-    a: "Aim for 30–60 characters. Most launch directories, including WeekLaunch, cut taglines at 60 characters, and short lines are easier to remember.",
+    a: "Aim for 30–60 characters. Most launch directories, including IndieShip, cut taglines at 60 characters, and short lines are easier to remember.",
   },
   {
     q: "Is this tagline generator free?",
@@ -80,7 +80,7 @@ export default function TaglineGeneratorPage() {
               href="/submit"
               className="font-medium text-brand-700 underline"
             >
-              launch on WeekLaunch
+              launch on IndieShip
             </Link>
             .
           </p>

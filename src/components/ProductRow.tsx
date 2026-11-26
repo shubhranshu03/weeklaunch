@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Crown,
   BadgeCheck,
+  ChevronUp,
   MessageSquare,
   Star,
   Triangle,
@@ -45,10 +46,10 @@ export function ProductLogo({
 }) {
   const box =
     size === "sm"
-      ? "size-10 rounded-full text-sm"
+      ? "size-10 rounded-xl text-sm"
       : size === "lg"
-        ? "badge-pop size-20 rounded-full text-3xl"
-        : "size-10 rounded-full text-base sm:size-[52px] sm:text-lg";
+        ? "badge-pop size-20 rounded-2xl text-3xl"
+        : "size-11 rounded-xl text-base sm:size-12 sm:text-lg";
 
   if (logo.url)
     return (
@@ -97,7 +98,7 @@ export function PremiumBadge({ size = "sm" }: { size?: "sm" | "md" }) {
 export function SampleTag({ paper = false }: { paper?: boolean }) {
   return (
     <span
-      title="A sample launch, made up to show how WeekLaunch looks"
+      title="A sample launch, made up to show how IndieShip looks"
       className={
         paper
           ? "ml-2 inline-flex items-center rounded-sm border border-dashed border-ink-soft px-1 py-px align-middle font-sans text-[9px] font-bold uppercase tracking-wider text-ink-soft"
@@ -136,7 +137,7 @@ export function UpvoteButton({
   // The launch day; voting opens then and stays open
   day: number;
   // "paper" is the ink-on-newsprint style used on the home page
-  variant?: "default" | "paper";
+  variant?: "default" | "paper" | "soft";
 }) {
   // Worked out in the browser; while the page loads the button stays usable
   const nowWeek = useSyncExternalStore(
@@ -174,11 +175,7 @@ export function UpvoteButton({
       type="button"
       onClick={onClick}
       disabled={!open}
-      title={
-        open
-          ? undefined
-          : "Voting opens on launch day"
-      }
+      title={open ? undefined : "Voting opens on launch day"}
       aria-pressed={voted}
       aria-label={
         open
@@ -188,28 +185,49 @@ export function UpvoteButton({
           : `${Math.max(0, shown)} upvotes, voting opens on launch day`
       }
       className={
-        variant === "paper"
-          ? `ink-pop flex h-10 min-w-[4.5rem] shrink-0 items-center justify-center gap-1.5 rounded-sm px-3 font-sans text-sm font-bold tabular-nums disabled:cursor-default ${
+        variant === "soft"
+          ? `group flex shrink-0 flex-col items-center rounded-lg px-3 py-2 transition disabled:cursor-default ${
               voted
-                ? "bg-press text-white"
-                : open
-                  ? "bg-paper text-ink hover:bg-white"
-                  : "bg-paper-dark text-ink-soft"
+                ? "bg-orange-50 text-orange-600"
+                : "bg-slate-50 text-slate-600 hover:bg-orange-50 hover:text-orange-600"
             }`
-          : `btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
-              voted
-                ? "bg-brand-500 text-white"
-                : open
-                  ? "bg-white text-slate-900 hover:bg-brand-50"
-                  : "bg-slate-50 text-slate-500"
-            }`
+          : variant === "paper"
+            ? `ink-pop flex h-10 min-w-[4.5rem] shrink-0 items-center justify-center gap-1.5 rounded-sm px-3 font-sans text-sm font-bold tabular-nums disabled:cursor-default ${
+                voted
+                  ? "bg-press text-white"
+                  : open
+                    ? "bg-paper text-ink hover:bg-white"
+                    : "bg-paper-dark text-ink-soft"
+              }`
+            : `btn-pop flex h-12 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-sm font-bold tabular-nums disabled:cursor-default sm:h-14 sm:w-12 sm:gap-1 ${
+                voted
+                  ? "bg-brand-500 text-white"
+                  : open
+                    ? "bg-white text-slate-900 hover:bg-brand-50"
+                    : "bg-slate-50 text-slate-500"
+              }`
       }
     >
-      <Triangle
-        key={String(voted)}
-        className={`size-3 ${voted ? "animate-pop fill-white" : "fill-current"}`}
-      />
-      {Math.max(0, shown)}
+      {variant === "soft" ? (
+        <>
+          <ChevronUp
+            key={String(voted)}
+            className={`size-4 ${voted ? "animate-pop" : ""}`}
+            strokeWidth={voted ? 3 : 2}
+          />
+          <span className="text-sm font-medium tabular-nums">
+            {Math.max(0, shown)}
+          </span>
+        </>
+      ) : (
+        <>
+          <Triangle
+            key={String(voted)}
+            className={`size-3 ${voted ? "animate-pop fill-white" : "fill-current"}`}
+          />
+          {Math.max(0, shown)}
+        </>
+      )}
     </button>
   );
 }

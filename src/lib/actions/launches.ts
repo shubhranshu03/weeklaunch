@@ -10,7 +10,8 @@ import {
   platformColumns,
   type PlatformInfo,
 } from "../platforms";
-import { nextFreeDay, premiumLeft, dayLoad } from "../products";
+import { boostTakenFor, dayLoad, nextFreeDay, premiumLeft } from "../products";
+import { cleanDeal, dealColumns, type Deal } from "../deals";
 import { mediaPrefix } from "../supabase/env";
 import { supabaseAdmin } from "../supabase/server";
 import { dayLabel, dayKey, dayNumber, daysAround } from "../days";
@@ -30,6 +31,7 @@ export type LaunchInput = {
   highlights: string[];
   faqs: { q: string; a: string }[];
   app: PlatformInfo;
+  deal?: Deal;
 };
 
 // Trims the Premium extras and drops empty or oversized entries
@@ -44,6 +46,16 @@ function cleanExtras(input: LaunchInput) {
     .slice(0, 5);
   return { highlights, faqs };
 }
+
+// PostgREST says a column is unknown (code PGRST204) until its migration runs
+const missingDealColumns = (e: { code?: string; message?: string }) =>
+  e.code === "PGRST204" || /deal_(code|percent|text)/.test(e.message ?? "");
+// Spread over a row to leave the deal columns out entirely
+const dealColumnsOff = {
+  deal_code: undefined,
+  deal_percent: undefined,
+  deal_text: undefined,
+};
 
 type Result =
   | { ok: true; slug: string; id: string; day: number; checkoutUrl?: string }
@@ -120,6 +132,8 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
     return { ok: false, error: "Pick one to three categories." };
   const app = cleanPlatform(input.app);
   if (!app.ok) return app;
+  const deal = cleanDeal(input.deal);
+  if (!deal.ok) return deal;
 
   const premium = input.plan === "premium";
   const paid = premium || input.boost;
@@ -154,41 +168,48 @@ export async function createLaunch(input: LaunchInput): Promise<Result> {
       ok: false,
       error: `${dayLabel(week.number)} is full. Pick another day.`,
     };
-  // One Boost (sponsor card) per day
-  if (input.boost && load.boosted)
+  // One Boost (sponsor card) at a time; each runs for a week
+  if (input.boost && (await boostTakenFor([week]))[week.number])
     return {
       ok: false,
-      error: `The Boost for ${dayLabel(week.number)} is already taken. Untick it or pick another day.`,
+      error: `The in-feed ad is booked for part of the week from ${dayLabel(week.number)}. Untick it or pick another day.`,
     };
 
   const [from, to] = palette[Math.floor(Math.random() * palette.length)];
   const slug = await uniqueSlug(name);
-  const { data: product, error } = await supabaseAdmin()
-    .from("products")
-    .insert({
-      slug,
-      maker_id: user.id,
-      name,
-      tagline,
-      description,
-      website,
-      tags,
-      logo_glyph: name.slice(0, 2).replace(/\s/g, "").toUpperCase() || "W",
-      logo_from: from,
-      logo_to: to,
-      logo_url: ownFile(input.logo, user.id) ? input.logo : null,
-      screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
-      ...(premium ? cleanExtras(input) : { highlights: [], faqs: [] }),
-      // Web is the default, so web launches still save before migration 007 runs
-      ...(app.value.platform !== "web" && platformColumns(app.value)),
-      // A premium launch holds its spot while the maker pays; it stays hidden until paid
-      plan: premium ? "premium" : "free",
-      status: paid ? "pending_payment" : "pending_review",
-      launch_year: week.year,
-      launch_day: week.number,
-    })
-    .select("id")
-    .single();
+  const row = {
+    slug,
+    maker_id: user.id,
+    name,
+    tagline,
+    description,
+    website,
+    tags,
+    logo_glyph: name.slice(0, 2).replace(/\s/g, "").toUpperCase() || "W",
+    logo_from: from,
+    logo_to: to,
+    logo_url: ownFile(input.logo, user.id) ? input.logo : null,
+    screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
+    ...(premium ? cleanExtras(input) : { highlights: [], faqs: [] }),
+    // Web is the default, so web launches still save before migration 007 runs
+    ...(app.value.platform !== "web" && platformColumns(app.value)),
+    // Sent only with a deal, so launches still save before migration 012 runs
+    ...(deal.value && dealColumns(deal.value)),
+    // A premium launch holds its spot while the maker pays; it stays hidden until paid
+    plan: premium ? "premium" : "free",
+    status: paid ? "pending_payment" : "pending_review",
+    launch_year: week.year,
+    launch_day: week.number,
+  };
+  const insert = (r: typeof row) =>
+    supabaseAdmin().from("products").insert(r).select("id").single();
+  let { data: product, error } = await insert(row);
+  // Before migration 012 the deal columns don't exist: save the launch without its deal
+  if (error && deal.value && missingDealColumns(error))
+    ({ data: product, error } = await insert({
+      ...row,
+      ...dealColumnsOff,
+    }));
   if (error || !product)
     return { ok: false, error: "Couldn't save your launch. Please try again." };
 
@@ -272,7 +293,7 @@ export async function payForLaunch(
   if (week.number <= dayNumber(new Date()))
     return {
       ok: false,
-      error: `Week ${week.number} has already started, so it can't be paid for now.`,
+      error: `${dayLabel(week.number)} has already started, so it can't be paid for now.`,
     };
 
   // Check the week again: an unpaid spot is only held for an hour, so it may
@@ -281,12 +302,12 @@ export async function payForLaunch(
   if (premium && premiumLeft(load) === 0)
     return {
       ok: false,
-      error: `Premium spots for Week ${week.number} are sold out.`,
+      error: `Premium spots for ${dayLabel(week.number)} are sold out.`,
     };
-  if (boost && load.boosted)
+  if (boost && (await boostTakenFor([week], product.id))[week.number])
     return {
       ok: false,
-      error: `The Boost for Week ${week.number} is already taken.`,
+      error: `The in-feed ad is already booked for part of the week from ${dayLabel(week.number)}.`,
     };
 
   // Hold the spot again while the maker pays
@@ -394,6 +415,7 @@ export type LaunchEdit = {
   highlights: string[];
   faqs: { q: string; a: string }[];
   app: PlatformInfo;
+  deal?: Deal;
 };
 
 // A maker updates their own launch. The address (slug), plan and week stay the
@@ -447,6 +469,8 @@ export async function updateLaunch(
     return { ok: false, error: "Pick one to three categories." };
   const app = cleanPlatform(input.app);
   if (!app.ok) return app;
+  const deal = cleanDeal(input.deal);
+  if (!deal.ok) return deal;
 
   // Keep the old logo, or take one this maker uploaded
   const logo =
@@ -466,27 +490,31 @@ export async function updateLaunch(
         })
       : {};
 
-  const { error } = await admin
-    .from("products")
-    .update({
-      name,
-      website,
-      tagline,
-      description,
-      tags,
-      logo_url: logo,
-      logo_glyph: name.slice(0, 2).replace(/\s/g, "").toUpperCase() || "W",
-      screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
-      ...extras,
-      // Once migration 007 has run the columns exist; before that only web is kept
-      ...(("platform" in current || app.value.platform !== "web") &&
-        platformColumns(app.value)),
-      ...(backToReview && { status: "pending_review" }),
-      // The badge was checked on the old site
-      ...(websiteChanged &&
-        "badge_verified_at" in current && { badge_verified_at: null }),
-    })
-    .eq("id", current.id);
+  const patch = {
+    name,
+    website,
+    tagline,
+    description,
+    tags,
+    logo_url: logo,
+    logo_glyph: name.slice(0, 2).replace(/\s/g, "").toUpperCase() || "W",
+    screenshots: input.shots.filter((s) => ownFile(s, user.id)).slice(0, 5),
+    ...extras,
+    // Once migration 007 has run the columns exist; before that only web is kept
+    ...(("platform" in current || app.value.platform !== "web") &&
+      platformColumns(app.value)),
+    ...(("deal_code" in current || deal.value) && dealColumns(deal.value)),
+    ...(backToReview && { status: "pending_review" }),
+    // The badge was checked on the old site
+    ...(websiteChanged &&
+      "badge_verified_at" in current && { badge_verified_at: null }),
+  };
+  const save = (p: typeof patch) =>
+    admin.from("products").update(p).eq("id", current.id);
+  let { error } = await save(patch);
+  // Before migration 012 the deal columns don't exist: save everything else
+  if (error && missingDealColumns(error))
+    ({ error } = await save({ ...patch, ...dealColumnsOff }));
   if (error)
     return {
       ok: false,

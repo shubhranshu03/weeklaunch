@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { productCategories, type Product } from "@/lib/data";
+import { platforms } from "@/lib/platforms";
 import { voteRanks } from "@/lib/ranks";
 import { ProductRow } from "./ProductRow";
 
@@ -38,17 +39,36 @@ const icons: Record<string, { icon: LucideIcon; tint: string }> = {
 // Every product is listed once, under its main (first) category
 
 export function ProductsDirectory({
-  products: allProducts,
+  products: everyProduct,
   view = "all",
 }: {
   products: Product[];
   // "mac" lists Mac apps only, on /products/mac
   view?: "all" | "mac";
 }) {
-  const [category, setCategory] = useState("All");
-  // The home page search sends people here as /products?q=...
+  // The search and Browse links send people here as /products?q=, ?category= or ?platform=
   const params = useSearchParams();
-  const [query, setQuery] = useState(() => (params.get("q") ?? "").slice(0, 80));
+  const urlCategory = params.get("category");
+  const urlQuery = (params.get("q") ?? "").slice(0, 80);
+  const platform = params.get("platform");
+  const validCategory = (c: string | null) =>
+    productCategories.some((x) => x.name === c) ? c! : "All";
+  const [category, setCategory] = useState(() => validCategory(urlCategory));
+  const [query, setQuery] = useState(urlQuery);
+  // A new link in the address bar resets the filters it names
+  const [seen, setSeen] = useState({ urlCategory, urlQuery });
+  if (seen.urlCategory !== urlCategory || seen.urlQuery !== urlQuery) {
+    setSeen({ urlCategory, urlQuery });
+    setCategory(validCategory(urlCategory));
+    setQuery(urlQuery);
+  }
+  const allProducts = useMemo(
+    () =>
+      platform
+        ? everyProduct.filter((p) => p.app.platform === platform)
+        : everyProduct,
+    [everyProduct, platform],
+  );
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -81,7 +101,11 @@ export function ProductsDirectory({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              {view === "mac" ? "New Mac apps" : "All products"}
+              {view === "mac"
+                ? "New Mac apps"
+                : platform
+                  ? `${platforms.find((x) => x.id === platform)?.label ?? "Other"}s`
+                  : "All products"}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               {view === "mac"
@@ -102,7 +126,7 @@ export function ProductsDirectory({
                   className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
                     view === id
                       ? "badge-pop bg-slate-900 text-white"
-                      : "border-[1.5px] border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
                   }`}
                 >
                   {label}
@@ -118,7 +142,7 @@ export function ProductsDirectory({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products…"
-              className="h-10 w-full rounded-xl border-[1.5px] border-slate-900 bg-white pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-brand-100"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-brand-100"
             />
           </label>
         </div>
@@ -137,7 +161,7 @@ export function ProductsDirectory({
                 className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                   active
                     ? "badge-pop bg-brand-500 text-white"
-                    : "border-[1.5px] border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                    : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
                 }`}
               >
                 <Icon className="size-3.5" />

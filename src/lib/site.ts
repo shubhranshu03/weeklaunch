@@ -8,10 +8,10 @@ export const SITE_URL = (
     : "https://weeklaunch.vercel.app")
 ).replace(/\/$/, "");
 
-export const SITE_NAME = "WeekLaunch";
+export const SITE_NAME = "IndieShip";
 
 export const SITE_DESCRIPTION =
-  "A weekly product launch directory for indie makers and startups. Launch your product, climb the weekly leaderboard and keep a permanent product page.";
+  "A daily launch platform for indie makers and startups. Launch any day, win Product of the Day, Week or Month, and keep a permanent product page people and AI assistants can find.";
 
 // Date the static pages last changed meaningfully (used in the sitemap)
 export const CONTENT_UPDATED = "2026-11-02";

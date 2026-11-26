@@ -9,7 +9,7 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "All products by category — AI, SaaS, dev tools",
   description:
-    "Browse every product launched on WeekLaunch, grouped by category: AI, productivity, developer tools, design, marketing, analytics, finance and social media.",
+    "Browse every product launched on IndieShip, grouped by category: AI, productivity, developer tools, design, marketing, analytics, finance and social media.",
   alternates: { canonical: "/products" },
 };
 
@@ -35,7 +35,7 @@ async function Directory() {
         data={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          name: "All products on WeekLaunch",
+          name: "All products on IndieShip",
           url: `${SITE_URL}/products`,
           mainEntity: {
             "@type": "ItemList",

@@ -88,7 +88,7 @@ export const checklist: ChecklistSection[] = [
       },
       {
         id: "b16",
-        text: "Submit your product to WeekLaunch",
+        text: "Submit your product to IndieShip",
         tip: "Free from the queue, or Premium to launch today and be featured.",
       },
       {
@@ -197,7 +197,7 @@ export const checklist: ChecklistSection[] = [
       },
       {
         id: "a7",
-        text: "Keep your WeekLaunch page updated",
+        text: "Keep your IndieShip page updated",
         tip: "Fresh screenshots and description keep it ranking.",
       },
       {

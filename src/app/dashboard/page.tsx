@@ -82,7 +82,7 @@ export default function DashboardPage(props: PageProps<"/dashboard">) {
             My launches
           </h1>
           <p className="mt-0.5 text-sm text-slate-500">
-            How your products are doing on WeekLaunch.
+            How your products are doing on IndieShip.
           </p>
         </div>
         <Link
@@ -113,7 +113,7 @@ async function Launches({
   const [
     launches,
     now,
-    { paid, status: payStatus, payment_id, directory, badge },
+    { paid, status: payStatus, payment_id, directory, badge, promotion },
     { data: dirOrders },
   ] = await Promise.all([
     getMakerLaunches(user.id),
@@ -182,6 +182,29 @@ async function Launches({
               <CircleCheck className="size-4 shrink-0" />
               Thanks! We&apos;ll start your directory submissions within 2
               working days and email you the report.
+            </>
+          )}
+        </p>
+      )}
+
+      {promotion && (
+        <p
+          className={`mt-4 flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
+            promotion === "failed" || promotion === "cancelled"
+              ? "bg-rose-50 text-rose-800"
+              : "bg-emerald-50 text-emerald-800"
+          }`}
+        >
+          {promotion === "failed" || promotion === "cancelled" ? (
+            <>
+              <CircleX className="size-4 shrink-0" />
+              The payment didn&apos;t go through, so you weren&apos;t charged.
+            </>
+          ) : (
+            <>
+              <CircleCheck className="size-4 shrink-0" />
+              Thanks for your order! We&apos;ll email you within one working day
+              to get your promotion started.
             </>
           )}
         </p>
@@ -336,7 +359,7 @@ async function Launches({
                 {needsBadge && (
                   <details
                     open
-                    className="group w-full rounded-2xl border-[1.5px] border-amber-300 bg-amber-50/60 px-4 py-3"
+                    className="group w-full rounded-2xl border border-amber-300 bg-amber-50/60 px-4 py-3"
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
                       <span className="flex items-center gap-2">
@@ -432,8 +455,7 @@ async function Launches({
               Upgrade {upgrade.product.name} to Premium
             </span>
             <span className="block text-sm text-white/75">
-              Go live today and get featured for 7 days for $
-              {PREMIUM_PRICE}.
+              Go live today and get featured for 7 days for ${PREMIUM_PRICE}.
             </span>
           </span>
           <PayButton

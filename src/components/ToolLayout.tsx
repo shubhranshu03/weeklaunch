@@ -65,7 +65,7 @@ export function ToolLayout({
               operatingSystem: "Any",
               isAccessibleForFree: true,
               offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-              publisher: { "@type": "Organization", name: "WeekLaunch" },
+              publisher: { "@type": "Organization", name: "IndieShip" },
             },
             {
               "@type": "BreadcrumbList",

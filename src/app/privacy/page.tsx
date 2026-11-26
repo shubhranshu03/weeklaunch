@@ -3,7 +3,7 @@ import { InfoPage } from "@/components/InfoPage";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How WeekLaunch collects, uses and protects your data.",
+  description: "How IndieShip collects, uses and protects your data.",
   alternates: { canonical: "/privacy" },
 };
 

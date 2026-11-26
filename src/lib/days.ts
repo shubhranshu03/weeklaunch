@@ -1,5 +1,5 @@
 // Launch days run midnight to midnight UTC, numbered from the first day of
-// WeekLaunch: Day 1 is Mon, Nov 2, 2026, Day 2 the next day, and so on.
+// IndieShip: Day 1 is Mon, Nov 2, 2026, Day 2 the next day, and so on.
 // Products launch on a day; awards also look at the week (Mon–Sun) and month.
 
 export type Day = {

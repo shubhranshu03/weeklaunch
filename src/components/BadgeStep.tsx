@@ -74,7 +74,7 @@ export function BadgeStep({
           {/* eslint-disable-next-line @next/next/no-img-element -- the exact image makers embed */}
           <img
             src={`/badges/${slug}.svg?theme=${theme}`}
-            alt="Launched on WeekLaunch"
+            alt="Launched on IndieShip"
             width={200}
             height={54}
           />
@@ -91,7 +91,7 @@ export function BadgeStep({
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                   theme === t.id
                     ? "badge-pop bg-brand-500 text-white"
-                    : "border-[1.5px] border-slate-200 text-slate-600 hover:border-slate-300"
+                    : "border border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {t.label}
@@ -146,7 +146,7 @@ export function BadgeStep({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-[1.5px] border-slate-200 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4">
         <p className="text-sm text-slate-600">
           Added it? We&apos;ll look for it on{" "}
           <span className="font-semibold text-slate-900">

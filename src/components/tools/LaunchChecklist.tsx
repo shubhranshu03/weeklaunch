@@ -140,9 +140,9 @@ export function LaunchChecklist() {
                       />
                       <span
                         aria-hidden
-                        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border-[1.5px] transition peer-focus-visible:ring-4 peer-focus-visible:ring-brand-100 ${
+                        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition peer-focus-visible:ring-4 peer-focus-visible:ring-brand-100 ${
                           on
-                            ? "border-slate-900 bg-brand-500 text-white"
+                            ? "border-brand-500 bg-brand-500 text-white"
                             : "border-slate-300 bg-white"
                         }`}
                       >

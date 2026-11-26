@@ -23,44 +23,47 @@ export function HomeFeed({ feed }: { feed: Feed }) {
     !!p.premium && feed.today - p.day < featuredDays && p.day <= feed.today;
   const award = (slug: string) => bestAward(feed.awards[slug]);
   const todayRanks = voteRanks(feed.launches);
+  const hot = new Set(feed.trending.slice(0, 3).map((p) => p.slug));
 
   return (
     <div className="min-w-0">
-      <div
-        role="tablist"
-        aria-label="Launch feeds"
-        className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-1"
-      >
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              tab === t.id
-                ? "bg-slate-900 text-white"
-                : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            <t.icon className="size-4" />
-            {t.label}
-          </button>
-        ))}
+      <div className="sticky top-16 z-20 -mx-1 flex justify-end px-1 py-2">
+        <div
+          role="tablist"
+          aria-label="Launch feeds"
+          className="inline-flex gap-1 rounded-xl bg-slate-100/95 p-1 shadow-sm backdrop-blur"
+        >
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
+                tab === t.id
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              {t.id !== "top" && <t.icon className="size-4" />}
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {tab === "top" && (
-        <div className="mt-6 space-y-8">
+        <div className="mt-4 space-y-8">
           {feed.top.length === 0 && <NoLaunches />}
           {feed.top.map((s, i) => (
             <section key={s.title} className="space-y-8">
               <div>
                 <SectionHeading
-                  title={`Top ${s.title.toLowerCase()}`}
+                  title={`${s.title} top ${s.products.length}`}
                   hint={s.hint}
                 />
-                <ol className="mt-3 space-y-2">
+                <ol className="mt-4 space-y-3">
                   {s.products.map((p, i) => (
                     <LaunchRow
                       key={p.slug}
@@ -68,6 +71,7 @@ export function HomeFeed({ feed }: { feed: Feed }) {
                       rank={p.upvotes > 0 ? i + 1 : null}
                       award={award(p.slug)}
                       featured={isFeatured(p)}
+                      trending={hot.has(p.slug)}
                     />
                   ))}
                 </ol>
@@ -86,13 +90,14 @@ export function HomeFeed({ feed }: { feed: Feed }) {
             {feed.launches.length === 0 ? (
               <NoLaunches />
             ) : (
-              <ol className="mt-3 space-y-2">
+              <ol className="mt-4 space-y-3">
                 {feed.launches.map((p) => (
                   <LaunchRow
                     key={p.slug}
                     product={p}
                     rank={todayRanks.get(p.slug) ?? null}
                     featured={isFeatured(p)}
+                      trending={hot.has(p.slug)}
                   />
                 ))}
               </ol>
@@ -104,13 +109,14 @@ export function HomeFeed({ feed }: { feed: Feed }) {
       {tab === "recent" && (
         <section className="mt-6">
           <SectionHeading title="Recently launched" hint="Newest first" />
-          <ol className="mt-3 space-y-2">
+          <ol className="mt-4 space-y-3">
             {feed.recent.map((p) => (
               <LaunchRow
                 key={p.slug}
                 product={p}
                 award={award(p.slug)}
                 featured={isFeatured(p)}
+                      trending={hot.has(p.slug)}
                 showDay
               />
             ))}
@@ -127,7 +133,7 @@ export function HomeFeed({ feed }: { feed: Feed }) {
           {feed.trending.length === 0 ? (
             <NoLaunches />
           ) : (
-            <ol className="mt-3 space-y-2">
+            <ol className="mt-4 space-y-3">
               {feed.trending.map((p, i) => (
                 <LaunchRow
                   key={p.slug}
@@ -135,6 +141,7 @@ export function HomeFeed({ feed }: { feed: Feed }) {
                   rank={i + 1}
                   award={award(p.slug)}
                   featured={isFeatured(p)}
+                      trending={hot.has(p.slug)}
                   showDay
                 />
               ))}
@@ -181,7 +188,7 @@ function CenterAd({ product }: { product: Feed["boosted"] }) {
               Your ad here, near the top of the feed
             </span>
             <span className="block text-sm text-slate-500">
-              Seen by everyone who opens WeekLaunch today. $19 per day.
+              Seen by everyone who opens IndieShip for 7 days. $19 per week.
             </span>
           </span>
           <span className="flex h-10 shrink-0 items-center gap-1 rounded-xl bg-brand-500 px-4 text-sm font-bold text-white">
@@ -195,8 +202,8 @@ function CenterAd({ product }: { product: Feed["boosted"] }) {
 
 function SectionHeading({ title, hint }: { title: string; hint: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <h2 className="text-lg font-bold tracking-tight text-slate-900">
+    <div className="flex items-baseline justify-between gap-3 border-b border-slate-200 pb-2">
+      <h2 className="text-xl font-semibold tracking-tight text-slate-900">
         {title}
       </h2>
       <span className="truncate text-xs font-medium text-slate-500">

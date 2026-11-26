@@ -6,7 +6,7 @@ import { createDirectoryOrder } from "@/lib/actions/directory";
 import { directoryPackages } from "@/lib/directories";
 
 const input =
-  "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
+  "h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 // Package cards on the page set ?package=… in the link; pick it up here
 function packageFromHash() {
@@ -80,7 +80,7 @@ export function DirectoryOrderForm({
                 className={`flex items-center justify-between rounded-xl p-3 text-left transition ${
                   on
                     ? "badge-pop bg-brand-500 text-white"
-                    : "border-[1.5px] border-slate-200 hover:border-slate-300"
+                    : "border border-slate-200 hover:border-slate-300"
                 }`}
               >
                 <span>

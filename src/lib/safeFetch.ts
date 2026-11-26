@@ -80,7 +80,7 @@ export async function fetchPublic(
         signal: AbortSignal.timeout(8000),
         cache: "no-store",
         headers: {
-          "user-agent": `Mozilla/5.0 (compatible; WeekLaunchBot/1.0; +${SITE_URL}/badges)`,
+          "user-agent": `Mozilla/5.0 (compatible; IndieShipBot/1.0; +${SITE_URL}/badges)`,
           accept,
         },
       });

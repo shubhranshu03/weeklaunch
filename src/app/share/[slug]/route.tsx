@@ -9,9 +9,9 @@ import { dayStart } from "@/lib/days";
 const S = 2;
 const px = (n: number) => n * S;
 
-// The WeekLaunch mark, same as the site's logo
+// The IndieShip mark, same as the site's logo
 const logoMark = `data:image/svg+xml;base64,${Buffer.from(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9f85ff"/><stop offset="1" stop-color="#5a32db"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#g)"/><path d="M7 12l4 11 5-9 5 9 4.5-14" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.3 10.5 25.5 7l1.4 4.6" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9f85ff"/><stop offset="1" stop-color="#5a32db"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#g)"/><path d="M16.5 6.5v12h8.2zM14.5 9.5v9H9zM6.5 21h19l-2.8 4.5H9.3z" fill="#fff"/></svg>`,
 ).toString("base64")}`;
 
 // The site's own font, loaded once per server
@@ -44,7 +44,7 @@ export async function GET(
     ? launch.logo.glyph
     : launch.name[0];
   const badge = launch.live
-    ? "Live now on WeekLaunch"
+    ? "Live now on IndieShip"
     : `Launching ${date}`;
 
   return new ImageResponse(
@@ -122,7 +122,7 @@ export async function GET(
                 letterSpacing: px(-0.5),
               }}
             >
-              weeklaunch
+              indieship
             </div>
           </div>
           <div
@@ -235,8 +235,8 @@ export async function GET(
             }}
           >
             {launch.live
-              ? "Upvote it on weeklaunch ▲"
-              : "Support it on weeklaunch ▲"}
+              ? "Upvote it on IndieShip ▲"
+              : "Support it on IndieShip ▲"}
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
   dayKey,
   dayNumber,
   daysAround,
+  dayStart,
   type Day,
 } from "./days";
 
@@ -59,6 +60,10 @@ export type ProductRowDb = {
   badge_verified_at?: string | null;
   // Missing until migration 010 has run
   is_sample?: boolean | null;
+  // Missing until migration 012 has run
+  deal_percent?: number | null;
+  deal_code?: string | null;
+  deal_text?: string | null;
   maker?: {
     name: string;
     handle: string;
@@ -111,6 +116,13 @@ export function toProduct(r: ProductRowDb): Product {
           verified: r.maker.verified,
         }
       : { name: r.maker_name || "A maker" },
+    ...((r.deal_code || r.deal_percent != null || r.deal_text) && {
+      deal: {
+        percent: r.deal_percent ?? null,
+        code: r.deal_code ?? "",
+        text: r.deal_text ?? "",
+      },
+    }),
     app: {
       platform: r.platform ?? "web",
       priceModel: r.price_model ?? null,
@@ -127,7 +139,6 @@ const byRank = (a: Product, b: Product) =>
   Number(b.premium) - Number(a.premium) || b.upvotes - a.upvotes;
 
 // ─── Public, cached reads ───────────────────────────────────
-
 
 // The current week; cached like the tabs so pages stay fast
 export async function getCurrentDay() {
@@ -420,10 +431,33 @@ export async function dayLoad(weeks: Day[], exceptId?: string) {
   return load;
 }
 
+// A Boost (the in-feed sponsor card) runs for this many days from its launch
+// day, and only one runs at a time
+export const BOOST_DAYS = 7;
+
+// For each day: would a Boost starting that day overlap one already booked?
+export async function boostTakenFor(days: Day[], exceptId?: string) {
+  const nums = days.map((d) => d.number);
+  if (nums.length === 0) return {} as Record<number, boolean>;
+  const span: Day[] = [];
+  for (
+    let n = Math.max(1, Math.min(...nums) - (BOOST_DAYS - 1));
+    n <= Math.max(...nums) + (BOOST_DAYS - 1);
+    n++
+  )
+    span.push({ number: n, year: dayStart(n).getUTCFullYear(), label: "" });
+  const load = await dayLoad(span, exceptId);
+  const booked = span
+    .filter((d) => load[dayKey(d)].boosted)
+    .map((d) => d.number);
+  return Object.fromEntries(
+    nums.map((n) => [n, booked.some((b) => Math.abs(b - n) < BOOST_DAYS)]),
+  ) as Record<number, boolean>;
+}
+
 // Premium spots still open in a day: limited by both caps
 export const premiumLeft = (l: DayLoad) =>
   Math.max(0, Math.min(PREMIUM_CAPACITY - l.premium, DAY_CAPACITY - l.total));
-
 
 // Free launches queue 3 weeks out, or the first later week with room
 export async function nextFreeDay(): Promise<Day | null> {

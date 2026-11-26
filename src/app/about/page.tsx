@@ -6,7 +6,7 @@ import { InfoPage } from "@/components/InfoPage";
 export const metadata: Metadata = {
   title: "About — a fair daily launch platform for makers",
   description:
-    "WeekLaunch is a daily launch platform that gives indie makers and small teams a fair shot at getting seen, with a permanent product page for every launch.",
+    "IndieShip is a daily launch platform that gives indie makers and small teams a fair shot at getting seen, with a permanent product page for every launch.",
   alternates: { canonical: "/about" },
 };
 
@@ -33,7 +33,7 @@ export default function AboutPage() {
     <InfoPage
       path="/about"
       type="AboutPage"
-      title="About WeekLaunch"
+      title="About IndieShip"
       intro="A daily launch platform that gives indie makers and small teams a fair shot at getting seen."
     >
       <div className="not-prose grid gap-3 sm:grid-cols-3">
@@ -51,7 +51,7 @@ export default function AboutPage() {
         <h2>Why we built it</h2>
         <p>
           Big launch sites move fast, and a product from a solo maker can
-          disappear in an hour. WeekLaunch gives every launch a whole week on
+          disappear in an hour. IndieShip gives every launch a whole week on
           the board, then keeps its product page live for good — so the work you
           put into launching keeps paying off.
         </p>

@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
-import { display, serif } from "./fonts";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,8 +18,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "WeekLaunch — Launch your product. Get discovered every week.",
-    template: "%s | WeekLaunch",
+    default: "IndieShip — Launch your product. Get found every day.",
+    template: "%s | IndieShip",
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -61,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       // The night edition script below sets data-theme before React loads
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${serif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         {/* Pick day or night edition before the page paints, so it never flashes */}

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getAllProducts, getProduct } from "@/lib/products";
 
-export const alt = "Product launched on WeekLaunch";
+export const alt = "Product launched on IndieShip";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +20,7 @@ export default async function ProductImage({
 }) {
   const { slug } = await params;
   const product = await getProduct(slug);
-  const name = product?.name ?? "WeekLaunch";
+  const name = product?.name ?? "IndieShip";
   const tagline = product?.tagline ?? "Launch your product";
   const logo = product?.logo ?? { glyph: "W", from: "#9f85ff", to: "#5a32db" };
   // The image font only has plain letters, so symbol logos fall back to the initial
@@ -92,10 +92,10 @@ export default async function ProductImage({
             color: "#0f172a",
           }}
         >
-          Launched on WeekLaunch
+          Launched on IndieShip
         </div>
         <div style={{ fontSize: 34, fontWeight: 700, color: "#7c5cff" }}>
-          weeklaunch
+          indieship
         </div>
       </div>
     </div>,

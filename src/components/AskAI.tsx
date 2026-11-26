@@ -3,7 +3,7 @@ import { siClaude, siGoogle, siPerplexity } from "simple-icons";
 
 // The question each assistant opens with, unless a page asks its own
 const sitePrompt =
-  "What is WeekLaunch, the weekly product launch directory for indie makers and startups? How can it help me launch my product and get users?";
+  "What is IndieShip, the weekly product launch directory for indie makers and startups? How can it help me launch my product and get users?";
 
 // OpenAI mark (not included in Simple Icons)
 const openAiPath =
@@ -38,7 +38,7 @@ const assistants = [
 ];
 
 export function AskAI({
-  subject = "WeekLaunch",
+  subject = "IndieShip",
   prompt = sitePrompt,
 }: {
   // What the box asks about, e.g. a product name

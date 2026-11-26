@@ -9,7 +9,7 @@ const ourHosts = new Set(
   ),
 );
 
-// True when the page links to this launch's WeekLaunch page
+// True when the page links to this launch's IndieShip page
 export function hasBadge(html: string, slug: string) {
   const want = `/products/${slug}`.toLowerCase();
   for (const m of html.matchAll(

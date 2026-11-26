@@ -14,6 +14,7 @@ import {
   Triangle,
 } from "lucide-react";
 import { AskAI } from "@/components/AskAI";
+import { DealBox } from "@/components/DealBox";
 import { Comments } from "@/components/Comments";
 import { AwardBadge } from "@/components/home/LaunchRow";
 import { ProductActions } from "@/components/ProductActions";
@@ -50,9 +51,9 @@ export async function generateStaticParams() {
     : [{ slug: "studyflow" }];
 }
 
-// Keeps "Name — tagline | WeekLaunch" within the ~60 characters Google shows
+// Keeps "Name — tagline | IndieShip" within the ~60 characters Google shows
 function shortTitle(name: string, tagline: string) {
-  const room = 60 - " | WeekLaunch".length - name.length - " — ".length;
+  const room = 60 - " | IndieShip".length - name.length - " — ".length;
   if (tagline.length <= room) return `${name} — ${tagline}`;
   const cut = tagline.slice(0, room - 1);
   return `${name} — ${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,.;:]$/, "")}…`;
@@ -67,7 +68,7 @@ export async function generateMetadata({
     // Not live yet: a "coming soon" page that shows the maker's share card
     const upcoming = await getUpcomingLaunch(slug);
     if (!upcoming) return {};
-    const title = `${upcoming.name} is launching on WeekLaunch`;
+    const title = `${upcoming.name} is launching on IndieShip`;
     const card = `/share/${upcoming.slug}`;
     return {
       title,
@@ -84,7 +85,7 @@ export async function generateMetadata({
   const description =
     more && lead.length < 120
       ? `${lead} ${more.slice(0, 157 - lead.length).replace(/\s+\S*$/, "")}…`
-      : `${lead} Launched on WeekLaunch in ${product.tags.join(", ")}.`;
+      : `${lead} Launched on IndieShip in ${product.tags.join(", ")}.`;
   return {
     title: shortTitle(product.name, product.tagline),
     description,
@@ -96,7 +97,7 @@ export async function generateMetadata({
       url,
       title: product.name,
       description,
-      siteName: "WeekLaunch",
+      siteName: "IndieShip",
       locale: "en_US",
       publishedTime: dayStart(product.day).toISOString(),
     },
@@ -190,7 +191,7 @@ async function ProductDetail({
               "@type": "WebPage",
               "@id": pageUrl,
               url: pageUrl,
-              name: `${product.name} on WeekLaunch`,
+              name: `${product.name} on IndieShip`,
               description: product.tagline,
               datePublished: launched.toISOString(),
               isPartOf: { "@id": `${SITE_URL}/#website` },
@@ -284,7 +285,7 @@ async function ProductDetail({
           <strong className="font-semibold text-slate-900">
             Sample launch.
           </strong>{" "}
-          This product is made up to show how a launch page looks on WeekLaunch.{" "}
+          This product is made up to show how a launch page looks on IndieShip.{" "}
           <Link
             href="/submit"
             className="font-semibold text-brand-700 hover:underline"
@@ -363,6 +364,17 @@ async function ProductDetail({
           />
         </div>
 
+        {product.deal && <DealBox deal={product.deal} name={product.name} />}
+
+        <p className="mt-4 text-sm">
+          <Link
+            href={`/alternatives/${product.slug}`}
+            className="font-medium text-brand-700 hover:underline"
+          >
+            See {product.name} alternatives →
+          </Link>
+        </p>
+
         <dl className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="rounded-2xl bg-slate-50 px-4 py-3">
@@ -429,9 +441,8 @@ async function ProductDetail({
                 </p>
               ))}
             <p>
-              It launched on WeekLaunch on {dayLabel(product.day)},{" "}
-              {product.year} and is listed under{" "}
-              {product.tags.join(", ")}.
+              It launched on IndieShip on {dayLabel(product.day)},{" "}
+              {product.year} and is listed under {product.tags.join(", ")}.
             </p>
           </div>
         </section>
@@ -513,7 +524,7 @@ async function ProductDetail({
               : []),
             ["Made by", product.maker.name],
             ["Website", host],
-            ["Launched on WeekLaunch", `Week ${product.day}, ${launchedOn}`],
+            ["Launched on IndieShip", `Week ${product.day}, ${launchedOn}`],
             [
               "Community",
               `${product.upvotes} upvotes · ${product.comments} comments`,
@@ -596,7 +607,7 @@ async function ProductDetail({
       <div className="mt-4">
         <AskAI
           subject={product.name}
-          prompt={`What is ${product.name} (${product.website})? It's described as: "${product.tagline}". Who is it for, what are its main features, and what are good alternatives? It launched on WeekLaunch: ${pageUrl}`}
+          prompt={`What is ${product.name} (${product.website})? It's described as: "${product.tagline}". Who is it for, what are its main features, and what are good alternatives? It launched on IndieShip: ${pageUrl}`}
         />
       </div>
 
@@ -690,8 +701,8 @@ function ComingSoon({
       </div>
       <div className="p-6 text-center">
         <p className="text-sm text-slate-600">
-          {launch.maker.name} is launching {launch.name} on WeekLaunch. Come
-          back on launch day to upvote it and leave a comment.
+          {launch.maker.name} is launching {launch.name} on IndieShip. Come back
+          on launch day to upvote it and leave a comment.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <Link

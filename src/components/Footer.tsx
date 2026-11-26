@@ -6,12 +6,16 @@ import { Logo } from "./Logo";
 
 // Footer links that already have a page; the rest are placeholders
 const hrefs: Record<string, string> = {
-  "This week": "/",
+  Today: "/",
   "All products": "/products",
-  Categories: "/products",
+  Categories: "/categories",
+  Platforms: "/platforms",
+  Deals: "/deals",
+  Alternatives: "/alternatives",
+  Blog: "/blog",
   Pricing: "/pricing",
   Advertise: "/pricing#ads",
-  "Past weeks": "/",
+  "Hall of Fame": "/hall-of-fame",
   "Submit a product": "/submit",
   "Launch badges": "/badges",
   "Help center": "/contact",
@@ -26,7 +30,14 @@ const hrefs: Record<string, string> = {
 const columns = [
   {
     title: "Product",
-    links: ["This week", "Past weeks", "All products", "Categories"],
+    links: [
+      "Today",
+      "Hall of Fame",
+      "Categories",
+      "Platforms",
+      "Deals",
+      "Alternatives",
+    ],
   },
   {
     title: "Makers",
@@ -35,6 +46,7 @@ const columns = [
   {
     title: "Resources",
     links: [
+      "Blog",
       "Launch directories",
       "Launch checklist",
       "Free tools",
@@ -74,7 +86,7 @@ function GitHubIcon() {
 export function Footer({ cta = true }: { cta?: boolean }) {
   return (
     <footer
-      className={`relative border-t-[3px] border-double border-ink bg-paper-dark ${cta ? "mt-16" : ""}`}
+      className={`relative border-t border-slate-200 bg-white ${cta ? "mt-16" : ""}`}
     >
       <FooterScene />
       {/* Bottom padding leaves the street of the scene clear of the text */}
@@ -90,7 +102,8 @@ export function Footer({ cta = true }: { cta?: boolean }) {
                   Ready to launch?
                 </h2>
                 <p className="mt-1 text-sm text-white/80">
-                  Launch today, or join the free queue. Your first product is free.
+                  Launch today, or join the free queue. Your first product is
+                  free.
                 </p>
               </div>
               <Link
@@ -118,7 +131,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
                 required
                 placeholder="Your email"
                 aria-label="Email for the weekly newsletter"
-                className="h-10 min-w-0 flex-1 rounded-xl border-[1.5px] border-slate-900 bg-white px-3 text-sm outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-brand-100"
+                className="h-10 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-brand-100"
               />
               <button
                 type="submit"
@@ -164,7 +177,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-100 py-6 sm:flex-row">
           <p className="text-xs text-slate-400">
-            © 2026 WeekLaunch. Made for makers, every week.
+            © 2026 IndieShip. Made for makers, every day.
           </p>
           <div className="flex items-center gap-2">
             {[
@@ -175,7 +188,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
               <Link
                 key={s.label}
                 href="#"
-                aria-label={`WeekLaunch on ${s.label}`}
+                aria-label={`IndieShip on ${s.label}`}
                 className="btn-pop flex size-9 items-center justify-center rounded-lg bg-white text-slate-900"
               >
                 {s.icon}

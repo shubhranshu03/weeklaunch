@@ -1,120 +1,97 @@
 @import "tailwindcss";
 
+/* Clean, modern look: white cards on a light gray page, violet accent */
 :root {
-  --background: #f3ede0;
-  --foreground: #1b1813;
+  --background: #f7f8fb;
+  --foreground: #0f172a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Sharper corners, like cut paper */
-  --radius-lg: 0.1875rem;
-  --radius-xl: 0.25rem;
-  --radius-2xl: 0.25rem;
-  --radius-3xl: 0.375rem;
-  --radius-4xl: 0.5rem;
-  --font-display: var(--font-playfair), Georgia, serif;
-  --font-serif: var(--font-source-serif), Georgia, serif;
+  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-/* Colors stay as CSS variables so the night edition can swap them */
+/* Colors stay as CSS variables so night mode can swap them */
 @theme {
-  /* Newspaper theme: brand is press red, slate is warm ink on newsprint */
-  --color-brand-50: #f8ebe7;
-  --color-brand-100: #f1d5cf;
-  --color-brand-200: #e3aba3;
-  --color-brand-400: #cf5a4f;
-  --color-brand-500: #b3261e;
-  --color-brand-600: #9c1f18;
-  --color-brand-700: #7f1913;
-  --color-slate-50: #ece5d6;
-  --color-slate-100: #e3d9c6;
-  --color-slate-200: #d2c6af;
-  --color-slate-300: #b9ad97;
-  --color-slate-400: #93887a;
-  --color-slate-500: #6f665a;
-  --color-slate-600: #564e44;
-  --color-slate-700: #3f3931;
-  --color-slate-800: #2b2620;
-  --color-slate-900: #1b1813;
-  --color-slate-950: #110f0c;
-  --color-white: #faf6ec;
-  --color-indigo-500: #3f3931;
-  --color-indigo-600: #2b2620;
-  --color-indigo-950: #1b1813;
-  --color-fuchsia-600: #b3261e;
-  --color-violet-500: #7f1913;
-  --color-sky-50: #e7edf0;
-  --color-sky-500: #2f5d7c;
-  --color-pink-50: #f3e8e8;
-  --color-pink-500: #8a4b5c;
-  --color-paper: #f3ede0;
-  --color-paper-dark: #e8dfcc;
-  --color-ink: #1b1813;
-  --color-ink-soft: #5b5348;
-  --color-rule: #b9ad97;
-  --color-press: #b3261e;
-  /* Lines and stamp shadows on buttons */
-  --color-line: #1b1813;
+  /* IndieShip violet */
+  --color-brand-50: #f4f1ff;
+  --color-brand-100: #ebe5ff;
+  --color-brand-200: #d6ccff;
+  --color-brand-300: #bcaaff;
+  --color-brand-400: #9b85ff;
+  --color-brand-500: #7c5cff;
+  --color-brand-600: #6a45f5;
+  --color-brand-700: #5a32db;
+  /* Page surfaces (names kept from the old design) */
+  --color-paper: #f7f8fb;
+  --color-paper-dark: #eef0f5;
+  --color-ink: #0f172a;
+  --color-ink-soft: #475569;
+  --color-rule: #e2e8f0;
+  --color-press: #7c5cff;
+  /* Borders of raised buttons and badges */
+  --color-line: #e2e8f0;
   /* Raised cards (bg-white) */
-  --color-card: #faf6ec;
+  --color-card: #ffffff;
 }
 
-/* Night edition: dark newsprint with cream ink */
+/* Night mode: deep blue-gray with light text */
 :root[data-theme="night"] {
   color-scheme: dark;
-  --background: #1a1713;
-  --foreground: #ece4d3;
-  --color-paper: #1a1713;
-  --color-paper-dark: #12100d;
-  --color-ink: #ece4d3;
-  --color-ink-soft: #b3a992;
-  --color-rule: #4a4339;
-  --color-press: #e0574b;
-  --color-line: #cfc4ad;
-  --color-card: #24201a;
-  --color-brand-50: #3a1f1a;
-  --color-brand-100: #4d2620;
-  --color-brand-200: #7a3329;
-  --color-brand-400: #e0574b;
-  --color-brand-500: #c8352b;
-  --color-brand-600: #b02c23;
-  --color-brand-700: #f0a197;
-  --color-slate-50: #221e19;
-  --color-slate-100: #2c2721;
-  --color-slate-200: #3d372f;
-  --color-slate-300: #574f44;
-  --color-slate-400: #8a806f;
-  --color-slate-500: #a89e8a;
-  --color-slate-600: #c2b8a3;
-  --color-slate-700: #d6ccb6;
-  --color-slate-800: #e3dac6;
-  --color-slate-900: #ece4d3;
-  --color-slate-950: #f6f0e3;
-  --color-indigo-500: #3d372f;
-  --color-indigo-600: #2c2721;
-  --color-indigo-950: #12100d;
-  --color-sky-50: #1c2a33;
-  --color-sky-500: #6fa3c4;
-  --color-pink-50: #33222a;
-  --color-pink-500: #c27f93;
+  --background: #0b0e14;
+  --foreground: #e6e9f0;
+  --color-paper: #0b0e14;
+  --color-paper-dark: #11151d;
+  --color-ink: #e6e9f0;
+  --color-ink-soft: #9aa3b5;
+  --color-rule: #262c38;
+  --color-press: #9b85ff;
+  --color-line: #2a3140;
+  --color-card: #151a23;
+  --color-brand-50: #1d1838;
+  --color-brand-100: #262047;
+  --color-brand-200: #3a2f6e;
+  --color-brand-300: #5a49a8;
+  --color-brand-400: #9b85ff;
+  --color-brand-500: #7c5cff;
+  --color-brand-600: #8b6dff;
+  --color-brand-700: #b8a8ff;
+  --color-slate-50: #151a23;
+  --color-slate-100: #1b212c;
+  --color-slate-200: #262c38;
+  --color-slate-300: #353d4c;
+  --color-slate-400: #6b7489;
+  --color-slate-500: #8d96aa;
+  --color-slate-600: #aab2c3;
+  --color-slate-700: #c5cbd8;
+  --color-slate-800: #dce0e8;
+  --color-slate-900: #eef1f6;
+  --color-slate-950: #f8fafc;
 }
-/* White stays cream for text on red; only white surfaces turn dark */
+/* Only white surfaces turn dark at night (white text stays white) */
 :root[data-theme="night"] .bg-white {
   background-color: var(--color-card);
 }
+/* Dark buttons (slate-900 with white text) turn light at night, with dark text */
+:root[data-theme="night"] .bg-slate-900.text-white,
+:root[data-theme="night"] .bg-slate-950.text-white {
+  color: #0b0e14;
+}
 /* Bright badges keep dark text at night */
 :root[data-theme="night"]
-  :is(.bg-amber-200, .bg-amber-300, .bg-amber-400, .bg-emerald-300, .bg-yellow-300) {
-  color: #1b1813;
-}
-
-h1,
-h2 {
-  font-family: var(--font-playfair), Georgia, serif;
+  :is(
+    .bg-amber-100,
+    .bg-amber-200,
+    .bg-amber-300,
+    .bg-amber-400,
+    .bg-emerald-300,
+    .bg-yellow-300
+  ) {
+  color: #0f172a;
 }
 
 body {
@@ -170,57 +147,46 @@ body {
   animation: marquee 40s linear infinite;
 }
 
-/* Outlined buttons with a hard offset shadow that "press" on click */
+/* Raised buttons: a hairline border, a soft shadow and a small lift on hover */
 @utility btn-pop {
-  border: 1.5px solid var(--color-line);
-  box-shadow: 2px 2px 0 var(--color-line);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
   transition:
     transform 0.12s ease,
-    box-shadow 0.12s ease,
+    box-shadow 0.15s ease,
     background-color 0.15s ease,
     color 0.15s ease;
   &:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0 var(--color-line);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgb(15 23 42 / 0.25);
   }
   &:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 #1b1813;
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
   }
 }
 
-/* Static badge version (no hover motion) */
+/* Badges: hairline border only */
 @utility badge-pop {
-  border: 1.5px solid var(--color-line);
-  box-shadow: 1.5px 1.5px 0 var(--color-line);
+  border: 1px solid rgb(15 23 42 / 0.08);
 }
 
-/* Newspaper front page: a drop cap for the lead story */
-.drop-cap::first-letter {
-  float: left;
-  font-family: var(--font-playfair), Georgia, serif;
-  font-weight: 800;
-  font-size: 3.4em;
-  line-height: 0.85;
-  padding: 0.08em 0.1em 0 0;
-}
-
-/* Ink-stamp buttons on the front page */
+/* Same as btn-pop (kept for older markup) */
 @utility ink-pop {
-  border: 1.5px solid var(--color-line);
-  box-shadow: 2px 2px 0 var(--color-line);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
   transition:
     transform 0.12s ease,
-    box-shadow 0.12s ease,
+    box-shadow 0.15s ease,
     background-color 0.15s ease,
     color 0.15s ease;
   &:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0 var(--color-line);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgb(15 23 42 / 0.25);
   }
   &:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 #1b1813;
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
   }
 }
 
@@ -269,12 +235,22 @@ body {
   animation: tv-blink 1.6s steps(2, start) infinite;
 }
 @keyframes tv-flicker {
-  0%, 96%, 100% { filter: brightness(1); }
-  97% { filter: brightness(1.15); }
-  98% { filter: brightness(0.92); }
+  0%,
+  96%,
+  100% {
+    filter: brightness(1);
+  }
+  97% {
+    filter: brightness(1.15);
+  }
+  98% {
+    filter: brightness(0.92);
+  }
 }
 @keyframes tv-blink {
-  to { visibility: hidden; }
+  to {
+    visibility: hidden;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .tv-screen,
@@ -318,6 +294,27 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .ad-glow {
+    animation: none;
+  }
+}
+
+/* Sponsor strip: two copies of the row slide left forever */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 60s linear infinite;
+}
+.marquee-reverse {
+  animation-direction: reverse;
+}
+.marquee:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
     animation: none;
   }
 }

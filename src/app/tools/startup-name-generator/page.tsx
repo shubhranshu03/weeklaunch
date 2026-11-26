@@ -93,7 +93,7 @@ export default function StartupNameGeneratorPage() {
               href="/submit"
               className="font-medium text-brand-700 underline"
             >
-              launch on WeekLaunch
+              launch on IndieShip
             </Link>
             .
           </p>

@@ -1,3 +1,4 @@
+import type { Deal } from "./deals";
 import type { PlatformInfo } from "./platforms";
 
 export type Product = {
@@ -26,10 +27,12 @@ export type Product = {
   year: number;
   // Web app, Mac app and so on, with the Mac details
   app: PlatformInfo;
-  // Free launches: the WeekLaunch badge was found on the maker's site
+  // Free launches: the IndieShip badge was found on the maker's site
   badgeVerified?: boolean;
   // A made-up demo launch, shown with a "Sample" tag
   sample?: boolean;
+  // The maker's optional discount for IndieShip visitors
+  deal?: Deal;
   maker: { name: string; handle?: string; avatar?: string; verified?: boolean };
 };
 
@@ -77,7 +80,7 @@ export const testimonials: Testimonial[] = [
     role: "Founder, StudyFlow",
     result: "#1 of Week 41",
     quote:
-      "We got 140 signups in launch week and still get traffic from our WeekLaunch page months later. The upvotes were nice, but the real win was the long tail: our product page ranks on Google for our main keyword, and people keep finding us through it. Easily the best launch we have done.",
+      "We got 140 signups in launch week and still get traffic from our IndieShip page months later. The upvotes were nice, but the real win was the long tail: our product page ranks on Google for our main keyword, and people keep finding us through it. Easily the best launch we have done.",
     color: "#7c5cff",
   },
   {

@@ -10,7 +10,7 @@ import { uploadImage } from "@/lib/upload";
 import { setSessionUser } from "@/lib/useAuth";
 
 const input =
-  "h-11 w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-brand-100";
+  "h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 function Card({
   title,
@@ -68,7 +68,7 @@ function Toggle({
         aria-checked={on}
         aria-label={label}
         onClick={() => onChange(!on)}
-        className={`relative h-7 w-12 shrink-0 rounded-full border-[1.5px] border-slate-900 transition ${
+        className={`relative h-7 w-12 shrink-0 rounded-full border border-slate-200 transition ${
           on ? "bg-brand-500" : "bg-slate-200"
         }`}
       >
@@ -202,7 +202,7 @@ export function SettingsForm({
           </Field>
           <Field label="Username">
             <span className="flex">
-              <span className="flex items-center rounded-l-xl border-[1.5px] border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">
+              <span className="flex items-center rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">
                 @
               </span>
               <input
@@ -327,7 +327,7 @@ export function SettingsForm({
         </button>
       </div>
 
-      <section className="rounded-3xl border-[1.5px] border-rose-200 bg-rose-50/50 p-5 sm:p-6">
+      <section className="rounded-3xl border border-rose-200 bg-rose-50/50 p-5 sm:p-6">
         <h2 className="font-semibold text-rose-700">Delete account</h2>
         <p className="mt-0.5 text-sm text-slate-600">
           Removes your profile, launches and comments for good. This can&apos;t
@@ -367,7 +367,7 @@ export function SettingsForm({
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="mt-4 flex h-10 items-center gap-1.5 rounded-xl border-[1.5px] border-rose-300 bg-white px-4 text-sm font-semibold text-rose-700 hover:bg-rose-50"
+            className="mt-4 flex h-10 items-center gap-1.5 rounded-xl border border-rose-300 bg-white px-4 text-sm font-semibold text-rose-700 hover:bg-rose-50"
           >
             <Trash2 className="size-4" />
             Delete account

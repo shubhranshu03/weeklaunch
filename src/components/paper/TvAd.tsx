@@ -115,7 +115,7 @@ function TvSet({
                   Advertisement
                 </span>
                 <span className="tv-glow mt-1 block font-display text-lg font-black leading-tight text-[#f4f1e4]">
-                  Advertise in The WeekLaunch
+                  Advertise in The IndieShip
                 </span>
                 <span className="mt-1 block font-serif text-[13px] italic leading-snug text-[#d9d4c2]/85">
                   Your logo, one line and a link on every page. Spot {channel}{" "}
